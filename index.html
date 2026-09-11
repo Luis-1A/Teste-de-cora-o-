@@ -1,92 +1,264 @@
 <!doctype html>
-<html lang="en">
+<html lang="pt-BR">
 
 <head>
-  <!-- Required meta tags -->
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no, user-scalable=no">
 
   <!-- Bootstrap CSS -->
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
     integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
-  <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;500;700&family=Handlee&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.0.0/animate.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
   <link rel="stylesheet" href="style.css">
   <link rel="shortcut icon" type="image/x-icon" href="./img/hbd.png">
-  <title>Happy Birthday!</title>
+  <title>Experiência de Aniversário da Issamara</title>
+  <meta name="description" content="Experiência digital interativa de aniversário de 18 anos da Issamara, comemorado em 24 de setembro de 2026.">
+  <meta property="og:title" content="Experiência de Aniversário da Issamara">
+  <meta property="og:description" content="Experiência digital interativa de aniversário de 18 anos da Issamara, comemorado em 24 de setembro de 2026.">
 </head>
 
 <body>
-  <audio id="background-music" src="./music/monokrom.mp3" preload="auto">
-  </audio>
+  <!-- Background Music from ZIP -->
+  <audio id="background-music" src="./music/monokrom.mp3" preload="auto" loop></audio>
+
+  <!-- ========================================== -->
+  <!-- ABERTURA CINEMATOGRÁFICA & PRÉ-CARREGAMENTO -->
+  <!-- ========================================== -->
+  <div id="cinematic-entry" class="cinematic-entry" aria-label="Abertura cinematográfica de aniversário">
+    <!-- Camada de Fundo com Nebulosa e Iluminação Suave -->
+    <div class="cinematic-bg" id="cinematic-bg"></div>
+    <div class="cinematic-vignette" aria-hidden="true"></div>
+
+    <!-- Camadas de Profundidade: Estrelas, Partículas e Pétalas Flutuantes -->
+    <div class="cinematic-depth-far" id="cinematic-stars-far" aria-hidden="true"></div>
+    <div class="cinematic-depth-mid" id="cinematic-particles-mid" aria-hidden="true"></div>
+    <div class="cinematic-depth-near" id="cinematic-petals-near" aria-hidden="true"></div>
+
+    <!-- Efeitos de Luz: Pulso, Halo e Onda de Choque Suave (BOOM Visual) -->
+    <div class="cinematic-light-flash" id="cinematic-light-flash" aria-hidden="true"></div>
+    <div class="cinematic-shockwave" id="cinematic-shockwave" aria-hidden="true"></div>
+
+    <!-- Palco Central da Abertura -->
+    <div class="cinematic-stage" id="cinematic-stage">
+      <!-- Indicador Discreto de Pré-Carregamento -->
+      <div class="cinematic-preloader" id="cinematic-preloader">
+        <div class="preloader-orb">
+          <span class="preloader-dot"></span>
+        </div>
+        <p class="preloader-text">Preparando uma surpresa...</p>
+      </div>
+
+      <!-- Elementos Visuais e Texto da Sequência Cinematográfica -->
+      <div class="cinematic-hero-content d-none" id="cinematic-hero-content">
+        <div class="cinematic-tagline" id="cinematic-tagline">
+          <span>Um momento especial guardado para hoje...</span>
+        </div>
+
+        <!-- Elemento Central: Medalhão Astral Rosé-Dourado dos 18 Anos -->
+        <div class="cinematic-focal-element" id="cinematic-focal-element">
+          <div class="focal-halo"></div>
+          <div class="focal-ring"></div>
+          <div class="focal-inner-orb">
+            <span class="focal-year">18</span>
+          </div>
+          <div class="focal-sparkles" aria-hidden="true">
+            <span class="sparkle sparkle-1">✦</span>
+            <span class="sparkle sparkle-2">★</span>
+            <span class="sparkle sparkle-3">✦</span>
+          </div>
+        </div>
+
+        <!-- Título e Subtítulo Delicados -->
+        <div class="cinematic-title-group" id="cinematic-title-group">
+          <h1 class="cinematic-name">ISSAMARA</h1>
+          <p class="cinematic-subtitle">Feito com carinho, especialmente para você.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Botão Discreto no Canto para Pular ou Acessibilidade -->
+    <button id="btn-skip-intro" class="cinematic-skip-btn" title="Pular introdução" aria-label="Pular introdução">
+      <span>Pular abertura</span> <i class="fas fa-forward ml-1"></i>
+    </button>
+  </div>
 
   <div class="bg" id="content">
 
-    <div class="container" id="timer">
-      <h5>Countdown to <x id='name'></x> birthday :</h5>
-      <ul>
-        <li><span id="days"></span>days</li>
-        <li><span id="hours"></span>Hours</li>
-        <li><span id="minutes"></span>Minutes</li>
-        <li><span id="seconds"></span>Seconds</li>
-      </ul>
-    </div>
-
-    <div id="slideSatu" class="animate__animated animate__slideInDown animate__slow d-none">
-      <img src="./img/hbd1.png" class="img">
-    </div>
-
-    <div id="slideDua"
-      class="slides d-none paper animate__zoomInDown animate__animated animate__delay-2s animate__slow">
-      <div class="paper-content">
-        <p id="teks1" class="teks"></p>
+    <!-- Top Navigation Bar -->
+    <header class="top-nav-bar" id="top-nav-bar">
+      <div class="nav-left">
+        <button id="btn-menu" class="nav-btn" title="Capítulos" aria-label="Abrir lista de capítulos">
+          <i class="fas fa-list-ul"></i>
+        </button>
+        <span id="chapter-badge" class="chapter-badge" title="Clique para ver todos os capítulos">
+          Cap. 1/20
+        </span>
       </div>
-    </div>
 
-    <div id="slideTiga" class="slides d-none paper animate__fadeInRight animate__animated">
-      <div class="paper-content">
-        <p id="teks2" class="teks"></p>
+      <div class="nav-right">
+        <button id="btn-prev" class="nav-btn" title="Voltar capítulo" disabled aria-label="Capítulo anterior">
+          <i class="fas fa-step-backward"></i> <span class="d-none d-sm-inline">Voltar</span>
+        </button>
+        <button id="btn-pause" class="nav-btn" title="Pausar / Continuar" aria-label="Pausar ou continuar">
+          <i class="fas fa-pause" id="icon-pause"></i>
+        </button>
+        <button id="btn-next" class="nav-btn" title="Próximo capítulo" aria-label="Próximo capítulo">
+          <span class="d-none d-sm-inline">Avançar</span> <i class="fas fa-step-forward"></i>
+        </button>
+        <button id="btn-sound" class="nav-btn" title="Música e Volume" aria-label="Controle de áudio">
+          <i class="fas fa-volume-up" id="icon-sound"></i>
+        </button>
       </div>
-    </div>
+    </header>
 
-    <div class="kotak d-none slides animate__animated animate__fadeInDown animate__delay-2s" id="slideEmpat">
-      <div class="row">
-        <div class="col-sm mt-1">
-          <h5>Kamu suka nggak?</h5>
+    <!-- Main Viewport -->
+    <main class="app-viewport">
+      <div class="stage-wrapper" id="stage-wrapper">
+        <!-- Chapters are dynamically rendered here with pristine animations -->
+      </div>
+
+      <!-- Bottom Tap Prompt from ZIP -->
+      <div class="bottom-tap-bar" id="bottom-tap-bar">
+        <div id="tap" class="animate__animated animate__pulse animate__infinite text-muted">
+          <span>Toque para continuar</span> <i class="fas fa-chevron-right ml-1"></i>
         </div>
       </div>
-      <div class="row mt-2">
-        <div class="col-4 offset-2">
-          <button id="gak" class="btn btn-outline-danger"> Gak! </button>
+    </main>
+
+    <!-- Chapter Selector Modal -->
+    <div id="modal-chapters" class="custom-modal-backdrop d-none">
+      <div class="custom-modal">
+        <div class="custom-modal-header">
+          <h5><i class="fas fa-book-open text-danger mr-2"></i> Capítulos da Experiência</h5>
+          <button type="button" class="close" id="btn-close-chapters-modal">&times;</button>
         </div>
-        <div class="col-4">
-          <button id="suka" class="btn btn-outline-info"> Suka!! </button>
+        <div class="custom-modal-body" id="chapters-list-container">
+          <!-- Dynamically populated chapters -->
+        </div>
+        <div class="custom-modal-footer">
+          <button type="button" class="btn btn-sm btn-outline-secondary" id="btn-close-modal-footer">Fechar</button>
         </div>
       </div>
     </div>
 
-    <div id="slideLima" class="d-none animate__bounceIn animate__animated animate__slow">
-      <i class="fas fa-heart fa-5x text-danger"></i>
+    <!-- Audio Control Modal / Popover -->
+    <div id="modal-audio" class="custom-modal-backdrop d-none">
+      <div class="custom-modal" style="max-width: 380px;">
+        <div class="custom-modal-header">
+          <h5><i class="fas fa-music text-info mr-2"></i> Controle de Música</h5>
+          <button type="button" class="close" id="btn-close-audio-modal">&times;</button>
+        </div>
+        <div class="custom-modal-body text-center">
+          <p class="text-muted mb-3"><i class="fas fa-compact-disc fa-spin mr-1"></i> Monokrom (Trilha de fundo)</p>
+          <div class="form-group">
+            <label for="audio-volume-slider" class="font-weight-bold">Volume: <span id="volume-label">70%</span></label>
+            <input type="range" class="custom-range" id="audio-volume-slider" min="0" max="100" value="70">
+          </div>
+          <div class="mt-3">
+            <button id="btn-toggle-mute" class="btn btn-outline-danger btn-sm px-4">
+              <i class="fas fa-volume-mute mr-1"></i> Mutar Som
+            </button>
+          </div>
+        </div>
+        <div class="custom-modal-footer">
+          <button type="button" class="btn btn-sm btn-primary" id="btn-confirm-audio-modal">OK</button>
+        </div>
+      </div>
     </div>
-    <p id="trims" class="text-muted d-none mt-2"></p>
 
-    <p id="tap" class="d-none animate__animated animate__pulse text-muted animate__slow animate__repeat-3">Ketuk untuk
-      melanjutkan</p>
-    <!-- Footer -->
-    <footer class="page-footer font-small blue fixed-bottom">
-  <!-- Optional JavaScript -->
-  <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <!-- Restart Confirmation Modal -->
+    <div id="modal-restart-confirm" class="custom-modal-backdrop d-none">
+      <div class="custom-modal" style="max-width: 420px;">
+        <div class="custom-modal-header">
+          <h5><i class="fas fa-redo text-warning mr-2"></i> Recomeçar Experiência?</h5>
+          <button type="button" class="close" id="btn-close-restart-modal">&times;</button>
+        </div>
+        <div class="custom-modal-body text-center">
+          <p class="mb-2">Tem certeza que deseja reiniciar do primeiro capítulo?</p>
+          <small class="text-muted">Seu progresso será redefinido para o início.</small>
+        </div>
+        <div class="custom-modal-footer">
+          <button type="button" class="btn btn-sm btn-outline-secondary" id="btn-cancel-restart">Cancelar</button>
+          <button type="button" class="btn btn-sm btn-danger" id="btn-confirm-restart">Sim, Recomeçar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Letter & PDF View Modal -->
+    <div id="modal-pdf" class="custom-modal-backdrop d-none">
+      <div class="custom-modal" style="max-width: 680px;">
+        <div class="custom-modal-header">
+          <h5><i class="fas fa-envelope-open-text text-danger mr-2"></i> Carta para Issamara</h5>
+          <button type="button" class="close" id="btn-close-pdf-modal">&times;</button>
+        </div>
+        <div class="custom-modal-body">
+          <div id="pdf-template">
+            <div class="pdf-header">
+              <div class="pdf-title">Feliz Aniversário de 18 Anos! 🎉</div>
+              <div class="pdf-subtitle">24 de setembro de 2026 • Para: <strong>Issamara</strong></div>
+            </div>
+            <div class="pdf-body" id="pdf-letter-content">
+Bom, Issamara...
+
+Eu não queria deixar seu aniversário passar como se fosse um dia qualquer.
+
+Então resolvi fazer isso aqui.
+
+Quero te desejar um feliz aniversário e, principalmente, que esse novo ciclo seja muito bom para você.
+
+Que não falte saúde, paz, felicidade e vontade de correr atrás das coisas que você quer.
+
+Espero que você consiga realizar seus planos, que apareçam muitas oportunidades boas e que você tenha vários motivos para sorrir durante esse novo ano.
+
+A gente acabou ficando um pouco distante com o tempo, e eu sinto falta de quando a gente conversava mais.
+
+Mas, mesmo assim, o carinho e o respeito que tenho por você continuam aqui.
+
+Você é uma pessoa que eu considero muito, e eu realmente espero que sua vida siga por caminhos bons.
+
+Aproveita muito seus 18 anos, comemora bastante e curte seu dia.
+
+Feliz aniversário, Issamara. 🎂🎉
+
+Que Deus abençoe muito sua vida e que esse novo ciclo venha cheio de coisas boas.
+            </div>
+            <div class="pdf-signature">
+              Com carinho,<br>
+              <strong>Luis.</strong>
+            </div>
+          </div>
+        </div>
+        <div class="custom-modal-footer">
+          <button type="button" class="btn btn-sm btn-outline-secondary" id="btn-close-pdf-footer">Fechar</button>
+          <button type="button" class="btn btn-sm btn-outline-info" id="btn-print-letter">
+            <i class="fas fa-print mr-1"></i> Imprimir
+          </button>
+          <button type="button" class="btn btn-sm btn-primary" id="btn-download-pdf">
+            <i class="fas fa-file-pdf mr-1"></i> Baixar em PDF
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Hidden canvas / printable helper -->
+    <div id="printable-area" class="d-none"></div>
+
+  </div>
+
+  <!-- Scripts -->
   <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"
     integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous">
   </script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
     integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous">
   </script>
-  <script src="https://kit.fontawesome.com/61e5120832.js" crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/npm/typeit@7.0.4/dist/typeit.min.js"></script>
-  <script src="https://momentjs.com/downloads/moment.js"></script>
-  <script src="https://momentjs.com/downloads/moment-with-locales.js"></script>
-  <script src="https://momentjs.com/downloads/moment-timezone-with-data.js"></script>
+  <!-- Confetti library for reliable multi-burst celebration -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+  <!-- html2pdf for export of the letter -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <!-- Core application logic -->
   <script src="script.js"></script>
 </body>
 

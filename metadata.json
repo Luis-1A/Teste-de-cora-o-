@@ -1,0 +1,6 @@
+{
+  "name": "Experiência de Aniversário da Issamara",
+  "description": "Experiência digital interativa de aniversário de 18 anos da Issamara, comemorado em 24 de setembro de 2026.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

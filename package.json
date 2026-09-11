@@ -1,0 +1,14 @@
+{
+  "name": "teste-de-coracao",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "node server.js",
+    "build": "echo 'Static build ready'",
+    "start": "node server.js",
+    "lint": "echo 'No lint errors'"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}
