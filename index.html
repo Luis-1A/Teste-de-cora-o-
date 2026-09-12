@@ -20,68 +20,102 @@
 </head>
 
 <body>
-  <!-- Background Music from ZIP -->
+  <!-- Background Music original do projeto (Instância Global Única) -->
   <audio id="background-music" src="./music/monokrom.mp3" preload="auto" loop></audio>
 
-  <!-- ========================================== -->
-  <!-- ABERTURA CINEMATOGRÁFICA & PRÉ-CARREGAMENTO -->
-  <!-- ========================================== -->
-  <div id="cinematic-entry" class="cinematic-entry" aria-label="Abertura cinematográfica de aniversário">
-    <!-- Camada de Fundo com Nebulosa e Iluminação Suave -->
-    <div class="cinematic-bg" id="cinematic-bg"></div>
-    <div class="cinematic-vignette" aria-hidden="true"></div>
-
-    <!-- Camadas de Profundidade: Estrelas, Partículas e Pétalas Flutuantes -->
-    <div class="cinematic-depth-far" id="cinematic-stars-far" aria-hidden="true"></div>
-    <div class="cinematic-depth-mid" id="cinematic-particles-mid" aria-hidden="true"></div>
-    <div class="cinematic-depth-near" id="cinematic-petals-near" aria-hidden="true"></div>
-
-    <!-- Efeitos de Luz: Pulso, Halo e Onda de Choque Suave (BOOM Visual) -->
-    <div class="cinematic-light-flash" id="cinematic-light-flash" aria-hidden="true"></div>
-    <div class="cinematic-shockwave" id="cinematic-shockwave" aria-hidden="true"></div>
-
-    <!-- Palco Central da Abertura -->
-    <div class="cinematic-stage" id="cinematic-stage">
-      <!-- Indicador Discreto de Pré-Carregamento -->
-      <div class="cinematic-preloader" id="cinematic-preloader">
-        <div class="preloader-orb">
-          <span class="preloader-dot"></span>
-        </div>
-        <p class="preloader-text">Preparando uma surpresa...</p>
+  <!-- ======================================================== -->
+  <!-- TELA INICIAL DE INTERAÇÃO (GATILHO AUTOPLAY & INÍCIO)    -->
+  <!-- ======================================================== -->
+  <div id="initial-start-overlay" class="initial-start-overlay" aria-label="Iniciar experiência">
+    <div class="initial-start-backdrop"></div>
+    <div class="initial-start-card">
+      <div class="initial-star-aura">
+        <span class="initial-sparkle">✦</span>
       </div>
+      <h2 class="initial-invitation-title">Uma lembrança especial</h2>
+      <p class="initial-invitation-sub">Para Issamara • 18 Anos</p>
+      <button id="btn-initial-start" class="btn-initial-start" aria-label="Toque para começar">
+        <span class="btn-start-pulse-dot"></span>
+        <span class="btn-start-label">Toque para começar</span>
+        <i class="fas fa-play ml-2" style="font-size: 11px;"></i>
+      </button>
+      <div class="initial-hint-audio">
+        <i class="fas fa-volume-up mr-1 text-muted"></i>
+        <span>Experiência com áudio imersivo</span>
+      </div>
+    </div>
+  </div>
 
-      <!-- Elementos Visuais e Texto da Sequência Cinematográfica -->
-      <div class="cinematic-hero-content d-none" id="cinematic-hero-content">
-        <div class="cinematic-tagline" id="cinematic-tagline">
-          <span>Um momento especial guardado para hoje...</span>
+  <!-- ======================================================== -->
+  <!-- ABERTURA CINEMATOGRÁFICA DE 45 SEGUNDOS (HISTÓRIA VIVA) -->
+  <!-- ======================================================== -->
+  <div id="cinematic-entry" class="cinematic-entry" aria-label="Abertura cinematográfica da experiência">
+    <div class="cinematic-scene">
+      <div class="cinematic-camera" id="cinematic-camera">
+        <!-- 1. Fundo Espacial / Nebulosa Dinâmica -->
+        <div class="cinematic-bg" id="cinematic-bg"></div>
+        <div class="cinematic-vignette" aria-hidden="true"></div>
+
+        <!-- 2. Camadas de Profundidade de Partículas (Far, Mid, Near) + Canvas Interativo -->
+        <div class="cinematic-depth-far" id="cinematic-stars-far" aria-hidden="true"></div>
+        <div class="cinematic-depth-mid" id="cinematic-particles-mid" aria-hidden="true"></div>
+        <canvas id="cinematic-canvas" class="cinematic-canvas" aria-hidden="true"></canvas>
+        <div class="cinematic-depth-near" id="cinematic-petals-near" aria-hidden="true"></div>
+
+        <!-- 3. Iluminação Central Evolutiva (Luz que respira) -->
+        <div class="cinematic-central-light" id="cinematic-central-light" aria-hidden="true">
+          <div class="light-pulse-core"></div>
+          <div class="light-pulse-halo"></div>
+          <div class="light-pulse-aura"></div>
         </div>
 
-        <!-- Elemento Central: Medalhão Astral Rosé-Dourado dos 18 Anos -->
-        <div class="cinematic-focal-element" id="cinematic-focal-element">
+        <!-- 4. Elemento Central: Medalhão Astral 18 com Silhueta -> Contorno -> Detalhes -->
+        <div class="cinematic-focal-element" id="cinematic-focal-element" aria-hidden="true">
           <div class="focal-halo"></div>
+          <div class="focal-shimmer-sweep"></div>
           <div class="focal-ring"></div>
           <div class="focal-inner-orb">
             <span class="focal-year">18</span>
           </div>
-          <div class="focal-sparkles" aria-hidden="true">
+          <div class="focal-sparkles">
             <span class="sparkle sparkle-1">✦</span>
             <span class="sparkle sparkle-2">★</span>
             <span class="sparkle sparkle-3">✦</span>
           </div>
         </div>
 
-        <!-- Título e Subtítulo Delicados -->
-        <div class="cinematic-title-group" id="cinematic-title-group">
-          <h1 class="cinematic-name">ISSAMARA</h1>
-          <p class="cinematic-subtitle">Feito com carinho, especialmente para você.</p>
+        <!-- 5. Camada Textual Poética (Frase 1, Frase 2, Nome ISSAMARA) -->
+        <div class="cinematic-narrative-layer" id="cinematic-narrative-layer">
+          <p class="cinematic-phrase" id="cinematic-phrase-1">
+            Algumas histórias começam de um jeito simples...
+          </p>
+          <p class="cinematic-phrase" id="cinematic-phrase-2">
+            ...mas algumas pessoas fazem questão de deixar uma lembrança.
+          </p>
+          <div class="cinematic-name-wrap" id="cinematic-name-wrap">
+            <div class="name-halo-glow"></div>
+            <h1 class="cinematic-name-title" id="cinematic-name-title">ISSAMARA</h1>
+            <p class="cinematic-name-sub">24 de Setembro • 18 Anos</p>
+          </div>
         </div>
-      </div>
-    </div>
 
-    <!-- Botão Discreto no Canto para Pular ou Acessibilidade -->
-    <button id="btn-skip-intro" class="cinematic-skip-btn" title="Pular introdução" aria-label="Pular introdução">
-      <span>Pular abertura</span> <i class="fas fa-forward ml-1"></i>
-    </button>
+        <!-- 6. Clímax: Três Camadas de Luz com Expansão Cinematográfica -->
+        <div class="climax-light-container" id="climax-light-container" aria-hidden="true">
+          <!-- Camada 1: Halo pequeno e intenso -->
+          <div class="climax-layer-core" id="climax-layer-core"></div>
+          <!-- Camada 2: Halo intermediário -->
+          <div class="climax-layer-mid" id="climax-layer-mid"></div>
+          <!-- Camada 3: Grande expansão luminosa cobrindo a tela -->
+          <div class="climax-layer-expansion" id="climax-layer-expansion"></div>
+        </div>
+
+        <!-- 7. Prompt Discreto Final: «Toque para começar a jornada» -->
+        <button class="cinematic-start-prompt" id="cinematic-start-prompt" aria-label="Toque para começar a jornada">
+          <span class="prompt-pulse-text">Toque para começar a jornada</span>
+          <i class="fas fa-sparkles ml-1 text-warning"></i>
+        </button>
+      </div><!-- .cinematic-camera -->
+    </div><!-- .cinematic-scene -->
   </div>
 
   <div class="bg" id="content">

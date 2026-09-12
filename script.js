@@ -130,11 +130,23 @@
   class AudioManager {
     constructor() {
       this.audio = document.getElementById('background-music');
+      if (!this.audio) {
+        this.audio = document.querySelector('audio');
+      }
+      if (this.audio && (!this.audio.src || !this.audio.src.includes('monokrom.mp3'))) {
+        this.audio.src = './music/monokrom.mp3';
+      }
+      if (this.audio) {
+        this.audio.loop = true;
+        this.audio.preload = 'auto';
+      }
+
       this.isMuted = false;
       this.baseVolume = 0.7;
       this.currentVolume = 0.7;
       this.isPlaying = false;
       this.fadeInterval = null;
+      this.hasFallbackListener = false;
 
       const savedVol = localStorage.getItem('issamara_bday_audio_vol');
       if (savedVol !== null) {
@@ -150,26 +162,309 @@
         this.audio.volume = this.isMuted ? 0 : this.currentVolume;
       }
 
+      this.audioCtx = null;
       this.setupUserUnlock();
+    }
+
+    /**
+     * Gatilho oficial da experiência: inicia a música global 'music/monokrom.mp3'
+     * e garante desbloqueio de contexto de áudio sem nunca recriar nem reiniciar.
+     */
+    startExperienceAudio() {
+      const ctx = this.getAudioContext();
+      if (ctx && ctx.state === 'suspended') {
+        ctx.resume().catch(() => {});
+      }
+
+      if (!this.audio) {
+        this.audio = document.getElementById('background-music');
+      }
+      if (!this.audio) return;
+
+      // Assegura desmutado para que a música toque ao iniciar
+      this.isMuted = false;
+      this.audio.muted = false;
+      if (this.baseVolume <= 0.05) this.baseVolume = 0.7;
+      this.audio.volume = 0.08;
+
+      const playPromise = this.audio.play();
+      if (playPromise !== undefined) {
+        playPromise.then(() => {
+          this.isPlaying = true;
+          this.fadeTo(this.baseVolume || 0.7, 1800);
+          this.updateUI();
+        }).catch((err) => {
+          console.warn('Gesto adicional necessário para autoplay:', err);
+          this.attachFallbackGesture();
+        });
+      }
     }
 
     setupUserUnlock() {
       const unlockAudio = () => {
+        const ctx = this.getAudioContext();
+        if (ctx && ctx.state === 'suspended') {
+          ctx.resume().catch(() => {});
+        }
+
         if (!this.isPlaying && this.audio) {
+          this.audio.muted = this.isMuted;
           const playPromise = this.audio.play();
           if (playPromise !== undefined) {
             playPromise.then(() => {
               this.isPlaying = true;
               this.updateUI();
-            }).catch(() => {});
+            }).catch(() => {
+              this.attachFallbackGesture();
+            });
           }
         }
         document.removeEventListener('click', unlockAudio);
         document.removeEventListener('touchstart', unlockAudio);
+        document.removeEventListener('pointerdown', unlockAudio);
+        document.removeEventListener('keydown', unlockAudio);
       };
 
-      document.addEventListener('click', unlockAudio, { once: true });
-      document.addEventListener('touchstart', unlockAudio, { once: true });
+      document.addEventListener('click', unlockAudio, { once: true, passive: true });
+      document.addEventListener('touchstart', unlockAudio, { once: true, passive: true });
+      document.addEventListener('pointerdown', unlockAudio, { once: true, passive: true });
+      document.addEventListener('keydown', unlockAudio, { once: true, passive: true });
+    }
+
+    attachFallbackGesture() {
+      if (this.hasFallbackListener) return;
+      this.hasFallbackListener = true;
+      const retryPlay = () => {
+        if (this.isPlaying) {
+          document.removeEventListener('click', retryPlay, true);
+          document.removeEventListener('touchstart', retryPlay, true);
+          document.removeEventListener('pointerdown', retryPlay, true);
+          document.removeEventListener('keydown', retryPlay, true);
+          return;
+        }
+        if (this.audio) {
+          this.audio.muted = this.isMuted;
+          const p = this.audio.play();
+          if (p !== undefined) {
+            p.then(() => {
+              this.isPlaying = true;
+              this.fadeTo(this.baseVolume || 0.7, 1200);
+              this.updateUI();
+              document.removeEventListener('click', retryPlay, true);
+              document.removeEventListener('touchstart', retryPlay, true);
+              document.removeEventListener('pointerdown', retryPlay, true);
+              document.removeEventListener('keydown', retryPlay, true);
+            }).catch(() => {});
+          }
+        }
+      };
+      document.addEventListener('click', retryPlay, true);
+      document.addEventListener('touchstart', retryPlay, true);
+      document.addEventListener('pointerdown', retryPlay, true);
+      document.addEventListener('keydown', retryPlay, true);
+    }
+
+    getAudioContext() {
+      if (!this.audioCtx) {
+        const AudioCtxClass = window.AudioContext || window.webkitAudioContext;
+        if (AudioCtxClass) {
+          try {
+            this.audioCtx = new AudioCtxClass();
+          } catch (e) {
+            console.warn('Web Audio API não suportada ou bloqueada:', e);
+          }
+        }
+      }
+      if (this.audioCtx && this.audioCtx.state === 'suspended') {
+        this.audioCtx.resume().catch(() => {});
+      }
+      return this.audioCtx;
+    }
+
+    /**
+     * Efeito sonoro discreto de 'brilho' (celestial shimmer / sparkle) via Web Audio API.
+     * Sincronizado especificamente com o estado de revelação do elemento central na abertura.
+     */
+    playSparkleSound(intensity = 1.0) {
+      if (this.isMuted) return;
+      const ctx = this.getAudioContext();
+      if (!ctx) return;
+
+      try {
+        const t0 = ctx.currentTime + 0.015;
+        const masterVol = Math.max(0.01, Math.min(1.0, this.currentVolume));
+        const effectiveGain = 0.08 * intensity * masterVol;
+
+        const masterGain = ctx.createGain();
+        masterGain.gain.setValueAtTime(effectiveGain, t0);
+
+        // Filtro passa-altas para manter as frequências cristalinas, etéreas e sem impacto no grave
+        const highPass = ctx.createBiquadFilter();
+        highPass.type = 'highpass';
+        highPass.frequency.setValueAtTime(800, t0);
+
+        masterGain.connect(highPass);
+        highPass.connect(ctx.destination);
+
+        // Cascata de notas celestiais em arpeggio cristalino (Dó maior / Lá menor estelar)
+        const chimeNotes = [
+          { freq: 1046.50, delay: 0.00, dur: 0.65, vol: 0.75 }, // C6
+          { freq: 1318.51, delay: 0.05, dur: 0.60, vol: 0.85 }, // E6
+          { freq: 1567.98, delay: 0.11, dur: 0.58, vol: 0.80 }, // G6
+          { freq: 1975.53, delay: 0.18, dur: 0.54, vol: 0.75 }, // B6
+          { freq: 2349.32, delay: 0.26, dur: 0.50, vol: 0.70 }, // D7
+          { freq: 3135.96, delay: 0.35, dur: 0.45, vol: 0.60 }  // G7
+        ];
+
+        chimeNotes.forEach(note => {
+          const noteStart = t0 + note.delay;
+          const osc = ctx.createOscillator();
+          const oscOvertone = ctx.createOscillator();
+          const noteGain = ctx.createGain();
+
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(note.freq, noteStart);
+
+          // Sobretom suave (oitava superior com toque aveludado)
+          oscOvertone.type = 'sine';
+          oscOvertone.frequency.setValueAtTime(note.freq * 2, noteStart);
+
+          noteGain.gain.setValueAtTime(0.0001, noteStart);
+          noteGain.gain.linearRampToValueAtTime(note.vol, noteStart + 0.015);
+          noteGain.gain.exponentialRampToValueAtTime(0.0001, noteStart + note.dur);
+
+          osc.connect(noteGain);
+          oscOvertone.connect(noteGain);
+          noteGain.connect(masterGain);
+
+          osc.start(noteStart);
+          oscOvertone.start(noteStart);
+          osc.stop(noteStart + note.dur + 0.04);
+          oscOvertone.stop(noteStart + note.dur + 0.04);
+        });
+
+        // Toque etéreo de 'poeira de estrelas' (ruído sutil filtrado em alta frequência)
+        const noiseDur = 0.42;
+        const noiseBuffer = ctx.createBuffer(1, Math.floor(ctx.sampleRate * noiseDur), ctx.sampleRate);
+        const noiseData = noiseBuffer.getChannelData(0);
+        for (let i = 0; i < noiseData.length; i++) {
+          noiseData[i] = (Math.random() * 2 - 1) * 0.15;
+        }
+
+        const noiseSrc = ctx.createBufferSource();
+        noiseSrc.buffer = noiseBuffer;
+
+        const noiseFilter = ctx.createBiquadFilter();
+        noiseFilter.type = 'bandpass';
+        noiseFilter.frequency.setValueAtTime(4200, t0);
+        noiseFilter.Q.setValueAtTime(3.2, t0);
+
+        const noiseGain = ctx.createGain();
+        noiseGain.gain.setValueAtTime(0.0001, t0);
+        noiseGain.gain.linearRampToValueAtTime(0.22, t0 + 0.04);
+        noiseGain.gain.exponentialRampToValueAtTime(0.0001, t0 + noiseDur);
+
+        noiseSrc.connect(noiseFilter);
+        noiseFilter.connect(noiseGain);
+        noiseGain.connect(masterGain);
+
+        noiseSrc.start(t0 + 0.04);
+        noiseSrc.stop(t0 + 0.04 + noiseDur);
+      } catch (err) {
+        console.warn('Erro ao reproduzir som de brilho:', err);
+      }
+    }
+
+    /**
+     * Efeito sonoro discreto de 'página virando' / capa de livro abrindo via Web Audio API.
+     * Sincronizado especificamente com o momento exato em que a capa do livro se abre em 3D.
+     */
+    playPageTurnSound(intensity = 1.0) {
+      if (this.isMuted) return;
+      const ctx = this.getAudioContext();
+      if (!ctx) return;
+
+      try {
+        const t0 = ctx.currentTime + 0.01;
+        const masterVol = Math.max(0.01, Math.min(1.0, this.currentVolume));
+        const effectiveGain = 0.11 * intensity * masterVol;
+
+        const masterGain = ctx.createGain();
+        masterGain.gain.setValueAtTime(effectiveGain, t0);
+        masterGain.connect(ctx.destination);
+
+        // 1. Ruído filtrado com cor rosa/orgânica para o deslocamento físico de ar e papel
+        const duration = 0.75;
+        const bufferSize = Math.floor(ctx.sampleRate * duration);
+        const noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+        const data = noiseBuffer.getChannelData(0);
+
+        let b0 = 0, b1 = 0, b2 = 0;
+        for (let i = 0; i < bufferSize; i++) {
+          const white = Math.random() * 2 - 1;
+          b0 = 0.99886 * b0 + white * 0.0555179;
+          b1 = 0.99332 * b1 + white * 0.0750759;
+          b2 = 0.96900 * b2 + white * 0.1538520;
+          data[i] = (b0 + b1 + b2 + white * 0.08) * 0.35;
+        }
+
+        const noiseSource = ctx.createBufferSource();
+        noiseSource.buffer = noiseBuffer;
+
+        // Filtro passa-faixa com envelope de varredura que sobe ao erguer a capa e desce ao repousar
+        const bandPass = ctx.createBiquadFilter();
+        bandPass.type = 'bandpass';
+        bandPass.Q.setValueAtTime(1.8, t0);
+        bandPass.frequency.setValueAtTime(520, t0);
+        bandPass.frequency.exponentialRampToValueAtTime(1420, t0 + 0.18);
+        bandPass.frequency.exponentialRampToValueAtTime(450, t0 + 0.68);
+
+        const pageGain = ctx.createGain();
+        pageGain.gain.setValueAtTime(0.0001, t0);
+        pageGain.gain.linearRampToValueAtTime(0.85, t0 + 0.08);
+        pageGain.gain.setValueAtTime(0.85, t0 + 0.18);
+        pageGain.gain.exponentialRampToValueAtTime(0.20, t0 + 0.45);
+        pageGain.gain.exponentialRampToValueAtTime(0.0001, t0 + duration);
+
+        noiseSource.connect(bandPass);
+        bandPass.connect(pageGain);
+        pageGain.connect(masterGain);
+
+        // 2. Camada sutil de atrito fino de borda de página / pergaminho
+        const frictionFilter = ctx.createBiquadFilter();
+        frictionFilter.type = 'highpass';
+        frictionFilter.frequency.setValueAtTime(2600, t0);
+
+        const frictionGain = ctx.createGain();
+        frictionGain.gain.setValueAtTime(0.0001, t0);
+        frictionGain.gain.linearRampToValueAtTime(0.18, t0 + 0.06);
+        frictionGain.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.38);
+
+        noiseSource.connect(frictionFilter);
+        frictionFilter.connect(frictionGain);
+        frictionGain.connect(masterGain);
+
+        // 3. Toque sutil de deslocamento de ar suave da capa em movimento
+        const airOsc = ctx.createOscillator();
+        airOsc.type = 'sine';
+        airOsc.frequency.setValueAtTime(115, t0);
+        airOsc.frequency.exponentialRampToValueAtTime(60, t0 + 0.32);
+
+        const airGain = ctx.createGain();
+        airGain.gain.setValueAtTime(0.0001, t0);
+        airGain.gain.linearRampToValueAtTime(0.18, t0 + 0.05);
+        airGain.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.34);
+
+        airOsc.connect(airGain);
+        airGain.connect(masterGain);
+
+        noiseSource.start(t0);
+        noiseSource.stop(t0 + duration);
+        airOsc.start(t0);
+        airOsc.stop(t0 + 0.36);
+      } catch (err) {
+        console.warn('Erro ao reproduzir som de página virando:', err);
+      }
     }
 
     play() {
@@ -1065,8 +1360,10 @@
       const currentPageEl = this.activePageEl;
       const nextIndex = this.currentPageIndex + 1;
 
-      // Reproduz som sutil de papel virando
-      if (this.soundEffects) {
+      // Reproduz som sutil de papel virando via Web Audio API
+      if (this.sys && this.sys.audioManager) {
+        this.sys.audioManager.playPageTurnSound(1.0);
+      } else if (this.soundEffects) {
         this.soundEffects.playPageTurn();
       }
 
@@ -1131,7 +1428,10 @@
       const currentPageEl = this.activePageEl;
       const prevIndex = this.currentPageIndex - 1;
 
-      if (this.soundEffects) {
+      // Reproduz som sutil de papel virando para trás via Web Audio API
+      if (this.sys && this.sys.audioManager) {
+        this.sys.audioManager.playPageTurnSound(1.0);
+      } else if (this.soundEffects) {
         this.soundEffects.playPageTurn();
       }
 
@@ -2019,119 +2319,574 @@
       }
     },
 
-    // Cap 20 - Até qualquer dia
+    // Cap 20 - O Grande Encerramento (Cena Final Definitiva - 30 Segundos Contínuos)
     {
       id: 20,
-      title: "Até qualquer dia",
-      audioLevel: 0.55,
+      title: "Cena Final Definitiva",
+      audioLevel: 0.70,
       render: (stage, sys) => {
-        const container = document.createElement('div');
-        container.className = 'kotak animate__animated animate__fadeIn';
-        container.innerHTML = `
-          <div class="py-2">
-            <p id="p20_1" class="lead-text animate__animated animate__fadeIn">E é isso.</p>
-            <p id="p20_2" class="sub-text d-none animate__animated animate__fadeIn mt-2">
-              Espero que você tenha gostado desse pequeno presente.
-            </p>
-            <p id="p20_3" class="lead-text text-primary d-none animate__animated animate__fadeIn mt-2">
-              Aproveita muito seus 18 anos.
-            </p>
-            <p id="p20_4" class="sub-text d-none animate__animated animate__fadeIn mt-2">
-              E espero poder te encontrar novamente algum dia.
-            </p>
-            <div id="p20_5" class="d-none animate__animated animate__zoomIn my-3">
-              <h4 class="text-danger font-weight-bold">Feliz aniversário, Issamara. ❤️</h4>
-            </div>
-            <p id="p20_6" class="text-muted font-italic d-none animate__animated animate__fadeIn mt-2">
-              Até qualquer dia.
-            </p>
+        if (sys.audioManager) {
+          sys.audioManager.fadeTo(0.70, 1500);
+        }
+        sys.hideTapPrompt();
 
-            <div id="p20_actions" class="d-none animate__animated animate__fadeInUp mt-4">
-              <div class="d-flex flex-column flex-sm-row justify-content-center gap-2">
-                <button id="btn-show-credits" class="btn btn-outline-info btn-sm mb-2 mb-sm-0 mr-sm-2">
-                  <i class="fas fa-info-circle mr-1"></i> Ver Créditos
-                </button>
-                <button id="btn-reopen-book" class="btn btn-outline-secondary btn-sm mb-2 mb-sm-0 mr-sm-2">
-                  <i class="fas fa-book-open mr-1"></i> Ler o Livro
-                </button>
-                <button id="btn-open-pdf-20" class="btn btn-primary btn-sm mb-2 mb-sm-0 mr-sm-2">
-                  <i class="fas fa-file-pdf mr-1"></i> Baixar Carta em PDF
-                </button>
-                <button id="btn-restart-20" class="btn btn-outline-danger btn-sm">
-                  <i class="fas fa-redo mr-1"></i> Recomeçar
-                </button>
-              </div>
-            </div>
-          </div>
-        `;
-        stage.appendChild(container);
-
-        sys.timer.setTimeout(() => {
-          const el = document.getElementById('p20_2');
-          if (el) el.classList.remove('d-none');
-        }, 1200);
-
-        sys.timer.setTimeout(() => {
-          const el = document.getElementById('p20_3');
-          if (el) el.classList.remove('d-none');
-        }, 2400);
-
-        sys.timer.setTimeout(() => {
-          const el = document.getElementById('p20_4');
-          if (el) el.classList.remove('d-none');
-        }, 3600);
-
-        sys.timer.setTimeout(() => {
-          const el = document.getElementById('p20_5');
-          if (el) el.classList.remove('d-none');
-        }, 5000);
-
-        sys.timer.setTimeout(() => {
-          const el = document.getElementById('p20_6');
-          if (el) el.classList.remove('d-none');
-        }, 6400);
-
-        sys.timer.setTimeout(() => {
-          const el = document.getElementById('p20_actions');
-          if (el) el.classList.remove('d-none');
-
-          document.getElementById('btn-show-credits').addEventListener('click', () => {
-            sys.renderCredits();
-          });
-          document.getElementById('btn-reopen-book').addEventListener('click', () => {
-            sys.goToChapter(19);
-          });
-          document.getElementById('btn-open-pdf-20').addEventListener('click', () => {
-            sys.openPdfModal();
-          });
-          document.getElementById('btn-restart-20').addEventListener('click', () => {
-            sys.openRestartModal();
-          });
-        }, 7600);
+        // Inicializa a Cena Final Definitiva
+        sys.activeFinaleController = new DefinitiveFinaleController(stage, sys);
       }
     }
   ];
 
-  // ==========================================
-  // 4.5. CINEMATIC ENTRY CONTROLLER
-  // ==========================================
+  // ==========================================================================
+  // 4.4. DEFINITIVE FINALE CONTROLLER (30 SEGUNDOS CONTÍNUOS DE ESPETÁCULO)
+  // Linha do Tempo:
+  // 0s-4s: Fechamento do Livro 3D
+  // 4s-7s: A Primeira Luz e Pulsos
+  // 7s-11s: O Jardim de Luz (Flores Botânicas em SVG)
+  // 11s-15s: Flores em Expansão & Órbitas
+  // 15s-18s: Convergência Central e Halos
+  // 18s-21s: Tensão e Respiração
+  // 21s-24s: O Grande Clímax (Onda, Anel, Flares H/V, Flash)
+  // 24s-26s: FELIZ ANIVERSÁRIO ISSAMARA 18 ANOS
+  // 26s-28s: Calma e Serenidade
+  // 28s-30s: Último Momento
+  // 30s+: Créditos Finais e Encerramento com Fade-Out de Áudio
+  // ==========================================================================
+  class DefinitiveFinaleController {
+    constructor(container, experienceSystem) {
+      this.container = container;
+      this.sys = experienceSystem;
+      this.isDestroyed = false;
+      this.startTime = null;
+      this.animFrameId = null;
+      this.timeouts = [];
+      this.flowers = [];
+      this.canvasParticles = [];
+      this.canvasCtx = null;
+      this.canvasWidth = 0;
+      this.canvasHeight = 0;
+
+      this.init();
+    }
+
+    init() {
+      if (!this.container) return;
+      this.container.innerHTML = '';
+
+      this.viewport = document.createElement('div');
+      this.viewport.className = 'df-finale-viewport';
+      this.viewport.innerHTML = `
+        <div class="df-ambient-wash" id="df-ambient-wash"></div>
+        <canvas class="df-particles-canvas" id="df-particles-canvas"></canvas>
+
+        <!-- 0s - 4s: O Livro Termina (Fechamento 3D Suave) -->
+        <div class="df-book-stage" id="df-book-stage">
+          <div class="df-book-wrap" id="df-book-wrap">
+            <div class="df-book-base">
+              <div class="df-book-base-text">
+                "Que cada novo passo seja guiado por luz, coragem e infinita felicidade."
+              </div>
+            </div>
+            <div class="df-book-cover" id="df-book-cover">
+              <div class="df-cover-emblem">
+                <span class="df-cover-year">18</span>
+              </div>
+              <div class="df-cover-name">ISSAMARA</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4s - 7s: A Primeira Luz (Ponto Central & 3 Pulsos) -->
+        <div class="df-light-core-wrap" id="df-light-core-wrap">
+          <div class="df-first-light-dot" id="df-first-light-dot"></div>
+          <div class="df-light-ripple" id="df-light-ripple"></div>
+        </div>
+
+        <!-- 7s - 15s: O Jardim de Luz (Flores Botânicas SVG Nativas) -->
+        <div class="df-flowers-container" id="df-flowers-container"></div>
+
+        <!-- 15s - 18s: Halos de Energia e Anel Giratório -->
+        <div class="df-halos-group" id="df-halos-group">
+          <div class="df-halo-3"></div>
+          <div class="df-halo-2"></div>
+          <div class="df-halo-1"></div>
+          <div class="df-energy-ring"></div>
+        </div>
+
+        <!-- 18s - 21s: Tensão e Respiração Central -->
+        <div class="df-tension-layer" id="df-tension-layer"></div>
+
+        <!-- 21s - 24s: O Grande Clímax (Onda, Anel, Flares H/V, Flash) -->
+        <div class="df-climax-stage" id="df-climax-stage">
+          <div class="df-climax-shockwave" id="df-climax-shockwave"></div>
+          <div class="df-climax-ring" id="df-climax-ring"></div>
+          <div class="df-climax-flare-h" id="df-climax-flare-h"></div>
+          <div class="df-climax-flare-v" id="df-climax-flare-v"></div>
+          <div class="df-climax-flash" id="df-climax-flash"></div>
+        </div>
+
+        <!-- 24s - 26s: Revelação FELIZ ANIVERSÁRIO ISSAMARA 18 ANOS -->
+        <div class="df-hbd-reveal-wrap" id="df-hbd-reveal-wrap">
+          <p class="df-hbd-tagline">Feliz Aniversário</p>
+          <h1 class="df-hbd-name">ISSAMARA</h1>
+          <div class="df-hbd-sub-badge">
+            <span class="df-hbd-sub-text">18 ANOS DE LUZ</span>
+          </div>
+        </div>
+
+        <!-- 28s - 30s+: Créditos Finais & Encerramento Absoluto -->
+        <div class="df-credits-screen" id="df-credits-screen">
+          <div class="df-credits-card">
+            <p class="df-credits-line-1">"Uma pequena experiência feita especialmente para Issamara."</p>
+            <p class="df-credits-author">Por Luis Fernando Santos</p>
+            <p class="df-credits-date">24 de setembro de 2026</p>
+            <div class="df-final-actions">
+              <button class="df-action-pill pill-book" id="df-btn-reopen-book">
+                <i class="fas fa-book-open"></i> Rever Livro
+              </button>
+              <button class="df-action-pill pill-letter" id="df-btn-open-pdf">
+                <i class="fas fa-file-pdf"></i> Baixar Carta em PDF
+              </button>
+              <button class="df-action-pill pill-restart" id="df-btn-restart">
+                <i class="fas fa-redo"></i> Recomeçar
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+
+      this.container.appendChild(this.viewport);
+
+      // Referências internas aos nós
+      this.bookStage = this.viewport.querySelector('#df-book-stage');
+      this.bookCover = this.viewport.querySelector('#df-book-cover');
+      this.lightDot = this.viewport.querySelector('#df-first-light-dot');
+      this.lightRipple = this.viewport.querySelector('#df-light-ripple');
+      this.flowersContainer = this.viewport.querySelector('#df-flowers-container');
+      this.halosGroup = this.viewport.querySelector('#df-halos-group');
+      this.tensionLayer = this.viewport.querySelector('#df-tension-layer');
+      this.climaxShockwave = this.viewport.querySelector('#df-climax-shockwave');
+      this.climaxRing = this.viewport.querySelector('#df-climax-ring');
+      this.climaxFlareH = this.viewport.querySelector('#df-climax-flare-h');
+      this.climaxFlareV = this.viewport.querySelector('#df-climax-flare-v');
+      this.climaxFlash = this.viewport.querySelector('#df-climax-flash');
+      this.hbdWrap = this.viewport.querySelector('#df-hbd-reveal-wrap');
+      this.creditsScreen = this.viewport.querySelector('#df-credits-screen');
+
+      // Botões dos Créditos
+      const btnReopen = this.viewport.querySelector('#df-btn-reopen-book');
+      const btnPdf = this.viewport.querySelector('#df-btn-open-pdf');
+      const btnRestart = this.viewport.querySelector('#df-btn-restart');
+
+      if (btnReopen) btnReopen.addEventListener('click', () => this.sys.goToChapter(19));
+      if (btnPdf) btnPdf.addEventListener('click', () => this.sys.openPdfModal());
+      if (btnRestart) btnRestart.addEventListener('click', () => this.sys.openRestartModal());
+
+      // Prepara o sistema de partículas do canvas
+      this.initCanvas();
+
+      // Constrói o jardim de flores botânicas em SVG
+      this.buildBotanicalFlowers();
+
+      // Dispara a linha do tempo contínua de 30 segundos
+      this.startTimeline();
+    }
+
+    initCanvas() {
+      const canvas = this.viewport.querySelector('#df-particles-canvas');
+      if (!canvas) return;
+      this.canvas = canvas;
+      this.canvasCtx = canvas.getContext('2d');
+
+      const updateSize = () => {
+        if (!this.viewport || !this.canvas) return;
+        this.canvasWidth = this.viewport.clientWidth || 700;
+        this.canvasHeight = this.viewport.clientHeight || 550;
+        this.canvas.width = this.canvasWidth;
+        this.canvas.height = this.canvasHeight;
+      };
+      updateSize();
+
+      // 40 partículas sutis em tons rosados e brancos
+      this.canvasParticles = [];
+      for (let i = 0; i < 40; i++) {
+        this.canvasParticles.push({
+          x: Math.random() * this.canvasWidth,
+          y: Math.random() * this.canvasHeight,
+          radius: Math.random() * 2 + 1,
+          baseRadius: Math.random() * 2 + 1,
+          alpha: Math.random() * 0.7 + 0.2,
+          speedX: (Math.random() - 0.5) * 0.4,
+          speedY: (Math.random() - 0.5) * 0.4,
+          color: Math.random() > 0.3 ? '255, 174, 192' : '255, 255, 255'
+        });
+      }
+    }
+
+    buildBotanicalFlowers() {
+      if (!this.flowersContainer) return;
+      this.flowersContainer.innerHTML = '';
+      this.flowers = [];
+
+      // 28 flores distribuídas em 3 camadas de profundidade
+      const flowerCount = 28;
+      const depths = ['depth-far', 'depth-mid', 'depth-near'];
+
+      for (let i = 0; i < flowerCount; i++) {
+        const depth = depths[i % 3];
+        const angleDeg = (i / flowerCount) * 360 + (Math.random() * 25 - 12);
+        const distance = depth === 'depth-near' ? (150 + Math.random() * 140) : (depth === 'depth-mid' ? (110 + Math.random() * 120) : (70 + Math.random() * 90));
+        const size = depth === 'depth-near' ? 76 : (depth === 'depth-mid' ? 56 : 38);
+
+        const el = document.createElement('div');
+        el.className = `df-flower ${depth}`;
+        el.style.width = `${size}px`;
+        el.style.height = `${size}px`;
+
+        // SVG puro nativo com 8 pétalas orgânicas curvas e centro brilhante
+        const id = `flw-${i}`;
+        el.innerHTML = `
+          <svg viewBox="-50 -50 100 100" width="100%" height="100%">
+            <defs>
+              <radialGradient id="${id}-grad" cx="0%" cy="0%" r="50%">
+                <stop offset="0%" stop-color="#ffffff" stop-opacity="1" />
+                <stop offset="45%" stop-color="#ffaec0" stop-opacity="0.85" />
+                <stop offset="90%" stop-color="#ff6b8b" stop-opacity="0.3" />
+                <stop offset="100%" stop-color="#ff6b8b" stop-opacity="0" />
+              </radialGradient>
+            </defs>
+            <g class="flower-petals-group">
+              <path d="M0 0 C -12 -20, -14 -40, 0 -48 C 14 -40, 12 -20, 0 0" fill="url(#${id}-grad)" transform="rotate(0)" />
+              <path d="M0 0 C -12 -20, -14 -40, 0 -48 C 14 -40, 12 -20, 0 0" fill="url(#${id}-grad)" transform="rotate(45)" />
+              <path d="M0 0 C -12 -20, -14 -40, 0 -48 C 14 -40, 12 -20, 0 0" fill="url(#${id}-grad)" transform="rotate(90)" />
+              <path d="M0 0 C -12 -20, -14 -40, 0 -48 C 14 -40, 12 -20, 0 0" fill="url(#${id}-grad)" transform="rotate(135)" />
+              <path d="M0 0 C -12 -20, -14 -40, 0 -48 C 14 -40, 12 -20, 0 0" fill="url(#${id}-grad)" transform="rotate(180)" />
+              <path d="M0 0 C -12 -20, -14 -40, 0 -48 C 14 -40, 12 -20, 0 0" fill="url(#${id}-grad)" transform="rotate(225)" />
+              <path d="M0 0 C -12 -20, -14 -40, 0 -48 C 14 -40, 12 -20, 0 0" fill="url(#${id}-grad)" transform="rotate(270)" />
+              <path d="M0 0 C -12 -20, -14 -40, 0 -48 C 14 -40, 12 -20, 0 0" fill="url(#${id}-grad)" transform="rotate(315)" />
+            </g>
+            <circle cx="0" cy="0" r="7.5" fill="#ffffff" filter="drop-shadow(0 0 5px #ff6b8b)" />
+          </svg>
+        `;
+
+        this.flowersContainer.appendChild(el);
+
+        this.flowers.push({
+          el,
+          angleDeg,
+          orbitSpeed: (depth === 'depth-near' ? 0.08 : (depth === 'depth-mid' ? -0.06 : 0.04)) * (Math.random() > 0.5 ? 1 : -1),
+          distance,
+          currentDist: 0,
+          scale: 0,
+          targetScale: depth === 'depth-near' ? 1.05 : (depth === 'depth-mid' ? 0.85 : 0.6),
+          rotation: Math.random() * 360,
+          rotSpeed: (Math.random() - 0.5) * 0.18,
+          depth
+        });
+      }
+    }
+
+    startTimeline() {
+      this.startTime = performance.now();
+
+      // Dispara fechamento do livro logo nos primeiros 400ms (0s - 4s)
+      this.addTimeout(() => {
+        if (this.bookCover) {
+          this.bookCover.classList.add('is-closed');
+        }
+      }, 400);
+
+      // 4s: Livro se dissolve suavemente
+      this.addTimeout(() => {
+        if (this.bookStage) {
+          this.bookStage.classList.add('book-dissolve');
+        }
+      }, 4000);
+
+      // 4.2s: Pulso 1 da Primeira Luz (pequeno halo rosado)
+      this.addTimeout(() => {
+        if (this.lightDot) {
+          this.lightDot.classList.add('pulse-1');
+        }
+        if (this.sys && this.sys.audioManager) {
+          this.sys.audioManager.playSparkleSound(0.5);
+        }
+      }, 4200);
+
+      // 5.2s: Pulso 2 (halo maior iluminando a tela)
+      this.addTimeout(() => {
+        if (this.lightDot) {
+          this.lightDot.classList.remove('pulse-1');
+          this.lightDot.classList.add('pulse-2');
+        }
+      }, 5200);
+
+      // 6.2s: Pulso 3 (onda circular que se expande)
+      this.addTimeout(() => {
+        if (this.lightRipple) {
+          this.lightRipple.classList.add('ripple-active');
+        }
+        if (this.sys && this.sys.audioManager) {
+          this.sys.audioManager.playSparkleSound(0.7);
+        }
+      }, 6200);
+
+      // 7s: Flores começam a brotar e expandir radialmente
+      this.addTimeout(() => {
+        this.flowers.forEach((f) => {
+          f.el.classList.add('bloomed');
+        });
+      }, 7000);
+
+      // 15s: O Centro começa a brilhar intensamente (Halos 1, 2, 3 e Anel)
+      this.addTimeout(() => {
+        if (this.halosGroup) {
+          this.halosGroup.classList.add('halos-visible');
+        }
+        if (this.sys && this.sys.audioManager) {
+          this.sys.audioManager.playSparkleSound(0.9);
+        }
+      }, 15000);
+
+      // 18s: Momento de Tensão (desaceleração quase parada e lavagem rosada)
+      this.addTimeout(() => {
+        if (this.tensionLayer) {
+          this.tensionLayer.classList.add('tension-active');
+        }
+      }, 18000);
+
+      // 21s: O GRANDE CLÍMAX
+      this.addTimeout(() => {
+        if (this.climaxShockwave) this.climaxShockwave.classList.add('fire-climax');
+        if (this.climaxRing) this.climaxRing.classList.add('fire-climax');
+        if (this.climaxFlareH) this.climaxFlareH.classList.add('fire-climax');
+        if (this.climaxFlareV) this.climaxFlareV.classList.add('fire-climax');
+        if (this.climaxFlash) this.climaxFlash.classList.add('fire-climax');
+
+        // Confetes delicados na paleta do projeto (rosa, dourado suave, branco)
+        if (window.confetti) {
+          window.confetti({
+            particleCount: 50,
+            spread: 80,
+            origin: { x: 0.5, y: 0.5 },
+            colors: ['#ff6b8b', '#ffaec0', '#ffffff', '#ffe6ee', '#ffd1a4']
+          });
+        }
+
+        if (this.sys && this.sys.audioManager) {
+          this.sys.audioManager.playSparkleSound(1.2);
+        }
+      }, 21000);
+
+      // 24s: Revelação com tipografia nobre: FELIZ ANIVERSÁRIO ISSAMARA 18 ANOS
+      this.addTimeout(() => {
+        if (this.hbdWrap) {
+          this.hbdWrap.classList.add('reveal-active');
+        }
+      }, 24000);
+
+      // 26s: A festa se transforma em calma e paz serena
+      this.addTimeout(() => {
+        if (this.hbdWrap) {
+          this.hbdWrap.classList.add('reveal-fade-calm');
+        }
+      }, 26500);
+
+      // 27.5s - 29.5s: Transição Serena para os Créditos - flores somem suavemente uma a uma
+      this.addTimeout(() => {
+        if (this.halosGroup) {
+          this.halosGroup.classList.remove('halos-visible');
+        }
+        if (this.tensionLayer) {
+          this.tensionLayer.classList.remove('tension-active');
+        }
+        if (this.flowers && this.flowers.length) {
+          this.flowers.forEach((f, idx) => {
+            this.addTimeout(() => {
+              if (f.el) f.el.classList.add('flower-fade-out');
+            }, idx * 45);
+          });
+        }
+      }, 27500);
+
+      // 30s+: Créditos Finais elegantes e encerramento com fade-out suave do áudio
+      this.addTimeout(() => {
+        if (this.creditsScreen) {
+          this.creditsScreen.classList.add('credits-visible');
+        }
+        // Encerramento suave do áudio com fade-out gradual e sereno
+        if (this.sys && this.sys.audioManager) {
+          this.sys.audioManager.fadeTo(0.15, 6000);
+        }
+      }, 30000);
+
+      // Inicia loop contínuo a 60 FPS
+      const loop = (now) => {
+        if (this.isDestroyed) return;
+        const elapsed = now - this.startTime;
+
+        this.updateFlowers(elapsed);
+        this.renderCanvas(elapsed);
+
+        this.animFrameId = requestAnimationFrame(loop);
+      };
+      this.animFrameId = requestAnimationFrame(loop);
+    }
+
+    updateFlowers(elapsed) {
+      if (!this.flowers || !this.flowers.length) return;
+
+      // 0s-7s: escondidas
+      if (elapsed < 7000) return;
+
+      const centerX = (this.viewport ? this.viewport.clientWidth : 700) / 2;
+      const centerY = (this.viewport ? this.viewport.clientHeight : 550) / 2;
+
+      // Fases da dinâmica
+      let expansionProgress = 1;
+      let speedFactor = 1;
+
+      if (elapsed >= 7000 && elapsed < 11000) {
+        // 7s-11s: expansão radial partindo do centro
+        expansionProgress = Math.min(1, (elapsed - 7000) / 4000);
+      } else if (elapsed >= 18000 && elapsed < 21000) {
+        // 18s-21s: desaceleração profunda de tensão
+        speedFactor = 0.15;
+      } else if (elapsed >= 21000 && elapsed < 23000) {
+        // Clímax: impulso radial temporário
+        speedFactor = 2.4;
+      } else if (elapsed >= 26000) {
+        // Calma serena
+        speedFactor = 0.25;
+      }
+
+      this.flowers.forEach((f) => {
+        f.angleDeg += f.orbitSpeed * speedFactor;
+        f.rotation += f.rotSpeed * speedFactor;
+
+        // Suave alcance da distância radial
+        const targetDist = f.distance * expansionProgress;
+        f.currentDist += (targetDist - f.currentDist) * 0.05;
+
+        // Escala
+        const curScale = f.targetScale * expansionProgress;
+
+        const rad = (f.angleDeg * Math.PI) / 180;
+        const posX = centerX + Math.cos(rad) * f.currentDist - f.el.clientWidth / 2;
+        const posY = centerY + Math.sin(rad) * f.currentDist - f.el.clientHeight / 2;
+
+        f.el.style.transform = `translate3d(${posX.toFixed(1)}px, ${posY.toFixed(1)}px, 0) scale(${curScale.toFixed(2)}) rotate(${f.rotation.toFixed(1)}deg)`;
+      });
+    }
+
+    renderCanvas(elapsed) {
+      if (!this.canvasCtx || !this.canvas) return;
+      const ctx = this.canvasCtx;
+      ctx.clearRect(0, 0, this.canvasWidth, this.canvasHeight);
+
+      let speedMod = 1;
+      if (elapsed >= 18000 && elapsed < 21000) speedMod = 0.2; // Tensão
+      else if (elapsed >= 21000 && elapsed < 24000) speedMod = 2.0; // Clímax
+      else if (elapsed >= 26000) speedMod = 0.35; // Calma
+
+      for (let i = 0; i < this.canvasParticles.length; i++) {
+        const p = this.canvasParticles[i];
+        p.x += p.speedX * speedMod;
+        p.y += p.speedY * speedMod;
+
+        // Wrap around
+        if (p.x < -10) p.x = this.canvasWidth + 10;
+        if (p.x > this.canvasWidth + 10) p.x = -10;
+        if (p.y < -10) p.y = this.canvasHeight + 10;
+        if (p.y > this.canvasHeight + 10) p.y = -10;
+
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(${p.color}, ${p.alpha})`;
+        ctx.shadowBlur = 8;
+        ctx.shadowColor = `rgba(${p.color}, 0.8)`;
+        ctx.fill();
+      }
+    }
+
+    addTimeout(fn, delayMs) {
+      const id = setTimeout(() => {
+        if (!this.isDestroyed) fn();
+      }, delayMs);
+      this.timeouts.push(id);
+      return id;
+    }
+
+    destroy() {
+      this.isDestroyed = true;
+      if (this.animFrameId) {
+        cancelAnimationFrame(this.animFrameId);
+        this.animFrameId = null;
+      }
+      this.timeouts.forEach((id) => clearTimeout(id));
+      this.timeouts = [];
+      if (this.viewport && this.viewport.parentNode) {
+        this.viewport.parentNode.removeChild(this.viewport);
+      }
+    }
+  }
+
+  // ==========================================================================
+  // 4.5. CINEMATIC ENTRY CONTROLLER (45s State-Based Orchestrator)
+  // ==========================================================================
   class CinematicEntryController {
     constructor(experienceSystem) {
       this.sys = experienceSystem;
-      this.entryEl = document.getElementById('cinematic-entry');
-      this.preloaderEl = document.getElementById('cinematic-preloader');
-      this.heroContentEl = document.getElementById('cinematic-hero-content');
-      this.focalElementEl = document.getElementById('cinematic-focal-element');
-      this.shockwaveEl = document.getElementById('cinematic-shockwave');
-      this.flashEl = document.getElementById('cinematic-light-flash');
-      this.skipBtn = document.getElementById('btn-skip-intro');
 
+      // Elementos do DOM
+      this.entryEl = document.getElementById('cinematic-entry');
+      this.cameraEl = document.getElementById('cinematic-camera');
+      this.bgEl = document.getElementById('cinematic-bg');
       this.starsFarEl = document.getElementById('cinematic-stars-far');
       this.particlesMidEl = document.getElementById('cinematic-particles-mid');
       this.petalsNearEl = document.getElementById('cinematic-petals-near');
+      this.canvasEl = document.getElementById('cinematic-canvas');
+      this.centralLightEl = document.getElementById('cinematic-central-light');
+      this.focalElementEl = document.getElementById('cinematic-focal-element');
+      this.narrativeLayerEl = document.getElementById('cinematic-narrative-layer');
+      this.phrase1El = document.getElementById('cinematic-phrase-1');
+      this.phrase2El = document.getElementById('cinematic-phrase-2');
+      this.nameWrapEl = document.getElementById('cinematic-name-wrap');
+      this.climaxContainerEl = document.getElementById('climax-light-container');
+      this.startPromptBtn = document.getElementById('cinematic-start-prompt') || document.getElementById('btn-cinematic-start-reading');
 
+      // Estado e Motor de Timeline
       this.isCompleted = false;
-      this.timers = [];
+      this.currentState = 'INIT';
+      this.startTime = 0;
+      this.animationFrameId = null;
+      this.activeTimers = [];
+      this.executedEventIndices = new Set();
+
+      // Canvas e Partículas Orgânicas (60 FPS)
+      this.canvasCtx = null;
+      this.canvasParticles = [];
+      this.canvasWidth = 0;
+      this.canvasHeight = 0;
+
+      // Definição da Linha do Tempo Poética de 45 Segundos (Sem o livro na abertura - o livro brilha no Cap. 19)
+      // Progressão: Escuridão → Descoberta → Curiosidade → Mensagem → Expectativa → Clímax → Resplendor → Toque
+      this.timelineEvents = [
+        { time: 0, state: 'INTRO', action: () => this.enterIntro() },
+        { time: 3000, state: 'FIRST_LIGHT', action: () => this.enterFirstLight() },
+        { time: 7000, state: 'ATMOSPHERE', action: () => this.enterAtmosphere() },
+        { time: 12000, state: 'CENTRAL_REVEAL', action: () => this.enterCentralReveal() },
+        { time: 16000, state: 'CENTRAL_DETAIL', action: () => this.enterCentralDetail() },
+        { time: 19500, state: 'TEXT_ONE', action: () => this.enterTextOne() },
+        { time: 23500, state: 'PAUSE_ONE', action: () => this.enterPauseOne() },
+        { time: 24800, state: 'TEXT_TWO', action: () => this.enterTextTwo() },
+        { time: 28000, state: 'NAME_REVEAL', action: () => this.enterNameReveal() },
+        { time: 31500, state: 'BUILDUP', action: () => this.enterBuildup() },
+        { time: 34500, state: 'ENERGY_CONCENTRATE', action: () => this.enterEnergyConcentrate() },
+        { time: 36000, state: 'CLIMAX', action: () => this.enterClimax() },
+        { time: 38500, state: 'LIGHT_TRANSITION', action: () => this.enterLightTransition() },
+        { time: 40500, state: 'CELEBRATION_GLOW', action: () => this.enterCelebrationGlow() },
+        { time: 43000, state: 'PROMPT_READY', action: () => this.enterPromptReady() }
+      ];
 
       this.init();
     }
@@ -2139,174 +2894,416 @@
     init() {
       if (!this.entryEl) return;
 
-      // Criação dinâmica de partículas com profundidade em 3 camadas
+      // Suporte a Preferência de Movimento Reduzido (Acessibilidade)
+      const prefersReduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (prefersReduced) {
+        this.finishCinematicSequence(true);
+        return;
+      }
+
+      // 1. Gera camadas estelares estáticas e pétalas CSS
       this.spawnDepthParticles();
 
-      // Botão discreto para pular introdução
-      if (this.skipBtn) {
-        this.skipBtn.addEventListener('click', (e) => {
+      // 2. Inicializa canvas interativo de partículas
+      this.initCanvasParticleSystem();
+
+      // 3. Vincula eventos de interação e botão de pular
+      this.bindControls();
+
+      // 4. Inicia pré-carregamento suave e motor de timeline contínuo
+      this.startSequence();
+    }
+
+    bindControls() {
+      // Botão "Toque para começar"
+      if (this.startPromptBtn) {
+        this.startPromptBtn.addEventListener('click', (e) => {
           e.stopPropagation();
-          this.skipIntro();
+          this.finishCinematicSequence(false);
         });
       }
 
-      // Atalhos de teclado (Esc ou Espaço para pular se desejado)
-      window.addEventListener('keydown', (e) => {
-        if (!this.isCompleted && (e.key === 'Escape' || e.key === ' ')) {
-          this.skipIntro();
-        }
-      });
+      // Toque em qualquer lugar da tela após o clímax/brilho
+      if (this.entryEl) {
+        this.entryEl.addEventListener('click', () => {
+          if (this.currentState === 'CELEBRATION_GLOW' || this.currentState === 'PROMPT_READY') {
+            this.finishCinematicSequence(false);
+          }
+        });
+      }
 
-      // Executa pré-carregamento elegante de recursos
-      this.executePreloadSequence();
+      // Redimensionamento responsivo do Canvas
+      window.addEventListener('resize', () => this.resizeCanvas());
     }
 
     spawnDepthParticles() {
       const isMobile = window.innerWidth <= 768;
-      const prefersReduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      if (prefersReduced) return;
 
-      // Camada distante: estrelas e poeira estelar suave
+      // Camada Distante: estrelas suaves e poeira cósmica
       if (this.starsFarEl) {
-        const countFar = isMobile ? 8 : 20;
+        const countFar = isMobile ? 12 : 24;
         for (let i = 0; i < countFar; i++) {
           const p = document.createElement('div');
           p.className = 'cinematic-particle particle-far';
-          p.style.top = `${Math.random() * 95}%`;
+          p.style.top = `${Math.random() * 96}%`;
           p.style.left = `${Math.random() * 98}%`;
-          p.style.animationDelay = `${(Math.random() * 5).toFixed(2)}s`;
-          p.style.animationDuration = `${(7 + Math.random() * 6).toFixed(2)}s`;
+          p.style.animationDelay = `${(Math.random() * 6).toFixed(2)}s`;
+          p.style.animationDuration = `${(8 + Math.random() * 6).toFixed(2)}s`;
           this.starsFarEl.appendChild(p);
         }
       }
 
-      // Camada média: orbes dourados translúcidos
+      // Camada Média: orbes dourados tênues
       if (this.particlesMidEl) {
-        const countMid = isMobile ? 5 : 12;
+        const countMid = isMobile ? 6 : 14;
         for (let i = 0; i < countMid; i++) {
           const p = document.createElement('div');
           p.className = 'cinematic-particle particle-mid';
-          p.style.top = `${Math.random() * 90}%`;
-          p.style.left = `${Math.random() * 95}%`;
+          p.style.top = `${Math.random() * 92}%`;
+          p.style.left = `${Math.random() * 96}%`;
           p.style.animationDelay = `${(Math.random() * 4).toFixed(2)}s`;
-          p.style.animationDuration = `${(5 + Math.random() * 4).toFixed(2)}s`;
+          p.style.animationDuration = `${(6 + Math.random() * 4).toFixed(2)}s`;
           this.particlesMidEl.appendChild(p);
         }
       }
 
-      // Camada próxima: pétalas rosé flutuando delicadamente
+      // Camada Próxima: pétalas rosé flutuando delicadamente
       if (this.petalsNearEl) {
-        const countPetals = isMobile ? 3 : 7;
+        const countPetals = isMobile ? 4 : 8;
         for (let i = 0; i < countPetals; i++) {
           const p = document.createElement('div');
           p.className = 'cinematic-particle particle-petal';
-          p.style.left = `${(Math.random() * 92 + 4).toFixed(1)}%`;
-          p.style.animationDelay = `${(Math.random() * 5).toFixed(2)}s`;
-          p.style.animationDuration = `${(7 + Math.random() * 4).toFixed(2)}s`;
+          p.style.left = `${(Math.random() * 90 + 5).toFixed(1)}%`;
+          p.style.animationDelay = `${(Math.random() * 7).toFixed(2)}s`;
+          p.style.animationDuration = `${(8 + Math.random() * 4).toFixed(2)}s`;
           this.petalsNearEl.appendChild(p);
         }
       }
     }
 
-    async executePreloadSequence() {
-      const startTime = Date.now();
+    initCanvasParticleSystem() {
+      if (!this.canvasEl) return;
+      this.canvasCtx = this.canvasEl.getContext('2d');
+      this.resizeCanvas();
 
-      // Se usuário prefere movimento reduzido, finaliza rapidamente
-      if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-        setTimeout(() => this.finishCinematicSequence(true), 500);
-        return;
+      const particleCount = window.innerWidth <= 768 ? 22 : 45;
+      this.canvasParticles = [];
+      for (let i = 0; i < particleCount; i++) {
+        this.canvasParticles.push({
+          x: Math.random() * this.canvasWidth,
+          y: Math.random() * this.canvasHeight,
+          radius: Math.random() * 1.8 + 0.8,
+          alpha: Math.random() * 0.6 + 0.2,
+          speedX: (Math.random() - 0.5) * 0.35,
+          speedY: (Math.random() - 0.5) * 0.35,
+          angle: Math.random() * Math.PI * 2,
+          angularSpeed: (Math.random() - 0.5) * 0.015,
+          color: Math.random() > 0.4 ? '255, 215, 140' : '255, 180, 205'
+        });
+      }
+    }
+
+    resizeCanvas() {
+      if (!this.canvasEl) return;
+      this.canvasWidth = window.innerWidth;
+      this.canvasHeight = window.innerHeight;
+      this.canvasEl.width = this.canvasWidth;
+      this.canvasEl.height = this.canvasHeight;
+    }
+
+    renderCanvasParticles(state, elapsedMs) {
+      if (!this.canvasCtx || this.isCompleted) return;
+      const ctx = this.canvasCtx;
+      ctx.clearRect(0, 0, this.canvasWidth, this.canvasHeight);
+
+      const centerX = this.canvasWidth / 2;
+      const centerY = this.canvasHeight / 2;
+
+      // Modificadores de dinâmica por fase
+      let attraction = 0;
+      let burst = 0;
+      if (state === 'BUILDUP' || state === 'ENERGY_CONCENTRATE') {
+        attraction = state === 'ENERGY_CONCENTRATE' ? 0.025 : 0.008;
+      } else if (state === 'CLIMAX') {
+        burst = 1.6;
       }
 
-      const preloadPromises = [];
+      for (let i = 0; i < this.canvasParticles.length; i++) {
+        const p = this.canvasParticles[i];
 
-      // 1. Fontes carregadas
-      if (document.fonts && document.fonts.ready) {
-        preloadPromises.push(document.fonts.ready);
+        if (burst > 0) {
+          const dx = p.x - centerX;
+          const dy = p.y - centerY;
+          const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+          p.x += (dx / dist) * (burst * (p.radius + 1.2));
+          p.y += (dy / dist) * (burst * (p.radius + 1.2));
+        } else if (attraction > 0) {
+          const dx = centerX - p.x;
+          const dy = centerY - p.y;
+          p.x += dx * attraction;
+          p.y += dy * attraction;
+          // Órbita espiral
+          p.angle += p.angularSpeed * 2.5;
+          p.x += Math.cos(p.angle) * 0.6;
+          p.y += Math.sin(p.angle) * 0.6;
+        } else {
+          p.x += p.speedX;
+          p.y += p.speedY;
+        }
+
+        // Reposicionamento cíclico nas bordas
+        if (p.x < -10) p.x = this.canvasWidth + 10;
+        if (p.x > this.canvasWidth + 10) p.x = -10;
+        if (p.y < -10) p.y = this.canvasHeight + 10;
+        if (p.y > this.canvasHeight + 10) p.y = -10;
+
+        // Pulsação suave de brilho
+        const pulse = Math.sin((elapsedMs * 0.002) + i) * 0.2;
+        const currentAlpha = Math.max(0.08, Math.min(0.9, p.alpha + pulse));
+
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(${p.color}, ${currentAlpha})`;
+        ctx.shadowColor = `rgba(${p.color}, 0.8)`;
+        ctx.shadowBlur = 6;
+        ctx.fill();
       }
+    }
 
-      // 2. Imagens críticas
-      const criticalImages = ['./img/background.jpg', './img/hbd1.png'];
-      criticalImages.forEach((src) => {
-        preloadPromises.push(new Promise((resolve) => {
-          const img = new Image();
-          img.onload = () => resolve();
-          img.onerror = () => resolve();
-          img.src = src;
-        }));
-      });
+    startSequence() {
+      this.startTime = performance.now();
 
-      // 3. Pré-aquecimento do áudio
-      if (this.sys && this.sys.audioManager && this.sys.audioManager.audio) {
+      // Inicia reprodução sutil de áudio
+      if (this.sys && this.sys.audioManager) {
         try {
-          this.sys.audioManager.audio.load();
+          this.sys.audioManager.currentVolume = 0.05;
+          this.sys.audioManager.play();
         } catch (e) {}
       }
 
-      try {
-        await Promise.all(preloadPromises);
-      } catch (e) {}
+      // Loop contínuo com requestAnimationFrame
+      const tick = (now) => {
+        if (this.isCompleted) return;
 
-      // Mínimo de 380ms para evitar piscadas abruptas
-      const elapsed = Date.now() - startTime;
-      const remaining = Math.max(0, 380 - elapsed);
+        const elapsed = now - this.startTime;
 
-      setTimeout(() => {
-        if (!this.isCompleted) {
-          this.startCinematicTimeline();
+        // Dispara eventos da timeline no momento exato
+        for (let i = 0; i < this.timelineEvents.length; i++) {
+          const ev = this.timelineEvents[i];
+          if (elapsed >= ev.time && !this.executedEventIndices.has(i)) {
+            this.executedEventIndices.add(i);
+            this.currentState = ev.state;
+            ev.action();
+          }
         }
-      }, remaining);
+
+        // Câmera contínua: respiração sutil e rotação suave
+        this.updateContinuousCamera(elapsed);
+
+        // Renderização contínua das partículas do Canvas
+        this.renderCanvasParticles(this.currentState, elapsed);
+
+        // Continua o loop até ser completado ou após 45s
+        this.animationFrameId = requestAnimationFrame(tick);
+      };
+
+      this.animationFrameId = requestAnimationFrame(tick);
     }
 
-    startCinematicTimeline() {
-      if (this.isCompleted) return;
+    updateContinuousCamera(elapsed) {
+      if (!this.cameraEl) return;
 
-      // 1. Fade out sutil do indicador de pré-carregamento
-      if (this.preloaderEl) {
-        this.preloaderEl.classList.add('fade-out');
+      // Leve oscilação de rotação (0.3 graus) e translação para vida contínua
+      const driftRot = Math.sin(elapsed * 0.00035) * 0.25;
+      const driftY = Math.cos(elapsed * 0.0004) * 3;
+
+      let baseScale = 1.0;
+      if (this.currentState === 'ATMOSPHERE') baseScale = 1.02;
+      else if (this.currentState === 'CENTRAL_REVEAL' || this.currentState === 'CENTRAL_DETAIL') baseScale = 1.04;
+      else if (this.currentState === 'TEXT_ONE' || this.currentState === 'TEXT_TWO') baseScale = 1.05;
+      else if (this.currentState === 'NAME_REVEAL') baseScale = 1.06;
+      else if (this.currentState === 'BUILDUP') baseScale = 1.08;
+      else if (this.currentState === 'ENERGY_CONCENTRATE') baseScale = 1.12;
+      else if (this.currentState === 'CLIMAX') baseScale = 1.15;
+      else if (this.currentState === 'BOOK_APPROACH' || this.currentState === 'BOOK_OPEN' || this.currentState === 'FIRST_PAGE') baseScale = 1.05;
+
+      this.entryEl.style.setProperty('--camera-scale', baseScale.toString());
+      this.entryEl.style.setProperty('--camera-rot', `${driftRot.toFixed(2)}deg`);
+      this.entryEl.style.setProperty('--camera-y', `${driftY.toFixed(1)}px`);
+    }
+
+    setDomState(stateClass) {
+      if (!this.entryEl) return;
+      // Remove classes de estado anteriores
+      const currentClasses = Array.from(this.entryEl.classList).filter(c => c.startsWith('state-'));
+      currentClasses.forEach(c => this.entryEl.classList.remove(c));
+      this.entryEl.classList.add(stateClass);
+    }
+
+    // ------------------------------------------------------------------------
+    // MÉTODOS DE CADA FASE DA LINHA DO TEMPO
+    // ------------------------------------------------------------------------
+
+    enterIntro() {
+      // 0s - 3s: Escuridão profunda e atmosfera estelar sutil
+      this.setDomState('state-intro');
+      this.entryEl.style.setProperty('--light-intensity', '0.08');
+      if (this.sys && this.sys.audioManager) {
+        this.sys.audioManager.fadeTo(0.12, 2800);
       }
-
-      // 2. Revela o conteúdo cinematográfico
-      const t1 = setTimeout(() => {
-        if (this.preloaderEl) this.preloaderEl.style.display = 'none';
-        if (this.heroContentEl) this.heroContentEl.classList.remove('d-none');
-      }, 350);
-      this.timers.push(t1);
-
-      // 3. Aos 2.5s: Momento de impacto ("BOOM" visual elegante)
-      // Expansão do medalhão central, ativação da onda de choque suave
-      const tBoom = setTimeout(() => {
-        if (this.isCompleted) return;
-        if (this.focalElementEl) {
-          this.focalElementEl.classList.add('element-boom');
-        }
-        if (this.shockwaveEl) {
-          this.shockwaveEl.classList.add('trigger-boom');
-        }
-        // Fade-in sutil da música se permitido pela política do navegador
-        if (this.sys && this.sys.audioManager) {
-          try {
-            this.sys.audioManager.play();
-          } catch (e) {}
-        }
-      }, 2500);
-      this.timers.push(tBoom);
-
-      // 4. Aos 3.0s: Flash de luz suave preenche a tela
-      const tFlash = setTimeout(() => {
-        if (this.isCompleted) return;
-        if (this.flashEl) {
-          this.flashEl.classList.add('trigger-flash');
-        }
-      }, 3000);
-      this.timers.push(tFlash);
-
-      // 5. Aos 3.8s: Inicia a dissolução da luz e transição para o livro/palco
-      const tTransition = setTimeout(() => {
-        if (this.isCompleted) return;
-        this.finishCinematicSequence(false);
-      }, 3850);
-      this.timers.push(tTransition);
     }
+
+    enterFirstLight() {
+      // 3s - 7s: Primeiro pulso de luz cálida no centro
+      this.setDomState('state-first-light');
+      this.entryEl.style.setProperty('--light-intensity', '0.18');
+      if (this.sys && this.sys.audioManager) {
+        this.sys.audioManager.fadeTo(0.22, 3500);
+      }
+    }
+
+    enterAtmosphere() {
+      // 7s - 12s: Atmosfera expande, orbes dourados começam a se reunir
+      this.setDomState('state-atmosphere');
+      this.entryEl.style.setProperty('--light-intensity', '0.28');
+      if (this.sys && this.sys.audioManager) {
+        this.sys.audioManager.fadeTo(0.32, 4500);
+      }
+    }
+
+    enterCentralReveal() {
+      // 12s - 16s: O medalhão astral dos 18 anos emerge suavemente da luz
+      this.setDomState('state-central-reveal');
+      this.entryEl.style.setProperty('--light-intensity', '0.36');
+      if (this.sys && this.sys.audioManager) {
+        this.sys.audioManager.fadeTo(0.40, 3500);
+        // Efeito sonoro discreto de 'brilho' sincronizado com o surgimento do elemento central
+        this.sys.audioManager.playSparkleSound(1.0);
+      }
+    }
+
+    enterCentralDetail() {
+      // 16s - 19.5s: Detalhes dourados cintilam sobre o medalhão
+      this.setDomState('state-central-detail');
+      this.entryEl.style.setProperty('--light-intensity', '0.42');
+      if (this.sys && this.sys.audioManager) {
+        // Cintilação suave complementar na passagem do brilho dourado
+        this.sys.audioManager.playSparkleSound(0.75);
+      }
+    }
+
+    enterTextOne() {
+      // 19.5s - 23.5s: Primeira frase surge gradualmente em fade-in suave
+      this.setDomState('state-text-one');
+      this.entryEl.style.setProperty('--light-intensity', '0.38');
+      if (this.phrase1El) {
+        this.phrase1El.classList.remove('phrase-fading');
+        this.phrase1El.classList.add('phrase-visible');
+      }
+      if (this.sys && this.sys.audioManager) {
+        this.sys.audioManager.fadeTo(0.45, 3000);
+      }
+    }
+
+    enterPauseOne() {
+      // 23.5s - 24.8s: Pequena pausa poética para absorção da mensagem
+      this.setDomState('state-pause-one');
+    }
+
+    enterTextTwo() {
+      // 24.8s - 28s: Transição gradual - primeira frase desvanece e a segunda surge suavemente
+      this.setDomState('state-text-two');
+      this.entryEl.style.setProperty('--light-intensity', '0.42');
+      if (this.phrase1El) {
+        this.phrase1El.classList.remove('phrase-visible');
+        this.phrase1El.classList.add('phrase-fading');
+      }
+      if (this.phrase2El) {
+        this.phrase2El.classList.remove('phrase-fading');
+        this.phrase2El.classList.add('phrase-visible');
+      }
+      if (this.sys && this.sys.audioManager) {
+        this.sys.audioManager.fadeTo(0.50, 3000);
+      }
+    }
+
+    enterNameReveal() {
+      // 28s - 31.5s: Segunda frase desvanece e o nome ISSAMARA surge com halo luminoso
+      this.setDomState('state-name-reveal');
+      this.entryEl.style.setProperty('--light-intensity', '0.52');
+      if (this.phrase2El) {
+        this.phrase2El.classList.remove('phrase-visible');
+        this.phrase2El.classList.add('phrase-fading');
+      }
+      const nameWrap = document.querySelector('.cinematic-name-wrap');
+      if (nameWrap) {
+        nameWrap.classList.add('name-visible');
+      }
+      if (this.sys && this.sys.audioManager) {
+        this.sys.audioManager.fadeTo(0.58, 3000);
+        this.sys.audioManager.playSparkleSound(1.0);
+      }
+    }
+
+    enterBuildup() {
+      // 31.5s - 34.5s: Aceleração suave e crescente de energia e expectativa
+      this.setDomState('state-buildup');
+      this.entryEl.style.setProperty('--light-intensity', '0.65');
+      if (this.sys && this.sys.audioManager) {
+        this.sys.audioManager.fadeTo(0.68, 2800);
+      }
+    }
+
+    enterEnergyConcentrate() {
+      // 34.5s - 36s: Luz e partículas convergem para o ponto focal
+      this.setDomState('state-energy-concentrate');
+      this.entryEl.style.setProperty('--light-intensity', '0.80');
+      if (this.sys && this.sys.audioManager) {
+        this.sys.audioManager.fadeTo(0.75, 1400);
+      }
+    }
+
+    enterClimax() {
+      // 36s - 38.5s: CLÍMAX! Três camadas de luz radiante e acolhedora
+      this.setDomState('state-climax');
+      if (this.climaxContainerEl) {
+        this.climaxContainerEl.classList.add('climax-active');
+      }
+      this.entryEl.style.setProperty('--light-intensity', '1.0');
+      if (this.sys && this.sys.audioManager) {
+        this.sys.audioManager.fadeTo(0.80, 1500);
+      }
+    }
+
+    enterLightTransition() {
+      // 38.5s - 40.5s: A luz radiante se dissipa em névoa dourada acolhedora
+      this.setDomState('state-light-transition');
+      this.entryEl.style.setProperty('--light-intensity', '0.65');
+      if (this.sys && this.sys.audioManager) {
+        this.sys.audioManager.fadeTo(0.60, 1200);
+      }
+    }
+
+    enterCelebrationGlow() {
+      // 40.5s - 43s: Resplendor comemorativo de 18 anos e tributo à Issamara
+      this.setDomState('state-celebration-glow');
+      this.entryEl.style.setProperty('--light-intensity', '0.50');
+      if (this.sys && this.sys.audioManager) {
+        this.sys.audioManager.playSparkleSound(0.9);
+      }
+    }
+
+    enterPromptReady() {
+      // 43s - 45s+: Botão pulsante acolhedor pronto para tocar e começar a jornada
+      this.setDomState('state-prompt-ready');
+      if (this.startPromptBtn) {
+        this.startPromptBtn.classList.add('prompt-visible');
+      }
+    }
+
+    // ------------------------------------------------------------------------
+    // FINALIZAÇÃO E TRANSIÇÃO SUAVE PARA O LIVRO PRINCIPAL
+    // ------------------------------------------------------------------------
 
     skipIntro() {
       if (this.isCompleted) return;
@@ -2317,26 +3314,38 @@
       if (this.isCompleted) return;
       this.isCompleted = true;
 
-      // Limpa temporizadores pendentes
-      this.timers.forEach((t) => clearTimeout(t));
-      this.timers = [];
+      // Interrompe o loop de animação
+      if (this.animationFrameId) {
+        cancelAnimationFrame(this.animationFrameId);
+        this.animationFrameId = null;
+      }
 
-      // Revela a barra de navegação com transição suave
+      // Remove listener de teclado
+      if (this.handleKeydown) {
+        window.removeEventListener('keydown', this.handleKeydown);
+      }
+
+      // Garante volume confortável do áudio para leitura
+      if (this.sys && this.sys.audioManager) {
+        this.sys.audioManager.fadeTo(0.50, 800);
+      }
+
+      // Revela a barra de navegação superior com transição suave
       const navBar = document.getElementById('top-nav-bar');
       if (navBar) {
         navBar.classList.add('nav-reveal-active');
       }
 
-      // Revela o palco principal com escala suave e estabilização de sombra
+      // Revela o palco principal do livro com escala suave
       const stage = document.getElementById('stage-wrapper');
       if (stage) {
         stage.classList.add('stage-reveal-active');
       }
 
-      // Fade out do overlay de abertura
+      // Transição de fade-out do overlay de abertura
       if (this.entryEl) {
         this.entryEl.classList.add('fade-out-complete');
-        const cleanupDelay = isInstant ? 300 : 1200;
+        const cleanupDelay = isInstant ? 300 : 1100;
         setTimeout(() => {
           if (this.entryEl) {
             this.entryEl.style.display = 'none';
@@ -2345,6 +3354,7 @@
       }
     }
   }
+
 
   // ==========================================
   // 5. CORE SYSTEM CONTROLLER
@@ -2447,6 +3457,37 @@
         });
       }
 
+      // Gatilho oficial da tela inicial de interação ("Toque para começar")
+      const startOverlay = document.getElementById('initial-start-overlay');
+      const btnInitialStart = document.getElementById('btn-initial-start');
+
+      if (btnInitialStart) {
+        const handleStartExperience = (e) => {
+          if (e) e.stopPropagation();
+          // 1. Inicia áudio global com monokrom.mp3 (instância única contínua)
+          this.audioManager.startExperienceAudio();
+          // 2. Remove o overlay inicial com transição suave
+          if (startOverlay) {
+            startOverlay.classList.add('overlay-hidden');
+            setTimeout(() => {
+              if (startOverlay.parentNode) {
+                startOverlay.style.display = 'none';
+              }
+            }, 900);
+          }
+          // 3. Garante que o controlador cinematográfico continue em sincronia perfeita
+          if (this.cinematicIntro && !this.cinematicIntro.isCompleted) {
+            this.cinematicIntro.startSequence();
+          }
+        };
+
+        btnInitialStart.addEventListener('click', handleStartExperience);
+        btnInitialStart.addEventListener('touchstart', handleStartExperience, { passive: true });
+        if (startOverlay) {
+          startOverlay.addEventListener('click', handleStartExperience);
+        }
+      }
+
       // PDF Modal elements
       const btnClosePdf = document.getElementById('btn-close-pdf-modal');
       const btnClosePdfFooter = document.getElementById('btn-close-pdf-footer');
@@ -2474,6 +3515,10 @@
           this.activeBookController.destroy();
           this.activeBookController = null;
         }
+        if (this.activeFinaleController) {
+          this.activeFinaleController.destroy();
+          this.activeFinaleController = null;
+        }
         if (this.stage) this.stage.innerHTML = '';
 
         this.currentChapterIndex = idx;
@@ -2488,7 +3533,16 @@
         const isFinished = chapter.id === 20;
         this.progressManager.save(chapter.id, this.completedChapters, true, isFinished);
 
-        // Audio fade / level
+        // Audio fade / level & continuity (sem reiniciar)
+        if (autoPlayAudio && this.audioManager && this.audioManager.audio && this.audioManager.audio.paused && !this.audioManager.isMuted) {
+          const p = this.audioManager.audio.play();
+          if (p !== undefined) {
+            p.then(() => {
+              this.audioManager.isPlaying = true;
+              this.audioManager.updateUI();
+            }).catch(() => {});
+          }
+        }
         if (chapter.audioLevel !== undefined) {
           this.audioManager.fadeTo(chapter.audioLevel, 1000);
         }
@@ -2824,6 +3878,303 @@
           btnDownload.innerHTML = originalText;
         }
         window.print();
+      }
+    }
+
+    // ==========================================
+    // GRAND FINALE SHOW & MULTILINGUAL CELEBRATION
+    // ==========================================
+    fireSalvoConfetti() {
+      if (!window.confetti) return;
+      const defaults = { origin: { y: 0.68 } };
+      window.confetti(Object.assign({}, defaults, {
+        particleCount: 45,
+        spread: 75,
+        origin: { x: 0.2, y: 0.65 },
+        colors: ['#ffe699', '#ff6b8b', '#ffffff', '#ffd166', '#a29bfe']
+      }));
+      window.confetti(Object.assign({}, defaults, {
+        particleCount: 45,
+        spread: 75,
+        origin: { x: 0.8, y: 0.65 },
+        colors: ['#ffe699', '#ff6b8b', '#ffffff', '#ffd166', '#a29bfe']
+      }));
+    }
+
+    renderGrandFinaleShow(stage) {
+      if (!stage) return;
+      stage.innerHTML = '';
+
+      if (this.audioManager) {
+        this.audioManager.fadeTo(0.85, 1200);
+        this.audioManager.playSparkleSound(1.0);
+      }
+
+      // Salva inicial de confetes comemorativos
+      this.fireSalvoConfetti();
+      setTimeout(() => this.fireSalvoConfetti(), 900);
+
+      const languages = [
+        {
+          id: 'pt',
+          flag: '🇧🇷',
+          name: 'Português',
+          short: 'PT',
+          headline: 'Feliz Aniversário de 18 Anos, Issamara!',
+          msg: 'Que este novo ciclo traga horizontes infinitos, conquistas grandiosas, amor sincero e muita luz para a sua vida!'
+        },
+        {
+          id: 'en',
+          flag: '🇺🇸',
+          name: 'English',
+          short: 'EN',
+          headline: 'Happy 18th Birthday, Issamara!',
+          msg: 'May this milestone year bring boundless happiness, unforgettable adventures, and every dream coming true!'
+        },
+        {
+          id: 'fr',
+          flag: '🇫🇷',
+          name: 'Français',
+          short: 'FR',
+          headline: 'Joyeux 18ème Anniversaire, Issamara !',
+          msg: 'Que cette nouvelle étape de vie soit lumineuse, pleine de succès, de doux rires et de merveilleux bonheurs !'
+        },
+        {
+          id: 'it',
+          flag: '🇮🇹',
+          name: 'Italiano',
+          short: 'IT',
+          headline: 'Buon 18° Compleanno, Issamara!',
+          msg: 'Ti auguro un cammino radioso, ricco di emozioni straordinarie, serenità e tanta felicità nel cuore!'
+        },
+        {
+          id: 'es',
+          flag: '🇪🇸',
+          name: 'Español',
+          short: 'ES',
+          headline: '¡Felices 18 Años, Issamara!',
+          msg: '¡Que cada día de esta hermosa etapa esté lleno de sonrisas sinceras, grandes metas cumplidas y bendiciones!'
+        },
+        {
+          id: 'de',
+          flag: '🇩🇪',
+          name: 'Deutsch',
+          short: 'DE',
+          headline: 'Alles Gute zum 18. Geburtstag, Issamara!',
+          msg: 'Möge dein Weg von Glück, Gesundheit, Freude und unvergesslichen Momenten begleitet sein. Feiere diesen Tag!'
+        },
+        {
+          id: 'ja',
+          flag: '🇯🇵',
+          name: '日本語',
+          short: 'JA',
+          headline: '18歳のお誕生日おめでとう、イサマラ！',
+          msg: '輝かしい未来とたくさんの幸福があなたを包み込みますように。素敵な18歳の一年になりますように！'
+        },
+        {
+          id: 'ko',
+          flag: '🇰🇷',
+          name: '한국어',
+          short: 'KO',
+          headline: '18번째 생일을 진심으로 축하해, 이사마라!',
+          msg: '네 앞길에 언제나 따뜻한 빛과 눈부신 행복이 가득하길 바라. 특별한 오늘, 최고의 하루가 되길!'
+        }
+      ];
+
+      let currentLangIndex = 0;
+      let cycleTimer = null;
+
+      const grandShow = document.createElement('div');
+      grandShow.className = 'finale-grand-show animate__animated animate__zoomIn';
+      grandShow.innerHTML = `
+        <div class="finale-aurora-glow" aria-hidden="true"></div>
+
+        <!-- Partículas Festivas Flutuantes -->
+        <div class="finale-floating-particles" aria-hidden="true">
+          <span class="fp fp-1">✨</span>
+          <span class="fp fp-2">💖</span>
+          <span class="fp fp-3">🌸</span>
+          <span class="fp fp-4">⭐</span>
+          <span class="fp fp-5">🎉</span>
+          <span class="fp fp-6">✨</span>
+          <span class="fp fp-7">💕</span>
+          <span class="fp fp-8">🌟</span>
+          <span class="fp fp-9">🎂</span>
+          <span class="fp fp-10">💫</span>
+        </div>
+
+        <!-- Medalhão 3D dos 18 Anos com Órbitas Estelares -->
+        <div class="finale-crown-3d">
+          <div class="finale-orbit-ring">
+            <span class="orbit-star">✦</span>
+          </div>
+          <div class="finale-orbit-ring ring-2">
+            <span class="orbit-star">✦</span>
+          </div>
+          <div class="finale-medallion-core">
+            <div class="finale-badge-num">18</div>
+            <div class="finale-badge-sub">ANOS</div>
+          </div>
+        </div>
+
+        <!-- Cabeçalho -->
+        <div class="finale-header">
+          <div class="finale-stars-row">✦ &nbsp; ★ &nbsp; ✦</div>
+          <h1 class="finale-name-title">ISSAMARA</h1>
+          <div class="finale-date-badge">24 de Setembro de 2026 • 18 Anos</div>
+        </div>
+
+        <!-- Vitrine Multilíngue (Troca de Língua) -->
+        <div class="finale-multilingual-box">
+          <div class="finale-lang-card" id="finale-lang-card">
+            <div class="finale-lang-top">
+              <span class="finale-lang-flag" id="finale-lang-flag">🇧🇷</span>
+              <span class="finale-lang-name" id="finale-lang-name">PORTUGUÊS</span>
+              <span class="finale-lang-counter" id="finale-lang-counter">1 / 8</span>
+            </div>
+            <h2 class="finale-lang-headline" id="finale-lang-headline">Feliz Aniversário de 18 Anos, Issamara!</h2>
+            <p class="finale-lang-msg" id="finale-lang-msg">
+              Que este novo ciclo traga horizontes infinitos, conquistas grandiosas, amor sincero e muita luz para a sua vida!
+            </p>
+          </div>
+
+          <!-- Pílulas Interativas de Seleção de Língua -->
+          <div class="finale-lang-pills" id="finale-lang-pills"></div>
+        </div>
+
+        <!-- Botão Interativo de Fogos e Efeitos -->
+        <div class="finale-interactive-bar">
+          <button id="btn-finale-fireworks" class="btn-finale-spark">
+            <i class="fas fa-magic mr-2"></i> Soltar Mais Fogos & Confetes 🎉
+          </button>
+        </div>
+
+        <!-- Barra de Ações -->
+        <div class="finale-actions-row">
+          <button id="btn-show-credits" class="btn btn-outline-info">
+            <i class="fas fa-info-circle mr-1"></i> Ver Créditos
+          </button>
+          <button id="btn-reopen-book" class="btn btn-outline-secondary">
+            <i class="fas fa-book-open mr-1"></i> Reabrir Livro (Cap. 19)
+          </button>
+          <button id="btn-open-pdf-20" class="btn btn-primary">
+            <i class="fas fa-file-pdf mr-1"></i> Baixar Carta em PDF
+          </button>
+          <button id="btn-restart-20" class="btn btn-outline-danger">
+            <i class="fas fa-redo mr-1"></i> Recomeçar
+          </button>
+        </div>
+      `;
+
+      stage.appendChild(grandShow);
+
+      // Elementos do Card Multilíngue
+      const cardEl = grandShow.querySelector('#finale-lang-card');
+      const flagEl = grandShow.querySelector('#finale-lang-flag');
+      const nameEl = grandShow.querySelector('#finale-lang-name');
+      const counterEl = grandShow.querySelector('#finale-lang-counter');
+      const headlineEl = grandShow.querySelector('#finale-lang-headline');
+      const msgEl = grandShow.querySelector('#finale-lang-msg');
+      const pillsContainer = grandShow.querySelector('#finale-lang-pills');
+
+      // Criação das pílulas de idioma
+      languages.forEach((lang, idx) => {
+        const pill = document.createElement('button');
+        pill.className = `lang-pill-btn ${idx === 0 ? 'active-lang' : ''}`;
+        pill.innerHTML = `${lang.flag} ${lang.short}`;
+        pill.setAttribute('data-lang-idx', idx);
+        pill.addEventListener('click', (e) => {
+          e.stopPropagation();
+          setLanguage(idx);
+          restartAutoCycle();
+        });
+        pillsContainer.appendChild(pill);
+      });
+
+      const setLanguage = (index) => {
+        currentLangIndex = index;
+        const target = languages[index];
+        if (!target || !cardEl) return;
+
+        // Animação 3D de virada do card
+        cardEl.classList.remove('card-flipping');
+        void cardEl.offsetWidth; // Trigger reflow
+        cardEl.classList.add('card-flipping');
+
+        setTimeout(() => {
+          if (flagEl) flagEl.textContent = target.flag;
+          if (nameEl) nameEl.textContent = target.name;
+          if (counterEl) counterEl.textContent = `${index + 1} / ${languages.length}`;
+          if (headlineEl) headlineEl.textContent = target.headline;
+          if (msgEl) msgEl.textContent = target.msg;
+        }, 220);
+
+        // Atualiza estilo das pílulas
+        const pills = pillsContainer.querySelectorAll('.lang-pill-btn');
+        pills.forEach((p, idx) => {
+          if (idx === index) {
+            p.classList.add('active-lang');
+          } else {
+            p.classList.remove('active-lang');
+          }
+        });
+
+        if (this.audioManager) {
+          this.audioManager.playSparkleSound(0.7);
+        }
+      };
+
+      const restartAutoCycle = () => {
+        if (cycleTimer) clearInterval(cycleTimer);
+        cycleTimer = setInterval(() => {
+          const nextIdx = (currentLangIndex + 1) % languages.length;
+          setLanguage(nextIdx);
+        }, 3800);
+      };
+
+      restartAutoCycle();
+
+      // Botão de Fogos Interativo
+      const btnFireworks = grandShow.querySelector('#btn-finale-fireworks');
+      if (btnFireworks) {
+        btnFireworks.addEventListener('click', () => {
+          this.fireSalvoConfetti();
+          if (this.audioManager) {
+            this.audioManager.playSparkleSound(1.0);
+          }
+        });
+      }
+
+      // Toolbar Actions
+      const btnCredits = grandShow.querySelector('#btn-show-credits');
+      if (btnCredits) {
+        btnCredits.addEventListener('click', () => {
+          if (cycleTimer) clearInterval(cycleTimer);
+          this.renderCredits();
+        });
+      }
+
+      const btnBook = grandShow.querySelector('#btn-reopen-book');
+      if (btnBook) {
+        btnBook.addEventListener('click', () => {
+          if (cycleTimer) clearInterval(cycleTimer);
+          this.goToChapter(19);
+        });
+      }
+
+      const btnPdf = grandShow.querySelector('#btn-open-pdf-20');
+      if (btnPdf) {
+        btnPdf.addEventListener('click', () => {
+          this.openPdfModal();
+        });
+      }
+
+      const btnRestart = grandShow.querySelector('#btn-restart-20');
+      if (btnRestart) {
+        btnRestart.addEventListener('click', () => {
+          if (cycleTimer) clearInterval(cycleTimer);
+          this.openRestartModal();
+        });
       }
     }
   }
