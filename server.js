@@ -8,9 +8,38 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = 3000;
 
-app.use(express.static(__dirname));
+// Enable CORS and cache control headers
+app.use((req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  next();
+});
 
+// Serve all static files from root directory with explicit MIME type handling
+app.use(express.static(__dirname, {
+  dotfiles: 'ignore',
+  etag: true,
+  index: ['index.html'],
+  maxAge: '1h',
+  setHeaders: (res, filePath) => {
+    if (filePath.endsWith('.css')) {
+      res.setHeader('Content-Type', 'text/css; charset=utf-8');
+    } else if (filePath.endsWith('.js')) {
+      res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
+    } else if (filePath.endsWith('.mp3')) {
+      res.setHeader('Content-Type', 'audio/mpeg');
+      res.setHeader('Accept-Ranges', 'bytes');
+    } else if (filePath.endsWith('.svg')) {
+      res.setHeader('Content-Type', 'image/svg+xml');
+    }
+  }
+}));
+
+// Route fallback: only serve index.html for extensionless navigation routes
 app.get('*', (req, res) => {
+  const ext = path.extname(req.path);
+  if (ext && ext !== '.html') {
+    return res.status(404).type('text/plain').send(`Not found: ${req.path}`);
+  }
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 
