@@ -467,6 +467,169 @@
       }
     }
 
+    /**
+     * Efeito sonoro orgânico de sopro de ar ao apagar a vela do bolo de aniversário.
+     */
+    playCandleBlowSound(intensity = 1.0) {
+      if (this.isMuted) return;
+      const ctx = this.getAudioContext();
+      if (!ctx) return;
+      try {
+        const t0 = ctx.currentTime + 0.01;
+        const masterVol = Math.max(0.01, Math.min(1.0, this.currentVolume));
+        const effectiveGain = 0.26 * intensity * masterVol;
+
+        const masterGain = ctx.createGain();
+        masterGain.gain.setValueAtTime(effectiveGain, t0);
+        masterGain.connect(ctx.destination);
+
+        const dur = 0.75;
+        const bufferSize = Math.floor(ctx.sampleRate * dur);
+        const noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+        const data = noiseBuffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) {
+          data[i] = (Math.random() * 2 - 1) * 0.45;
+        }
+        const noiseSrc = ctx.createBufferSource();
+        noiseSrc.buffer = noiseBuffer;
+
+        const filter = ctx.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(320, t0);
+        filter.frequency.linearRampToValueAtTime(1300, t0 + 0.18);
+        filter.frequency.exponentialRampToValueAtTime(160, t0 + dur);
+
+        const gainNode = ctx.createGain();
+        gainNode.gain.setValueAtTime(0.001, t0);
+        gainNode.gain.linearRampToValueAtTime(0.95, t0 + 0.15);
+        gainNode.gain.exponentialRampToValueAtTime(0.001, t0 + dur);
+
+        noiseSrc.connect(filter);
+        filter.connect(gainNode);
+        gainNode.connect(masterGain);
+
+        noiseSrc.start(t0);
+        noiseSrc.stop(t0 + dur);
+      } catch (e) {
+        console.warn('Erro ao reproduzir som do sopro:', e);
+      }
+    }
+
+    /**
+     * Sintetizador melódico alegre e divertido do Axolote e Pato cantando 'Happy Birthday to you'
+     * fielmente sincronizado com o vídeo comemorativo.
+     */
+    playAxolotlHappyBirthdayTune(onEventCallback) {
+      if (this.isMuted) return;
+      const ctx = this.getAudioContext();
+      if (!ctx) return;
+
+      try {
+        const t0 = ctx.currentTime + 0.05;
+        const masterVol = Math.max(0.01, Math.min(1.0, this.currentVolume));
+        const masterGain = ctx.createGain();
+        masterGain.gain.setValueAtTime(0.24 * masterVol, t0);
+        masterGain.connect(ctx.destination);
+
+        // Notas da melodia: Sol, Sol, Lá, Sol, Dó, Si ...
+        const notes = [
+          // 1. "hap-py"
+          { freq: 392.00, start: 0.00, dur: 0.22, text: 'happy', mouth: 'happy', duck: true },
+          { freq: 392.00, start: 0.26, dur: 0.22, text: 'happy', mouth: 'happy', duck: false },
+          // "birth-day"
+          { freq: 440.00, start: 0.58, dur: 0.38, text: 'birthday', mouth: 'birthday', duck: true },
+          { freq: 392.00, start: 1.02, dur: 0.38, text: 'birthday', mouth: 'birthday', duck: false },
+          // "to youuuuu"
+          { freq: 523.25, start: 1.48, dur: 0.40, text: 'to youuuuu', mouth: 'toyou', duck: true, vibrato: true },
+          { freq: 493.88, start: 1.92, dur: 0.85, text: 'to youuuuu', mouth: 'toyou', duck: false, vibrato: true, bendTo: 512 },
+
+          // 2. "hap-py"
+          { freq: 392.00, start: 2.88, dur: 0.22, text: 'happy', mouth: 'happy', duck: true },
+          { freq: 392.00, start: 3.14, dur: 0.22, text: 'happy', mouth: 'happy', duck: false },
+          // "birth-day"
+          { freq: 440.00, start: 3.46, dur: 0.38, text: 'birthday', mouth: 'birthday', duck: true },
+          { freq: 392.00, start: 3.90, dur: 0.38, text: 'birthday', mouth: 'birthday', duck: false },
+          // "to youuuuu"
+          { freq: 587.33, start: 4.36, dur: 0.40, text: 'to youuuuu', mouth: 'toyou', duck: true, vibrato: true },
+          { freq: 523.25, start: 4.80, dur: 0.85, text: 'to youuuuu', mouth: 'toyou', duck: false, vibrato: true, bendTo: 540 },
+
+          // 3. "hap-py"
+          { freq: 392.00, start: 5.78, dur: 0.22, text: 'happy', mouth: 'happy', duck: true },
+          { freq: 392.00, start: 6.04, dur: 0.22, text: 'happy', mouth: 'happy', duck: false },
+          // "birth-day"
+          { freq: 783.99, start: 6.36, dur: 0.45, text: 'birthday', mouth: 'birthday', duck: true },
+          { freq: 659.25, start: 6.86, dur: 0.45, text: 'birthday', mouth: 'birthday', duck: false },
+          // "to youuuu" / "Issamara"
+          { freq: 523.25, start: 7.36, dur: 0.32, text: 'to youuuuu', mouth: 'toyou', duck: true },
+          { freq: 493.88, start: 7.72, dur: 0.32, text: 'to youuuuu', mouth: 'toyou', duck: false },
+          { freq: 440.00, start: 8.08, dur: 0.45, text: 'to youuuuu', mouth: 'toyou', duck: true },
+
+          // 4. Clímax com Zoom: "BIRTHDAYYYYYYYYYYY!"
+          { freq: 698.46, start: 8.66, dur: 0.30, text: 'BIRTHDAYYYYYYYYYYY', mouth: 'scream', duck: true, zoom: true, shake: true },
+          { freq: 698.46, start: 9.00, dur: 0.30, text: 'BIRTHDAYYYYYYYYYYY', mouth: 'scream', duck: true, zoom: true, shake: true },
+          { freq: 659.25, start: 9.34, dur: 0.35, text: 'BIRTHDAYYYYYYYYYYY', mouth: 'scream', duck: true, zoom: true, shake: true },
+          { freq: 523.25, start: 9.72, dur: 0.40, text: 'BIRTHDAYYYYYYYYYYY', mouth: 'scream', duck: true, zoom: true, shake: true },
+          { freq: 587.33, start: 10.16, dur: 0.40, text: 'BIRTHDAYYYYYYYYYYY', mouth: 'scream', duck: true, zoom: true, shake: true },
+          { freq: 523.25, start: 10.60, dur: 1.50, text: 'ISSAMARA! 🎉🎂', mouth: 'scream', duck: true, zoom: true, shake: true, vibrato: true, finale: true }
+        ];
+
+        notes.forEach(n => {
+          const startTime = t0 + n.start;
+          const osc = ctx.createOscillator();
+          const osc2 = ctx.createOscillator();
+          const noteGain = ctx.createGain();
+
+          osc.type = 'triangle';
+          osc2.type = 'sine';
+
+          osc.frequency.setValueAtTime(n.freq, startTime);
+          osc2.frequency.setValueAtTime(n.freq * 2, startTime);
+
+          if (n.bendTo) {
+            osc.frequency.exponentialRampToValueAtTime(n.bendTo, startTime + n.dur);
+          }
+
+          if (n.vibrato) {
+            const lfo = ctx.createOscillator();
+            const lfoGain = ctx.createGain();
+            lfo.frequency.setValueAtTime(6.2, startTime);
+            lfoGain.gain.setValueAtTime(n.freq * 0.035, startTime);
+            lfo.connect(lfoGain);
+            lfoGain.connect(osc.frequency);
+            lfo.start(startTime + 0.08);
+            lfo.stop(startTime + n.dur);
+          }
+
+          noteGain.gain.setValueAtTime(0.001, startTime);
+          noteGain.gain.linearRampToValueAtTime(0.72, startTime + 0.02);
+          noteGain.gain.exponentialRampToValueAtTime(0.001, startTime + n.dur);
+
+          osc.connect(noteGain);
+          osc2.connect(noteGain);
+          noteGain.connect(masterGain);
+
+          osc.start(startTime);
+          osc2.start(startTime);
+          osc.stop(startTime + n.dur + 0.05);
+          osc2.stop(startTime + n.dur + 0.05);
+
+          if (onEventCallback) {
+            setTimeout(() => {
+              onEventCallback(n);
+            }, n.start * 1000);
+          }
+        });
+
+        if (onEventCallback) {
+          setTimeout(() => {
+            onEventCallback({ type: 'completed' });
+          }, 12400);
+        }
+      } catch (e) {
+        console.warn('Erro ao reproduzir canção do axolote:', e);
+      }
+    }
+
     play() {
       if (!this.audio) return;
       this.audio.muted = this.isMuted;
@@ -2176,77 +2339,50 @@
       }
     },
 
-    // Cap 17
+    // Cap 17 - Revelação Especial: FELIZ ANIVERSÁRIO & FOTO DE HAPPY DAY
     {
       id: 17,
-      title: "A festa começa",
-      audioLevel: 0.9,
-      render: (stage, sys) => {
-        const container = document.createElement('div');
-        container.className = 'kotak animate__animated animate__fadeIn';
-        container.innerHTML = `
-          <div class="py-3">
-            <div class="mb-3">
-              <span style="font-size: 50px;">🎈 🎊 🎈</span>
-            </div>
-            <h3 class="bday-title animate__animated animate__fadeIn">
-              Porque aniversário sem festa não tem a mesma graça. 🎉
-            </h3>
-            <p class="text-muted mt-3">Segura que agora começou!</p>
-          </div>
-        `;
-        stage.appendChild(container);
-
-        // Music continues high
-        sys.audioManager.fadeTo(0.9, 1500);
-
-        // Initial celebration confetti burst
-        if (window.confetti) {
-          window.confetti({
-            particleCount: 50,
-            spread: 80,
-            origin: { y: 0.6 }
-          });
-        }
-
-        sys.timer.setTimeout(() => {
-          sys.showTapPrompt();
-        }, 2200);
-      }
-    },
-
-    // Cap 18 - Grand Climax: FELIZ ANIVERSÁRIO
-    {
-      id: 18,
-      title: "Feliz Aniversário!",
+      title: "Feliz Aniversário! (Foto de Happy Day 🎉)",
       audioLevel: 1.0,
       render: (stage, sys) => {
         const container = document.createElement('div');
         container.className = 'chapter-stage animate__animated animate__fadeIn text-center w-100';
         container.innerHTML = `
-          <div id="c18_step1" class="kotak animate__animated animate__zoomIn">
+          <div id="c17_step1" class="kotak animate__animated animate__zoomIn">
             <div class="display-18">18</div>
           </div>
-          <div id="c18_step2" class="kotak d-none animate__animated animate__bounceIn">
+          <div id="c17_step2" class="kotak d-none animate__animated animate__bounceIn">
             <h2 class="display-4 font-weight-bold text-danger">18 ANOS</h2>
           </div>
-          <div id="c18_step3" class="kotak d-none animate__animated animate__zoomIn">
+          <div id="c17_step3" class="kotak d-none animate__animated animate__zoomIn">
             <h1 class="bday-title text-primary" style="font-size: 42px;">FELIZ ANIVERSÁRIO</h1>
           </div>
-          <div id="c18_step4" class="kotak d-none animate__animated animate__tada">
-            <img src="./img/hbd1.png" class="img mb-2" alt="Parabéns">
+          <div id="c17_step4" class="kotak d-none animate__animated animate__tada">
+            <div class="happy-day-photo-frame mb-3">
+              <img src="./img/hbd1.png" onerror="this.onerror=null; this.src='./img/hbd.png';" class="img happy-day-img" alt="Foto de Happy Day - Parabéns Issamara">
+            </div>
             <div class="bday-name display-4" style="font-size: 44px;">ISSAMARA 🎉</div>
-            <p class="lead-text mt-3 text-dark">Que seu dia e seus 18 anos sejam incríveis!</p>
+            <div class="c17-axolotl-cheer animate__animated animate__fadeInUp mt-2 mb-2">
+              <span style="font-size: 22px;">🪷</span>
+              <span style="font-size: 15px; color: #ad1457; font-weight: 700;">Parabéns pelos seus 18 anos, Issamara!</span>
+              <span style="font-size: 22px;">🎉</span>
+            </div>
+            <p class="lead-text mt-2 text-dark">Que seu dia e seus 18 anos sejam repletos de sorrisos, conquistas e felicidade!</p>
+            <div class="mt-3 d-flex justify-content-center align-items-center flex-wrap" style="gap: 12px;">
+              <button class="btn btn-primary rounded-pill px-4 py-2 font-weight-bold shadow" id="btn-c17-to-video" style="background: linear-gradient(135deg, #e91e63, #ff4081); border: none; font-size: 15px;">
+                <i class="fas fa-birthday-cake mr-1"></i> Ir para o Bolo & Assoprar a Vela 🎂
+              </button>
+            </div>
           </div>
         `;
         stage.appendChild(container);
 
         sys.audioManager.fadeTo(1.0, 1000);
 
-        // Sequence of reveals
+        // Sequence of reveals: 18 -> 18 ANOS -> FELIZ ANIVERSÁRIO -> FOTO DE HAPPY DAY
         sys.timer.setTimeout(() => {
-          const s1 = document.getElementById('c18_step1');
-          const s2 = document.getElementById('c18_step2');
+          const s1 = document.getElementById('c17_step1');
+          const s2 = document.getElementById('c17_step2');
           if (s1) s1.classList.add('d-none');
           if (s2) s2.classList.remove('d-none');
           if (window.confetti) {
@@ -2255,8 +2391,8 @@
         }, 1400);
 
         sys.timer.setTimeout(() => {
-          const s2 = document.getElementById('c18_step2');
-          const s3 = document.getElementById('c18_step3');
+          const s2 = document.getElementById('c17_step2');
+          const s3 = document.getElementById('c17_step3');
           if (s2) s2.classList.add('d-none');
           if (s3) s3.classList.remove('d-none');
           if (window.confetti) {
@@ -2265,10 +2401,18 @@
         }, 2800);
 
         sys.timer.setTimeout(() => {
-          const s3 = document.getElementById('c18_step3');
-          const s4 = document.getElementById('c18_step4');
+          const s3 = document.getElementById('c17_step3');
+          const s4 = document.getElementById('c17_step4');
           if (s3) s3.classList.add('d-none');
           if (s4) s4.classList.remove('d-none');
+
+          const btnToVideo = container.querySelector('#btn-c17-to-video');
+          if (btnToVideo) {
+            btnToVideo.addEventListener('click', (e) => {
+              e.stopPropagation();
+              sys.nextChapter();
+            });
+          }
 
           // Grand celebratory fireworks / confetti cannons from both sides
           if (window.confetti) {
@@ -2297,6 +2441,24 @@
 
           sys.showTapPrompt();
         }, 4400);
+      }
+    },
+
+    // Cap 18 - Animação do Vídeo: Assopre a Vela & Axolote Cantor
+    {
+      id: 18,
+      title: "A festa começa (Assopre a Vela! 🎂)",
+      audioLevel: 0.9,
+      render: (stage, sys) => {
+        const container = document.createElement('div');
+        container.className = 'chapter-stage animate__animated animate__fadeIn text-center w-100';
+        stage.appendChild(container);
+
+        sys.hideTapPrompt();
+
+        // Inicializa a Animação Completa do Vídeo
+        sys.activeAnimController = new BirthdayVideoAnimController(container, sys);
+        sys.activeAnimController.render();
       }
     },
 
@@ -2335,6 +2497,510 @@
       }
     }
   ];
+
+  // ==========================================================================
+  // 4.3. BIRTHDAY VIDEO ANIMATION CONTROLLER (VELA & AXOLOTE CANTOR)
+  // Animação comemorativa completa inspirada no vídeo dos personagens
+  // 1. Contagem regressiva e bolo interativo (blow the candle in 4, 3, 2, 1)
+  // 2. Sopro de ar, vela apagada e blecaute com efeito de suspense
+  // 3. Pato & Axolote cantando alegremente 'Happy Birthday to you' sincronizado
+  // 4. Clímax com zoom de câmera, letras cômicas animadas e chuva de confetes
+  // ==========================================================================
+  class BirthdayVideoAnimController {
+    constructor(container, sys) {
+      this.container = container;
+      this.sys = sys;
+      this.isDestroyed = false;
+      this.countdownTimer = null;
+      this.currentCount = 4;
+      this.isBlown = false;
+      this.isSinging = false;
+      this.timeouts = [];
+    }
+
+    destroy() {
+      this.isDestroyed = true;
+      if (this.countdownTimer) {
+        clearInterval(this.countdownTimer);
+        this.countdownTimer = null;
+      }
+      this.timeouts.forEach(t => clearTimeout(t));
+      this.timeouts = [];
+    }
+
+    addTimeout(fn, delay) {
+      const t = setTimeout(() => {
+        if (!this.isDestroyed) fn();
+      }, delay);
+      this.timeouts.push(t);
+      return t;
+    }
+
+    render() {
+      this.container.innerHTML = `
+        <div class="bday-anim-card animate__animated animate__zoomIn" id="bday-anim-card">
+          <!-- 1. CENA DO BOLO & CONTAGEM REGRESSIVA -->
+          <div class="cake-scene-container" id="cake-scene-container">
+            <div class="cake-header-lead">blow the candle in...</div>
+            <div class="cake-countdown-box">
+              <span class="cake-countdown-digit" id="cake-countdown-digit">4</span>
+            </div>
+
+            <div class="cake-svg-wrapper" id="cake-svg-wrapper" title="Toque para apagar a vela!">
+              ${this.getCakeSvg()}
+              <div class="cake-wind-effect" id="cake-wind-effect">💨</div>
+            </div>
+
+            <button class="btn-blow-candle" id="btn-blow-candle">
+              <i class="fas fa-wind"></i> Assopre a vela
+            </button>
+            <p class="text-muted mt-2" style="font-size: 13px; color: #526f84 !important;">
+              (Faça um pedido para os seus 18 anos! ✨)
+            </p>
+          </div>
+
+          <!-- 2. CORTINA DE BLECAUTE / SUSPENSE -->
+          <div class="blackout-curtain" id="blackout-curtain">
+            <div class="blackout-text">
+              ✨ Pedido feito... ✨<br>
+              <span style="font-size: 16px; color: #ffffff; font-family: 'Quicksand', sans-serif; display: inline-block; margin-top: 8px;">
+                Guarde no coração! Prepare-se para a surpresa...
+              </span>
+            </div>
+          </div>
+
+          <!-- 3. CENA DOS PERSONAGENS CANTORES (PATO E AXOLOTE) -->
+          <div class="singing-scene-container scene-hidden" id="singing-scene-container">
+            <div class="singing-lyric-box">
+              <span class="singing-lyric-text" id="singing-lyric-text">...</span>
+            </div>
+
+            <div class="singing-camera-wrap" id="singing-camera-wrap">
+              ${this.getCharactersSvg()}
+            </div>
+
+            <div class="singing-action-bar" id="singing-action-bar">
+              <button class="btn-singing-replay" id="btn-singing-replay">
+                <i class="fas fa-redo"></i> Assoprar novamente
+              </button>
+              <button class="btn-singing-photo" id="btn-singing-photo">
+                <i class="fas fa-image"></i> Ver Foto de Happy Day
+              </button>
+              <button class="btn-singing-continue" id="btn-singing-continue">
+                Continuar a Celebração <i class="fas fa-arrow-right ml-1"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+
+      this.bindEvents();
+      this.startCountdown();
+    }
+
+    bindEvents() {
+      const btnBlow = this.container.querySelector('#btn-blow-candle');
+      const cakeWrapper = this.container.querySelector('#cake-svg-wrapper');
+      const btnReplay = this.container.querySelector('#btn-singing-replay');
+      const btnPhoto = this.container.querySelector('#btn-singing-photo');
+      const btnContinue = this.container.querySelector('#btn-singing-continue');
+
+      if (btnBlow) {
+        btnBlow.addEventListener('click', () => this.blowCandle());
+      }
+      if (cakeWrapper) {
+        cakeWrapper.addEventListener('click', () => this.blowCandle());
+      }
+      if (btnReplay) {
+        btnReplay.addEventListener('click', () => this.replayAll());
+      }
+      if (btnPhoto) {
+        btnPhoto.addEventListener('click', () => {
+          if (this.sys && typeof this.sys.goToChapter === 'function') {
+            this.sys.goToChapter(17);
+          }
+        });
+      }
+      if (btnContinue) {
+        btnContinue.addEventListener('click', () => {
+          if (this.sys && typeof this.sys.nextChapter === 'function') {
+            this.sys.nextChapter();
+          }
+        });
+      }
+    }
+
+    startCountdown() {
+      this.currentCount = 4;
+      const digitEl = this.container.querySelector('#cake-countdown-digit');
+      if (digitEl) digitEl.textContent = '4';
+
+      if (this.countdownTimer) clearInterval(this.countdownTimer);
+
+      this.countdownTimer = setInterval(() => {
+        if (this.isDestroyed || this.isBlown) {
+          clearInterval(this.countdownTimer);
+          return;
+        }
+
+        this.currentCount--;
+        const digit = this.container.querySelector('#cake-countdown-digit');
+        if (digit) {
+          digit.textContent = this.currentCount > 0 ? this.currentCount : '0';
+          digit.style.animation = 'none';
+          digit.offsetHeight; // trigger reflow
+          digit.style.animation = '';
+        }
+
+        if (this.currentCount <= 0) {
+          clearInterval(this.countdownTimer);
+          this.countdownTimer = null;
+          this.blowCandle();
+        }
+      }, 1000);
+    }
+
+    blowCandle() {
+      if (this.isBlown || this.isDestroyed) return;
+      this.isBlown = true;
+      if (this.countdownTimer) {
+        clearInterval(this.countdownTimer);
+        this.countdownTimer = null;
+      }
+
+      const windEl = this.container.querySelector('#cake-wind-effect');
+      const flameEl = this.container.querySelector('#cake-flame-group');
+      const smokeEl = this.container.querySelector('#cake-smoke-group');
+      const blackoutEl = this.container.querySelector('#blackout-curtain');
+      const cakeScene = this.container.querySelector('#cake-scene-container');
+      const singingScene = this.container.querySelector('#singing-scene-container');
+      const btnBlow = this.container.querySelector('#btn-blow-candle');
+
+      if (btnBlow) btnBlow.disabled = true;
+
+      // 1. Som de sopro de ar
+      if (this.sys && this.sys.audioManager) {
+        this.sys.audioManager.playCandleBlowSound(1.0);
+      }
+
+      // 2. Animação de vento e extinção da chama
+      if (windEl) windEl.classList.add('wind-active');
+      if (flameEl) flameEl.classList.add('flame-blown');
+      if (smokeEl) smokeEl.classList.add('smoke-active');
+
+      // Pequeno puff de confete suave ao apagar
+      if (window.confetti) {
+        window.confetti({
+          particleCount: 16,
+          spread: 45,
+          origin: { y: 0.55 },
+          colors: ['#ffe082', '#ffb74d', '#ffffff']
+        });
+      }
+
+      // 3. Blecaute / Suspense (0.7s após o sopro)
+      this.addTimeout(() => {
+        if (blackoutEl) blackoutEl.classList.add('blackout-active');
+      }, 700);
+
+      // 4. Revelação dos Personagens Cantores (após 1.8s)
+      this.addTimeout(() => {
+        if (cakeScene) cakeScene.classList.add('scene-hidden');
+        if (singingScene) singingScene.classList.remove('scene-hidden');
+        if (blackoutEl) blackoutEl.classList.remove('blackout-active');
+
+        this.startSingingPerformance();
+      }, 1800);
+    }
+
+    startSingingPerformance() {
+      if (this.isDestroyed) return;
+      this.isSinging = true;
+
+      // Suaviza a música de fundo para destacar o canto alegre do Axolote
+      if (this.sys && this.sys.audioManager) {
+        this.sys.audioManager.fadeTo(0.12, 600);
+        this.sys.audioManager.playAxolotlHappyBirthdayTune((evt) => {
+          if (!this.isDestroyed) this.handleSongEvent(evt);
+        });
+      }
+    }
+
+    handleSongEvent(evt) {
+      if (!evt || this.isDestroyed) return;
+
+      const lyricText = this.container.querySelector('#singing-lyric-text');
+      const mouthPath = this.container.querySelector('#axolotl-mouth-path');
+      const duckGroup = this.container.querySelector('#duck-group');
+      const axolotlGroup = this.container.querySelector('#axolotl-group');
+      const cameraWrap = this.container.querySelector('#singing-camera-wrap');
+      const actionBar = this.container.querySelector('#singing-action-bar');
+
+      if (evt.type === 'completed') {
+        this.isSinging = false;
+        // Restaura a música de fundo
+        if (this.sys && this.sys.audioManager) {
+          this.sys.audioManager.fadeTo(0.85, 1200);
+        }
+        if (cameraWrap) {
+          cameraWrap.classList.remove('camera-zoomed', 'camera-shaking');
+        }
+        if (axolotlGroup) {
+          axolotlGroup.classList.remove('axolotl-singing-up', 'axolotl-shaking');
+        }
+        if (mouthPath) {
+          mouthPath.setAttribute('d', 'M 132 162 Q 140 168 148 162');
+          mouthPath.setAttribute('fill', 'none');
+        }
+        if (actionBar) {
+          actionBar.classList.add('bar-visible');
+        }
+        if (this.sys && typeof this.sys.showTapPrompt === 'function') {
+          this.sys.showTapPrompt();
+        }
+        return;
+      }
+
+      // Atualiza texto da letra
+      if (evt.text && lyricText) {
+        lyricText.textContent = evt.text;
+        lyricText.className = 'singing-lyric-text' + (evt.finale ? ' lyric-finale' : '');
+        lyricText.style.animation = 'none';
+        lyricText.offsetHeight;
+        lyricText.style.animation = '';
+      }
+
+      // Atualiza boca e postura do Axolote
+      if (mouthPath && evt.mouth) {
+        if (evt.mouth === 'happy') {
+          mouthPath.setAttribute('d', 'M 130 158 Q 140 156 150 158 Q 154 172 140 174 Q 126 172 130 158 Z');
+          mouthPath.setAttribute('fill', '#7a0c2e');
+          if (axolotlGroup) axolotlGroup.classList.remove('axolotl-singing-up', 'axolotl-shaking');
+        } else if (evt.mouth === 'birthday') {
+          mouthPath.setAttribute('d', 'M 126 156 Q 140 153 154 156 Q 158 178 140 180 Q 122 178 126 156 Z');
+          mouthPath.setAttribute('fill', '#7a0c2e');
+          if (axolotlGroup) axolotlGroup.classList.remove('axolotl-singing-up', 'axolotl-shaking');
+        } else if (evt.mouth === 'toyou') {
+          mouthPath.setAttribute('d', 'M 122 152 Q 140 148 158 152 Q 166 195 140 198 Q 114 195 122 152 Z');
+          mouthPath.setAttribute('fill', '#7a0c2e');
+          if (axolotlGroup) {
+            axolotlGroup.classList.add('axolotl-singing-up');
+            axolotlGroup.classList.remove('axolotl-shaking');
+          }
+        } else if (evt.mouth === 'scream') {
+          mouthPath.setAttribute('d', 'M 118 150 Q 140 144 162 150 Q 170 202 140 205 Q 110 202 118 150 Z');
+          mouthPath.setAttribute('fill', '#880e4f');
+          if (axolotlGroup) {
+            axolotlGroup.classList.add('axolotl-singing-up', 'axolotl-shaking');
+          }
+        }
+      }
+
+      // Aperto ritmado do Pato
+      if (evt.duck && duckGroup) {
+        duckGroup.classList.remove('duck-squeezing');
+        duckGroup.offsetHeight;
+        duckGroup.classList.add('duck-squeezing');
+      }
+
+      // Efeito de Câmera (Zoom e Vibração)
+      if (cameraWrap) {
+        if (evt.zoom) cameraWrap.classList.add('camera-zoomed');
+        if (evt.shake) cameraWrap.classList.add('camera-shaking');
+      }
+
+      // Clímax final com confetes
+      if (evt.finale && window.confetti) {
+        window.confetti({
+          particleCount: 80,
+          spread: 85,
+          origin: { y: 0.6 },
+          colors: ['#ff4081', '#ffd54f', '#00e676', '#00b0ff', '#e040fb']
+        });
+      }
+    }
+
+    replayAll() {
+      this.destroy();
+      this.isDestroyed = false;
+      this.isBlown = false;
+      this.isSinging = false;
+      this.currentCount = 4;
+      this.timeouts = [];
+      this.render();
+    }
+
+    getCakeSvg() {
+      return `
+        <svg viewBox="0 0 320 320" class="cake-svg-el" id="cake-svg">
+          <defs>
+            <linearGradient id="cakePlateGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stop-color="#ffffff"/>
+              <stop offset="100%" stop-color="#d4e3ed"/>
+            </linearGradient>
+            <linearGradient id="cakeDripGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stop-color="#ffb3c6"/>
+              <stop offset="100%" stop-color="#ff8da7"/>
+            </linearGradient>
+            <linearGradient id="cakeBaseGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stop-color="#fff8f0"/>
+              <stop offset="100%" stop-color="#fceddb"/>
+            </linearGradient>
+            <linearGradient id="flameGrad" x1="0%" y1="100%" x2="0%" y2="0%">
+              <stop offset="0%" stop-color="#ff5722"/>
+              <stop offset="45%" stop-color="#ff9800"/>
+              <stop offset="85%" stop-color="#ffeb3b"/>
+              <stop offset="100%" stop-color="#ffffff"/>
+            </linearGradient>
+            <pattern id="candleStripes" width="20" height="20" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+              <rect width="10" height="20" fill="#ff4081"/>
+              <rect x="10" width="10" height="20" fill="#ffffff"/>
+            </pattern>
+          </defs>
+          
+          <!-- Prato do bolo -->
+          <ellipse cx="160" cy="285" rx="140" ry="22" fill="url(#cakePlateGrad)" stroke="#2b455b" stroke-width="3.5"/>
+          <ellipse cx="160" cy="282" rx="125" ry="16" fill="#f0f7fb" opacity="0.6"/>
+
+          <!-- Camada Inferior (Tier 2) -->
+          <rect x="52" y="195" width="216" height="80" rx="14" fill="url(#cakeBaseGrad)" stroke="#2b455b" stroke-width="3.5"/>
+          <!-- Cobertura Rosa Ondulada Inferior -->
+          <path d="M 52 195 L 268 195 C 268 205 264 218 252 218 C 242 218 238 206 230 206 C 220 206 216 226 202 226 C 190 226 186 210 176 210 C 166 210 162 232 148 232 C 136 232 130 212 120 212 C 110 212 104 228 92 228 C 82 228 78 208 68 208 C 58 208 52 215 52 215 Z" fill="url(#cakeDripGrad)" stroke="#2b455b" stroke-width="3.5"/>
+
+          <!-- Camada Superior (Tier 1) -->
+          <rect x="88" y="120" width="144" height="76" rx="12" fill="url(#cakeBaseGrad)" stroke="#2b455b" stroke-width="3.5"/>
+          <!-- Cobertura Rosa Ondulada Superior -->
+          <path d="M 88 120 L 232 120 C 232 130 228 140 218 140 C 208 140 204 128 196 128 C 188 128 184 148 172 148 C 162 148 158 132 148 132 C 138 132 134 146 122 146 C 112 146 108 130 98 130 C 92 130 88 135 88 135 Z" fill="url(#cakeDripGrad)" stroke="#2b455b" stroke-width="3.5"/>
+
+          <!-- Puffs de Chantilly no Topo -->
+          <circle cx="106" cy="116" r="11" fill="#ffffff" stroke="#2b455b" stroke-width="3"/>
+          <circle cx="138" cy="114" r="11" fill="#ffffff" stroke="#2b455b" stroke-width="3"/>
+          <circle cx="182" cy="114" r="11" fill="#ffffff" stroke="#2b455b" stroke-width="3"/>
+          <circle cx="214" cy="116" r="11" fill="#ffffff" stroke="#2b455b" stroke-width="3"/>
+
+          <!-- Confeitos fofos coloridos -->
+          <circle cx="115" cy="165" r="3.5" fill="#ff4081"/>
+          <circle cx="145" cy="172" r="3.5" fill="#4fc3f7"/>
+          <circle cx="185" cy="168" r="3.5" fill="#ffd54f"/>
+          <circle cx="205" cy="175" r="3.5" fill="#66bb6a"/>
+          <circle cx="75" cy="245" r="4" fill="#ffd54f"/>
+          <circle cx="110" cy="255" r="4" fill="#ff4081"/>
+          <circle cx="160" cy="250" r="4" fill="#4fc3f7"/>
+          <circle cx="210" cy="256" r="4" fill="#ab47bc"/>
+          <circle cx="245" cy="248" r="4" fill="#ffa726"/>
+
+          <!-- Vela Listrada -->
+          <rect x="153" y="58" width="14" height="60" rx="4" fill="url(#candleStripes)" stroke="#2b455b" stroke-width="3"/>
+          <!-- Pavio -->
+          <line x1="160" y1="58" x2="160" y2="44" stroke="#2b455b" stroke-width="3.5" stroke-linecap="round"/>
+
+          <!-- Chama Viva com Brilho -->
+          <g id="cake-flame-group" class="cake-flame">
+            <path d="M 160 14 C 145 28 147 43 160 47 C 173 43 175 28 160 14 Z" fill="url(#flameGrad)" stroke="#ff6f00" stroke-width="1.5"/>
+            <ellipse cx="160" cy="38" rx="4" ry="7" fill="#ffffff" opacity="0.8"/>
+          </g>
+
+          <!-- Fumaça de sopro -->
+          <g id="cake-smoke-group" class="cake-smoke-group">
+            <path d="M 160 42 Q 152 30 162 20 Q 172 10 160 0" fill="none" stroke="#90a4ae" stroke-width="3" stroke-linecap="round" stroke-dasharray="4 2"/>
+            <path d="M 164 42 Q 175 32 168 22" fill="none" stroke="#b0bec5" stroke-width="2.5" stroke-linecap="round"/>
+          </g>
+        </svg>
+      `;
+    }
+
+    getCharactersSvg() {
+      return `
+        <svg viewBox="0 0 280 320" class="characters-svg" id="characters-svg">
+          <defs>
+            <linearGradient id="duckBodyGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stop-color="#6ec8d4"/>
+              <stop offset="100%" stop-color="#4ea2ae"/>
+            </linearGradient>
+            <linearGradient id="duckBellyGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stop-color="#a2e4ed"/>
+              <stop offset="100%" stop-color="#7dd1dc"/>
+            </linearGradient>
+            <linearGradient id="axolotlGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stop-color="#ffb8cc"/>
+              <stop offset="100%" stop-color="#ff9ab5"/>
+            </linearGradient>
+            <linearGradient id="axolotlGillGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stop-color="#ff4081"/>
+              <stop offset="100%" stop-color="#d81b60"/>
+            </linearGradient>
+          </defs>
+
+          <!-- 1. GRUPO DO PATO (Azul/Ciano) -->
+          <g id="duck-group" class="duck-group">
+            <!-- Pés do Pato -->
+            <ellipse cx="98" cy="292" rx="20" ry="10" fill="#30526e" stroke="#1c3345" stroke-width="3"/>
+            <ellipse cx="182" cy="292" rx="20" ry="10" fill="#30526e" stroke="#1c3345" stroke-width="3"/>
+
+            <!-- Corpo do Pato -->
+            <ellipse cx="140" cy="180" rx="90" ry="105" fill="url(#duckBodyGrad)" stroke="#224057" stroke-width="4"/>
+            <!-- Barriguinha mais clara -->
+            <ellipse cx="140" cy="205" rx="68" ry="75" fill="url(#duckBellyGrad)" opacity="0.6"/>
+
+            <!-- Bico / Boné Escuro do Pato (topo da cabeça) -->
+            <path d="M 108 85 Q 140 65 172 85 Q 155 112 140 114 Q 125 112 108 85 Z" fill="#2d4f6c" stroke="#1c3345" stroke-width="3.5"/>
+
+            <!-- Olhinhos serenos e fechados do pato -->
+            <path d="M 85 125 Q 98 135 110 125" fill="none" stroke="#1e3649" stroke-width="3.5" stroke-linecap="round"/>
+            <path d="M 170 125 Q 182 135 195 125" fill="none" stroke="#1e3649" stroke-width="3.5" stroke-linecap="round"/>
+
+            <!-- Bochechas rosadas do pato -->
+            <circle cx="80" cy="138" r="10" fill="#ff70a0" opacity="0.35"/>
+            <circle cx="200" cy="138" r="10" fill="#ff70a0" opacity="0.35"/>
+
+            <!-- Asinhas / Mãos do Pato segurando carinhosamente o Axolote -->
+            <path d="M 72 175 Q 70 215 105 218 Q 115 218 116 200 Q 88 190 72 175 Z" fill="#4697a3" stroke="#224057" stroke-width="3.5"/>
+            <path d="M 208 175 Q 210 215 175 218 Q 165 218 164 200 Q 192 190 208 175 Z" fill="#4697a3" stroke="#224057" stroke-width="3.5"/>
+          </g>
+
+          <!-- 2. GRUPO DO AXOLOTE (Rosa Cantor) -->
+          <g id="axolotl-group" class="axolotl-group">
+            <!-- Guelras esquerdas (3 pétalas rosadas vibrantes) -->
+            <g class="gill-left" id="gill-left">
+              <path d="M 102 142 Q 62 130 68 148 Q 78 155 100 152 Z" fill="url(#axolotlGillGrad)" stroke="#a01548" stroke-width="2.5"/>
+              <path d="M 100 154 Q 55 152 64 170 Q 76 174 98 165 Z" fill="url(#axolotlGillGrad)" stroke="#a01548" stroke-width="2.5"/>
+              <path d="M 102 166 Q 66 178 76 192 Q 88 192 104 176 Z" fill="url(#axolotlGillGrad)" stroke="#a01548" stroke-width="2.5"/>
+            </g>
+
+            <!-- Guelras direitas (3 pétalas rosadas vibrantes) -->
+            <g class="gill-right" id="gill-right">
+              <path d="M 178 142 Q 218 130 212 148 Q 202 155 180 152 Z" fill="url(#axolotlGillGrad)" stroke="#a01548" stroke-width="2.5"/>
+              <path d="M 180 154 Q 225 152 216 170 Q 204 174 182 165 Z" fill="url(#axolotlGillGrad)" stroke="#a01548" stroke-width="2.5"/>
+              <path d="M 178 166 Q 214 178 204 192 Q 192 192 176 176 Z" fill="url(#axolotlGillGrad)" stroke="#a01548" stroke-width="2.5"/>
+            </g>
+
+            <!-- Corpinho fofo do axolote -->
+            <ellipse cx="140" cy="198" rx="34" ry="38" fill="url(#axolotlGrad)" stroke="#2b455b" stroke-width="3"/>
+            <!-- Coraçãozinho na barriga -->
+            <path d="M 140 198 Q 134 190 128 196 Q 124 204 140 215 Q 156 204 152 196 Q 146 190 140 198 Z" fill="#ffe3ed" opacity="0.85"/>
+
+            <!-- Patinhas do Axolote -->
+            <ellipse cx="120" cy="224" rx="8" ry="6" fill="#ffaec6" stroke="#2b455b" stroke-width="2.5"/>
+            <ellipse cx="160" cy="224" rx="8" ry="6" fill="#ffaec6" stroke="#2b455b" stroke-width="2.5"/>
+
+            <!-- Cabeça arredondada do axolote -->
+            <ellipse cx="140" cy="154" rx="46" ry="34" fill="url(#axolotlGrad)" stroke="#2b455b" stroke-width="3.5"/>
+
+            <!-- Bochechas rosadas do axolote -->
+            <circle cx="112" cy="162" r="7" fill="#ff4081" opacity="0.4"/>
+            <circle cx="168" cy="162" r="7" fill="#ff4081" opacity="0.4"/>
+
+            <!-- Olhinhos felizes (arcos fofos) -->
+            <path d="M 118 146 Q 124 140 130 146" fill="none" stroke="#2b455b" stroke-width="3" stroke-linecap="round"/>
+            <path d="M 150 146 Q 156 140 162 146" fill="none" stroke="#2b455b" stroke-width="3" stroke-linecap="round"/>
+
+            <!-- BOCA DINÂMICA DO AXOLOTE -->
+            <path id="axolotl-mouth-path" class="axolotl-mouth-path" d="M 132 162 Q 140 168 148 162" fill="none" stroke="#2b455b" stroke-width="3" stroke-linecap="round"/>
+          </g>
+        </svg>
+      `;
+    }
+  }
 
   // ==========================================================================
   // 4.4. DEFINITIVE FINALE CONTROLLER (30 SEGUNDOS CONTÍNUOS DE ESPETÁCULO)
@@ -2833,26 +3499,50 @@
   // ==========================================================================
   // 4.5. CINEMATIC ENTRY CONTROLLER (45s State-Based Orchestrator)
   // ==========================================================================
+  // 4.5. CINEMATIC ENTRY CONTROLLER (Narrativa Botânica: 2008 a 2026)
+  // ==========================================================================
   class CinematicEntryController {
     constructor(experienceSystem) {
       this.sys = experienceSystem;
 
-      // Elementos do DOM
+      // Elementos do DOM - Contêineres Principais
       this.entryEl = document.getElementById('cinematic-entry');
       this.cameraEl = document.getElementById('cinematic-camera');
       this.bgEl = document.getElementById('cinematic-bg');
-      this.starsFarEl = document.getElementById('cinematic-stars-far');
-      this.particlesMidEl = document.getElementById('cinematic-particles-mid');
-      this.petalsNearEl = document.getElementById('cinematic-petals-near');
       this.canvasEl = document.getElementById('cinematic-canvas');
-      this.centralLightEl = document.getElementById('cinematic-central-light');
-      this.focalElementEl = document.getElementById('cinematic-focal-element');
-      this.narrativeLayerEl = document.getElementById('cinematic-narrative-layer');
-      this.phrase1El = document.getElementById('cinematic-phrase-1');
-      this.phrase2El = document.getElementById('cinematic-phrase-2');
-      this.nameWrapEl = document.getElementById('cinematic-name-wrap');
-      this.climaxContainerEl = document.getElementById('climax-light-container');
-      this.startPromptBtn = document.getElementById('cinematic-start-prompt') || document.getElementById('btn-cinematic-start-reading');
+      this.skipBtn = document.getElementById('btn-skip-cinematic');
+      this.startPromptBtn = document.getElementById('cinematic-start-prompt');
+
+      // Elementos do Palco Botânico (SVG)
+      this.seedGroup = document.getElementById('plant-seed-group');
+      this.rootsGroup = document.getElementById('plant-roots');
+      this.stem = document.getElementById('plant-stem');
+      this.budGroup = document.getElementById('plant-bud-group');
+      this.flowerGroup = document.getElementById('plant-flower-group');
+      this.leaves = {
+        2009: document.getElementById('leaf-2009'),
+        2010: document.getElementById('leaf-2010'),
+        2011: document.getElementById('leaf-2011'),
+        2012: document.getElementById('leaf-2012'),
+        2013: document.getElementById('leaf-2013'),
+        2014: document.getElementById('leaf-2014'),
+        2015: document.getElementById('leaf-2015'),
+        2016: document.getElementById('leaf-2016')
+      };
+
+      // Elementos da Crônica Temporal
+      this.chronoDateCard = document.getElementById('chrono-date-card');
+      this.chronoDay = document.getElementById('chrono-day');
+      this.chronoMonth = document.getElementById('chrono-month');
+      this.chronoYear = document.getElementById('chrono-year');
+      this.chronoFlowBadge = document.getElementById('chrono-flow-badge');
+      this.chronoDetailBadge = document.getElementById('chrono-detail-badge');
+
+      // Elementos do Clímax e Revelação
+      this.transformWrap = document.getElementById('chrono-transformation-wrap');
+      this.poeticLead = document.getElementById('chrono-poetic-lead');
+      this.milestone18 = document.getElementById('chrono-18-milestone');
+      this.heroName = document.getElementById('chrono-hero-name');
 
       // Estado e Motor de Timeline
       this.isCompleted = false;
@@ -2868,24 +3558,53 @@
       this.canvasWidth = 0;
       this.canvasHeight = 0;
 
-      // Definição da Linha do Tempo Poética de 45 Segundos (Sem o livro na abertura - o livro brilha no Cap. 19)
-      // Progressão: Escuridão → Descoberta → Curiosidade → Mensagem → Expectativa → Clímax → Resplendor → Toque
+      // Definição da Linha do Tempo Poética Rítmica (2008 a 2026)
+      // A contagem e o crescimento da flor são perfeitamente sincronizados
       this.timelineEvents = [
-        { time: 0, state: 'INTRO', action: () => this.enterIntro() },
-        { time: 3000, state: 'FIRST_LIGHT', action: () => this.enterFirstLight() },
-        { time: 7000, state: 'ATMOSPHERE', action: () => this.enterAtmosphere() },
-        { time: 12000, state: 'CENTRAL_REVEAL', action: () => this.enterCentralReveal() },
-        { time: 16000, state: 'CENTRAL_DETAIL', action: () => this.enterCentralDetail() },
-        { time: 19500, state: 'TEXT_ONE', action: () => this.enterTextOne() },
-        { time: 23500, state: 'PAUSE_ONE', action: () => this.enterPauseOne() },
-        { time: 24800, state: 'TEXT_TWO', action: () => this.enterTextTwo() },
-        { time: 28000, state: 'NAME_REVEAL', action: () => this.enterNameReveal() },
-        { time: 31500, state: 'BUILDUP', action: () => this.enterBuildup() },
-        { time: 34500, state: 'ENERGY_CONCENTRATE', action: () => this.enterEnergyConcentrate() },
-        { time: 36000, state: 'CLIMAX', action: () => this.enterClimax() },
-        { time: 38500, state: 'LIGHT_TRANSITION', action: () => this.enterLightTransition() },
-        { time: 40500, state: 'CELEBRATION_GLOW', action: () => this.enterCelebrationGlow() },
-        { time: 43000, state: 'PROMPT_READY', action: () => this.enterPromptReady() }
+        // CENA 1 — O COMEÇO (0s - 10s)
+        { time: 0, state: 'SCENE_1_START', action: () => this.scene1Start() },
+        { time: 2200, state: 'SCENE_1_SEED', action: () => this.scene1Seed() },
+        { time: 4200, state: 'SCENE_1_DAY', action: () => this.scene1Day() },
+        { time: 5800, state: 'SCENE_1_MONTH', action: () => this.scene1Month() },
+        { time: 7400, state: 'SCENE_1_YEAR', action: () => this.scene1Year() },
+        { time: 9000, state: 'SCENE_1_ROOTS', action: () => this.scene1Roots() },
+
+        // CENA 2 — 2008: BROTAMENTO & SIMULAÇÃO DOS MESES
+        { time: 10600, state: 'SCENE_2_2008_OCT', action: () => this.scene2Month('OUT 2008', 335) },
+        { time: 11600, state: 'SCENE_2_2008_NOV', action: () => this.scene2Month('NOV 2008', 320) },
+        { time: 12600, state: 'SCENE_2_2008_DEC', action: () => this.scene2Month('DEZ 2008', 305) },
+
+        // CENA 3 — 2009: O CAULE SOBE, PRIMEIRA FOLHA
+        { time: 13600, state: 'SCENE_3_2009', action: () => this.scene3Year2009() },
+
+        // CENA 4 — 2010 A 2016: A INFÂNCIA, CRESCIMENTO COMPASSADO
+        { time: 15400, state: 'SCENE_4_2010', action: () => this.scene4Year(2010, 260, 'leaf-2010', 'MAI • OUT') },
+        { time: 17200, state: 'SCENE_4_2011', action: () => this.scene4Year(2011, 225, 'leaf-2011', 'JUN • NOV') },
+        { time: 19000, state: 'SCENE_4_2012', action: () => this.scene4Year(2012, 190, 'leaf-2012', 'MAR • SET') },
+        { time: 20800, state: 'SCENE_4_2013', action: () => this.scene4Year(2013, 155, 'leaf-2013', 'JUL • DEZ') },
+        { time: 22600, state: 'SCENE_4_2014', action: () => this.scene4Year(2014, 120, 'leaf-2014', 'ABR • OUT') },
+        { time: 24400, state: 'SCENE_4_2015', action: () => this.scene4Year(2015, 80, 'leaf-2015', 'AGO • NOV') },
+        { time: 26200, state: 'SCENE_4_2016', action: () => this.scene4Year(2016, 40, 'leaf-2016', 'FEV • DEZ') },
+
+        // CENA 5 — 2017: O BOTÃO DE FLOR SURGE NO ÁPICE
+        { time: 28200, state: 'SCENE_5_2017', action: () => this.scene5BudForms() },
+        { time: 30000, state: 'SCENE_5_2018', action: () => this.scene5Year(2018) },
+        { time: 31600, state: 'SCENE_5_2019', action: () => this.scene5Year(2019) },
+        { time: 33200, state: 'SCENE_5_2020', action: () => this.scene5Year(2020) },
+        { time: 34800, state: 'SCENE_5_2021', action: () => this.scene5Year(2021) },
+        { time: 36400, state: 'SCENE_5_2022', action: () => this.scene5Year(2022) },
+        { time: 38000, state: 'SCENE_5_2023', action: () => this.scene5BudSwells() },
+
+        // CENA 6 — 2024: DESACELERAÇÃO, 24 DE SETEMBRO, PRIMEIROS SINAIS
+        { time: 39800, state: 'SCENE_6_2024', action: () => this.scene6Year2024() },
+
+        // CENA 7 — 2025: RITMO AINDA MAIS LENTO, PÉTALAS SE AFASTANDO
+        { time: 42200, state: 'SCENE_7_2025', action: () => this.scene7Year2025() },
+
+        // CENA 8 — 2026: O DESABROCHAR COMPLETO, 18 ANOS, ISSAMARA
+        { time: 45000, state: 'SCENE_8_2026', action: () => this.scene8Bloom() },
+        { time: 47200, state: 'SCENE_8_REVEAL', action: () => this.scene8RevealText() },
+        { time: 49500, state: 'PROMPT_READY', action: () => this.scenePromptReady() }
       ];
 
       this.init();
@@ -2901,21 +3620,29 @@
         return;
       }
 
-      // 1. Gera camadas estelares estáticas e pétalas CSS
-      this.spawnDepthParticles();
-
-      // 2. Inicializa canvas interativo de partículas
+      // 1. Inicializa canvas interativo de partículas
       this.initCanvasParticleSystem();
 
-      // 3. Vincula eventos de interação e botão de pular
+      // 2. Vincula eventos de interação e botão de pular
       this.bindControls();
 
-      // 4. Inicia pré-carregamento suave e motor de timeline contínuo
-      this.startSequence();
+      // 3. Se o overlay de interação com áudio não estiver bloqueando, inicia a timeline
+      const startOverlay = document.getElementById('initial-start-overlay');
+      if (!startOverlay || startOverlay.classList.contains('overlay-hidden') || startOverlay.style.display === 'none') {
+        this.startSequence();
+      }
     }
 
     bindControls() {
-      // Botão "Toque para começar"
+      // Botão de pular abertura
+      if (this.skipBtn) {
+        this.skipBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          this.finishCinematicSequence(true);
+        });
+      }
+
+      // Botão "Toque para começar a jornada"
       if (this.startPromptBtn) {
         this.startPromptBtn.addEventListener('click', (e) => {
           e.stopPropagation();
@@ -2923,10 +3650,10 @@
         });
       }
 
-      // Toque em qualquer lugar da tela após o clímax/brilho
+      // Toque em qualquer lugar da tela após a celebração
       if (this.entryEl) {
         this.entryEl.addEventListener('click', () => {
-          if (this.currentState === 'CELEBRATION_GLOW' || this.currentState === 'PROMPT_READY') {
+          if (this.currentState === 'SCENE_8_2026' || this.currentState === 'SCENE_8_REVEAL' || this.currentState === 'PROMPT_READY') {
             this.finishCinematicSequence(false);
           }
         });
@@ -2936,69 +3663,24 @@
       window.addEventListener('resize', () => this.resizeCanvas());
     }
 
-    spawnDepthParticles() {
-      const isMobile = window.innerWidth <= 768;
-
-      // Camada Distante: estrelas suaves e poeira cósmica
-      if (this.starsFarEl) {
-        const countFar = isMobile ? 12 : 24;
-        for (let i = 0; i < countFar; i++) {
-          const p = document.createElement('div');
-          p.className = 'cinematic-particle particle-far';
-          p.style.top = `${Math.random() * 96}%`;
-          p.style.left = `${Math.random() * 98}%`;
-          p.style.animationDelay = `${(Math.random() * 6).toFixed(2)}s`;
-          p.style.animationDuration = `${(8 + Math.random() * 6).toFixed(2)}s`;
-          this.starsFarEl.appendChild(p);
-        }
-      }
-
-      // Camada Média: orbes dourados tênues
-      if (this.particlesMidEl) {
-        const countMid = isMobile ? 6 : 14;
-        for (let i = 0; i < countMid; i++) {
-          const p = document.createElement('div');
-          p.className = 'cinematic-particle particle-mid';
-          p.style.top = `${Math.random() * 92}%`;
-          p.style.left = `${Math.random() * 96}%`;
-          p.style.animationDelay = `${(Math.random() * 4).toFixed(2)}s`;
-          p.style.animationDuration = `${(6 + Math.random() * 4).toFixed(2)}s`;
-          this.particlesMidEl.appendChild(p);
-        }
-      }
-
-      // Camada Próxima: pétalas rosé flutuando delicadamente
-      if (this.petalsNearEl) {
-        const countPetals = isMobile ? 4 : 8;
-        for (let i = 0; i < countPetals; i++) {
-          const p = document.createElement('div');
-          p.className = 'cinematic-particle particle-petal';
-          p.style.left = `${(Math.random() * 90 + 5).toFixed(1)}%`;
-          p.style.animationDelay = `${(Math.random() * 7).toFixed(2)}s`;
-          p.style.animationDuration = `${(8 + Math.random() * 4).toFixed(2)}s`;
-          this.petalsNearEl.appendChild(p);
-        }
-      }
-    }
-
     initCanvasParticleSystem() {
       if (!this.canvasEl) return;
       this.canvasCtx = this.canvasEl.getContext('2d');
       this.resizeCanvas();
 
-      const particleCount = window.innerWidth <= 768 ? 22 : 45;
+      const particleCount = window.innerWidth <= 768 ? 20 : 38;
       this.canvasParticles = [];
       for (let i = 0; i < particleCount; i++) {
         this.canvasParticles.push({
           x: Math.random() * this.canvasWidth,
           y: Math.random() * this.canvasHeight,
-          radius: Math.random() * 1.8 + 0.8,
-          alpha: Math.random() * 0.6 + 0.2,
-          speedX: (Math.random() - 0.5) * 0.35,
-          speedY: (Math.random() - 0.5) * 0.35,
+          radius: Math.random() * 2.0 + 0.8,
+          alpha: Math.random() * 0.5 + 0.15,
+          speedX: (Math.random() - 0.5) * 0.3,
+          speedY: -Math.random() * 0.45 - 0.1, // Movimento suave ascendente de pólen e seiva
           angle: Math.random() * Math.PI * 2,
-          angularSpeed: (Math.random() - 0.5) * 0.015,
-          color: Math.random() > 0.4 ? '255, 215, 140' : '255, 180, 205'
+          angularSpeed: (Math.random() - 0.5) * 0.012,
+          color: Math.random() > 0.4 ? '230, 160, 70' : '233, 30, 99'
         });
       }
     }
@@ -3019,14 +3701,9 @@
       const centerX = this.canvasWidth / 2;
       const centerY = this.canvasHeight / 2;
 
-      // Modificadores de dinâmica por fase
-      let attraction = 0;
-      let burst = 0;
-      if (state === 'BUILDUP' || state === 'ENERGY_CONCENTRATE') {
-        attraction = state === 'ENERGY_CONCENTRATE' ? 0.025 : 0.008;
-      } else if (state === 'CLIMAX') {
-        burst = 1.6;
-      }
+      // Na cena do desabrochar em 2026, irradiação suave de luz e pétalas
+      const isBloom = state === 'SCENE_8_2026' || state === 'SCENE_8_REVEAL' || state === 'PROMPT_READY';
+      const burst = isBloom ? 0.75 : 0;
 
       for (let i = 0; i < this.canvasParticles.length; i++) {
         const p = this.canvasParticles[i];
@@ -3035,48 +3712,47 @@
           const dx = p.x - centerX;
           const dy = p.y - centerY;
           const dist = Math.sqrt(dx * dx + dy * dy) || 1;
-          p.x += (dx / dist) * (burst * (p.radius + 1.2));
-          p.y += (dy / dist) * (burst * (p.radius + 1.2));
-        } else if (attraction > 0) {
-          const dx = centerX - p.x;
-          const dy = centerY - p.y;
-          p.x += dx * attraction;
-          p.y += dy * attraction;
-          // Órbita espiral
-          p.angle += p.angularSpeed * 2.5;
-          p.x += Math.cos(p.angle) * 0.6;
-          p.y += Math.sin(p.angle) * 0.6;
+          p.x += (dx / dist) * (burst * (p.radius + 0.8));
+          p.y += (dy / dist) * (burst * (p.radius + 0.8)) - 0.2;
         } else {
           p.x += p.speedX;
           p.y += p.speedY;
+          p.angle += p.angularSpeed;
+          p.x += Math.cos(p.angle) * 0.25;
         }
 
-        // Reposicionamento cíclico nas bordas
-        if (p.x < -10) p.x = this.canvasWidth + 10;
-        if (p.x > this.canvasWidth + 10) p.x = -10;
-        if (p.y < -10) p.y = this.canvasHeight + 10;
-        if (p.y > this.canvasHeight + 10) p.y = -10;
+        // Reposicionamento cíclico suave nas bordas
+        if (p.x < -15) p.x = this.canvasWidth + 15;
+        if (p.x > this.canvasWidth + 15) p.x = -15;
+        if (p.y < -15) p.y = this.canvasHeight + 15;
+        if (p.y > this.canvasHeight + 15) p.y = -15;
 
         // Pulsação suave de brilho
-        const pulse = Math.sin((elapsedMs * 0.002) + i) * 0.2;
-        const currentAlpha = Math.max(0.08, Math.min(0.9, p.alpha + pulse));
+        const pulse = Math.sin((elapsedMs * 0.0018) + i) * 0.2;
+        const currentAlpha = Math.max(0.06, Math.min(0.85, p.alpha + pulse));
 
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
         ctx.fillStyle = `rgba(${p.color}, ${currentAlpha})`;
-        ctx.shadowColor = `rgba(${p.color}, 0.8)`;
-        ctx.shadowBlur = 6;
+        ctx.shadowColor = `rgba(${p.color}, 0.6)`;
+        ctx.shadowBlur = 8;
         ctx.fill();
       }
     }
 
     startSequence() {
+      if (this.isCompleted) return;
+      if (this.animationFrameId) {
+        cancelAnimationFrame(this.animationFrameId);
+        this.animationFrameId = null;
+      }
+      this.executedEventIndices.clear();
       this.startTime = performance.now();
 
-      // Inicia reprodução sutil de áudio
+      // Inicia reprodução sutil de áudio com fade-in confortável
       if (this.sys && this.sys.audioManager) {
         try {
-          this.sys.audioManager.currentVolume = 0.05;
+          this.sys.audioManager.currentVolume = 0.08;
           this.sys.audioManager.play();
         } catch (e) {}
       }
@@ -3097,13 +3773,13 @@
           }
         }
 
-        // Câmera contínua: respiração sutil e rotação suave
+        // Câmera contínua com respiração suave
         this.updateContinuousCamera(elapsed);
 
         // Renderização contínua das partículas do Canvas
         this.renderCanvasParticles(this.currentState, elapsed);
 
-        // Continua o loop até ser completado ou após 45s
+        // Continua o loop até ser completado
         this.animationFrameId = requestAnimationFrame(tick);
       };
 
@@ -3113,19 +3789,16 @@
     updateContinuousCamera(elapsed) {
       if (!this.cameraEl) return;
 
-      // Leve oscilação de rotação (0.3 graus) e translação para vida contínua
-      const driftRot = Math.sin(elapsed * 0.00035) * 0.25;
-      const driftY = Math.cos(elapsed * 0.0004) * 3;
+      // Leve oscilação de rotação (0.2 graus) e translação para vida contínua
+      const driftRot = Math.sin(elapsed * 0.0003) * 0.2;
+      const driftY = Math.cos(elapsed * 0.00035) * 2.5;
 
       let baseScale = 1.0;
-      if (this.currentState === 'ATMOSPHERE') baseScale = 1.02;
-      else if (this.currentState === 'CENTRAL_REVEAL' || this.currentState === 'CENTRAL_DETAIL') baseScale = 1.04;
-      else if (this.currentState === 'TEXT_ONE' || this.currentState === 'TEXT_TWO') baseScale = 1.05;
-      else if (this.currentState === 'NAME_REVEAL') baseScale = 1.06;
-      else if (this.currentState === 'BUILDUP') baseScale = 1.08;
-      else if (this.currentState === 'ENERGY_CONCENTRATE') baseScale = 1.12;
-      else if (this.currentState === 'CLIMAX') baseScale = 1.15;
-      else if (this.currentState === 'BOOK_APPROACH' || this.currentState === 'BOOK_OPEN' || this.currentState === 'FIRST_PAGE') baseScale = 1.05;
+      if (this.currentState.startsWith('SCENE_4_')) baseScale = 1.02;
+      else if (this.currentState.startsWith('SCENE_5_')) baseScale = 1.04;
+      else if (this.currentState === 'SCENE_6_2024') baseScale = 1.05;
+      else if (this.currentState === 'SCENE_7_2025') baseScale = 1.06;
+      else if (this.currentState === 'SCENE_8_2026' || this.currentState === 'SCENE_8_REVEAL') baseScale = 1.05;
 
       this.entryEl.style.setProperty('--camera-scale', baseScale.toString());
       this.entryEl.style.setProperty('--camera-rot', `${driftRot.toFixed(2)}deg`);
@@ -3134,167 +3807,266 @@
 
     setDomState(stateClass) {
       if (!this.entryEl) return;
-      // Remove classes de estado anteriores
       const currentClasses = Array.from(this.entryEl.classList).filter(c => c.startsWith('state-'));
       currentClasses.forEach(c => this.entryEl.classList.remove(c));
       this.entryEl.classList.add(stateClass);
     }
 
     // ------------------------------------------------------------------------
-    // MÉTODOS DE CADA FASE DA LINHA DO TEMPO
+    // MÉTODOS DE CADA CENA DA LINHA DO TEMPO BOTÂNICA
     // ------------------------------------------------------------------------
 
-    enterIntro() {
-      // 0s - 3s: Escuridão profunda e atmosfera estelar sutil
-      this.setDomState('state-intro');
-      this.entryEl.style.setProperty('--light-intensity', '0.08');
+    scene1Start() {
+      this.setDomState('state-scene-1-start');
       if (this.sys && this.sys.audioManager) {
-        this.sys.audioManager.fadeTo(0.12, 2800);
+        this.sys.audioManager.fadeTo(0.15, 2000);
       }
     }
 
-    enterFirstLight() {
-      // 3s - 7s: Primeiro pulso de luz cálida no centro
-      this.setDomState('state-first-light');
-      this.entryEl.style.setProperty('--light-intensity', '0.18');
-      if (this.sys && this.sys.audioManager) {
-        this.sys.audioManager.fadeTo(0.22, 3500);
+    scene1Seed() {
+      this.setDomState('state-scene-1-seed');
+      if (this.seedGroup) {
+        this.seedGroup.classList.add('seed-visible');
       }
     }
 
-    enterAtmosphere() {
-      // 7s - 12s: Atmosfera expande, orbes dourados começam a se reunir
-      this.setDomState('state-atmosphere');
-      this.entryEl.style.setProperty('--light-intensity', '0.28');
-      if (this.sys && this.sys.audioManager) {
-        this.sys.audioManager.fadeTo(0.32, 4500);
+    scene1Day() {
+      this.setDomState('state-scene-1-day');
+      if (this.chronoDay) {
+        this.chronoDay.classList.add('day-visible');
       }
     }
 
-    enterCentralReveal() {
-      // 12s - 16s: O medalhão astral dos 18 anos emerge suavemente da luz
-      this.setDomState('state-central-reveal');
-      this.entryEl.style.setProperty('--light-intensity', '0.36');
-      if (this.sys && this.sys.audioManager) {
-        this.sys.audioManager.fadeTo(0.40, 3500);
-        // Efeito sonoro discreto de 'brilho' sincronizado com o surgimento do elemento central
-        this.sys.audioManager.playSparkleSound(1.0);
+    scene1Month() {
+      this.setDomState('state-scene-1-month');
+      if (this.chronoMonth) {
+        this.chronoMonth.classList.add('month-visible');
       }
     }
 
-    enterCentralDetail() {
-      // 16s - 19.5s: Detalhes dourados cintilam sobre o medalhão
-      this.setDomState('state-central-detail');
-      this.entryEl.style.setProperty('--light-intensity', '0.42');
+    scene1Year() {
+      this.setDomState('state-scene-1-year');
+      if (this.chronoYear) {
+        this.chronoYear.textContent = '2008';
+        this.chronoYear.classList.add('year-visible');
+        this.chronoYear.classList.add('year-tick-bump');
+      }
       if (this.sys && this.sys.audioManager) {
-        // Cintilação suave complementar na passagem do brilho dourado
+        this.sys.audioManager.playSparkleSound(0.6);
+        this.sys.audioManager.fadeTo(0.25, 2000);
+      }
+    }
+
+    scene1Roots() {
+      this.setDomState('state-scene-1-roots');
+      if (this.rootsGroup) {
+        this.rootsGroup.classList.add('roots-visible');
+      }
+      if (this.seedGroup) {
+        this.seedGroup.classList.add('seed-sprouted');
+      }
+    }
+
+    scene2Month(monthLabel, stemOffset) {
+      this.setDomState('state-scene-2-2008');
+      if (this.stem) {
+        this.stem.style.strokeDashoffset = stemOffset.toString();
+      }
+      if (this.chronoFlowBadge) {
+        this.chronoFlowBadge.textContent = monthLabel;
+        this.chronoFlowBadge.classList.add('flow-visible');
+      }
+    }
+
+    scene3Year2009() {
+      this.setDomState('state-scene-3-2009');
+      if (this.chronoYear) {
+        this.chronoYear.textContent = '2009';
+        this.chronoYear.classList.remove('year-tick-bump');
+        void this.chronoYear.offsetWidth;
+        this.chronoYear.classList.add('year-tick-bump');
+      }
+      if (this.stem) {
+        this.stem.style.strokeDashoffset = '295';
+      }
+      if (this.leaves && this.leaves[2009]) {
+        this.leaves[2009].classList.add('leaf-visible');
+      }
+      if (this.chronoFlowBadge) {
+        this.chronoFlowBadge.textContent = '2009';
+      }
+      if (this.sys && this.sys.audioManager) {
+        this.sys.audioManager.fadeTo(0.32, 1800);
+      }
+    }
+
+    scene4Year(year, stemOffset, leafKey, flowMonths) {
+      this.setDomState(`state-scene-4-${year}`);
+      if (this.chronoYear) {
+        this.chronoYear.textContent = year.toString();
+        this.chronoYear.classList.remove('year-tick-bump');
+        void this.chronoYear.offsetWidth;
+        this.chronoYear.classList.add('year-tick-bump');
+      }
+      if (this.stem) {
+        this.stem.style.strokeDashoffset = stemOffset.toString();
+      }
+      const yrNum = parseInt(year, 10);
+      if (this.leaves && this.leaves[yrNum]) {
+        this.leaves[yrNum].classList.add('leaf-visible');
+      }
+      if (this.chronoFlowBadge) {
+        this.chronoFlowBadge.textContent = flowMonths;
+      }
+      if (this.sys && this.sys.audioManager) {
+        const vol = 0.32 + ((yrNum - 2010) * 0.03);
+        this.sys.audioManager.fadeTo(Math.min(0.55, vol), 1200);
+      }
+    }
+
+    scene5BudForms() {
+      this.setDomState('state-scene-5-2017');
+      if (this.chronoYear) {
+        this.chronoYear.textContent = '2017';
+        this.chronoYear.classList.remove('year-tick-bump');
+        void this.chronoYear.offsetWidth;
+        this.chronoYear.classList.add('year-tick-bump');
+      }
+      if (this.stem) {
+        this.stem.style.strokeDashoffset = '0';
+      }
+      if (this.budGroup) {
+        this.budGroup.classList.add('bud-visible');
+      }
+      if (this.chronoFlowBadge) {
+        this.chronoFlowBadge.textContent = '2017';
+      }
+      if (this.sys && this.sys.audioManager) {
         this.sys.audioManager.playSparkleSound(0.75);
+        this.sys.audioManager.fadeTo(0.58, 1500);
       }
     }
 
-    enterTextOne() {
-      // 19.5s - 23.5s: Primeira frase surge gradualmente em fade-in suave
-      this.setDomState('state-text-one');
-      this.entryEl.style.setProperty('--light-intensity', '0.38');
-      if (this.phrase1El) {
-        this.phrase1El.classList.remove('phrase-fading');
-        this.phrase1El.classList.add('phrase-visible');
+    scene5Year(year) {
+      this.setDomState(`state-scene-5-${year}`);
+      if (this.chronoYear) {
+        this.chronoYear.textContent = year.toString();
+        this.chronoYear.classList.remove('year-tick-bump');
+        void this.chronoYear.offsetWidth;
+        this.chronoYear.classList.add('year-tick-bump');
+      }
+      if (this.chronoFlowBadge) {
+        this.chronoFlowBadge.textContent = year.toString();
+      }
+    }
+
+    scene5BudSwells() {
+      this.setDomState('state-scene-5-2023');
+      if (this.chronoYear) {
+        this.chronoYear.textContent = '2023';
+        this.chronoYear.classList.remove('year-tick-bump');
+        void this.chronoYear.offsetWidth;
+        this.chronoYear.classList.add('year-tick-bump');
+      }
+      if (this.budGroup) {
+        this.budGroup.classList.add('bud-swelling');
+      }
+      if (this.chronoFlowBadge) {
+        this.chronoFlowBadge.textContent = '2023';
       }
       if (this.sys && this.sys.audioManager) {
-        this.sys.audioManager.fadeTo(0.45, 3000);
+        this.sys.audioManager.fadeTo(0.62, 1400);
       }
     }
 
-    enterPauseOne() {
-      // 23.5s - 24.8s: Pequena pausa poética para absorção da mensagem
-      this.setDomState('state-pause-one');
-    }
-
-    enterTextTwo() {
-      // 24.8s - 28s: Transição gradual - primeira frase desvanece e a segunda surge suavemente
-      this.setDomState('state-text-two');
-      this.entryEl.style.setProperty('--light-intensity', '0.42');
-      if (this.phrase1El) {
-        this.phrase1El.classList.remove('phrase-visible');
-        this.phrase1El.classList.add('phrase-fading');
+    scene6Year2024() {
+      this.setDomState('state-scene-6-2024');
+      if (this.chronoYear) {
+        this.chronoYear.textContent = '2024';
+        this.chronoYear.classList.remove('year-tick-bump');
+        void this.chronoYear.offsetWidth;
+        this.chronoYear.classList.add('year-tick-bump');
       }
-      if (this.phrase2El) {
-        this.phrase2El.classList.remove('phrase-fading');
-        this.phrase2El.classList.add('phrase-visible');
+      if (this.chronoFlowBadge) {
+        this.chronoFlowBadge.classList.remove('flow-visible');
+      }
+      if (this.chronoDetailBadge) {
+        this.chronoDetailBadge.textContent = '24 de setembro';
+        this.chronoDetailBadge.classList.add('detail-visible');
+      }
+      // Primeiros sinais do desabrochar da flor
+      if (this.flowerGroup) {
+        this.flowerGroup.classList.add('flower-visible');
+      }
+      if (this.budGroup) {
+        this.budGroup.style.opacity = '0';
       }
       if (this.sys && this.sys.audioManager) {
-        this.sys.audioManager.fadeTo(0.50, 3000);
+        this.sys.audioManager.playSparkleSound(0.85);
+        this.sys.audioManager.fadeTo(0.66, 1600);
       }
     }
 
-    enterNameReveal() {
-      // 28s - 31.5s: Segunda frase desvanece e o nome ISSAMARA surge com halo luminoso
-      this.setDomState('state-name-reveal');
-      this.entryEl.style.setProperty('--light-intensity', '0.52');
-      if (this.phrase2El) {
-        this.phrase2El.classList.remove('phrase-visible');
-        this.phrase2El.classList.add('phrase-fading');
+    scene7Year2025() {
+      this.setDomState('state-scene-7-2025');
+      if (this.chronoYear) {
+        this.chronoYear.textContent = '2025';
+        this.chronoYear.classList.remove('year-tick-bump');
+        void this.chronoYear.offsetWidth;
+        this.chronoYear.classList.add('year-tick-bump');
       }
-      const nameWrap = document.querySelector('.cinematic-name-wrap');
-      if (nameWrap) {
-        nameWrap.classList.add('name-visible');
+      // Pétalas começam a se afastar suavemente
+      if (this.flowerGroup) {
+        this.flowerGroup.classList.add('flower-opening');
       }
       if (this.sys && this.sys.audioManager) {
-        this.sys.audioManager.fadeTo(0.58, 3000);
+        this.sys.audioManager.fadeTo(0.70, 2000);
+      }
+    }
+
+    scene8Bloom() {
+      this.setDomState('state-scene-8-2026');
+      if (this.chronoYear) {
+        this.chronoYear.textContent = '2026';
+        this.chronoYear.classList.remove('year-tick-bump');
+        void this.chronoYear.offsetWidth;
+        this.chronoYear.classList.add('year-tick-bump');
+      }
+      // A flor se abre em plena glória
+      if (this.flowerGroup) {
+        this.flowerGroup.classList.add('flower-full-bloom');
+      }
+      if (this.sys && this.sys.audioManager) {
+        this.sys.audioManager.playSparkleSound(1.0);
+        this.sys.audioManager.fadeTo(0.78, 1800);
+      }
+    }
+
+    scene8RevealText() {
+      this.setDomState('state-scene-8-reveal');
+      // Transição harmoniosa: a data anterior sobe suavemente
+      if (this.chronoDateCard) {
+        this.chronoDateCard.classList.add('card-faded');
+      }
+      // Revelação do marco de 18 anos e nome
+      if (this.transformWrap) {
+        this.transformWrap.classList.add('wrap-visible');
+      }
+      if (this.poeticLead) {
+        this.poeticLead.classList.add('lead-visible');
+      }
+      if (this.milestone18) {
+        this.milestone18.classList.add('milestone-visible');
+      }
+      if (this.heroName) {
+        this.heroName.classList.add('name-visible');
+      }
+      if (this.sys && this.sys.audioManager) {
         this.sys.audioManager.playSparkleSound(1.0);
       }
     }
 
-    enterBuildup() {
-      // 31.5s - 34.5s: Aceleração suave e crescente de energia e expectativa
-      this.setDomState('state-buildup');
-      this.entryEl.style.setProperty('--light-intensity', '0.65');
-      if (this.sys && this.sys.audioManager) {
-        this.sys.audioManager.fadeTo(0.68, 2800);
-      }
-    }
-
-    enterEnergyConcentrate() {
-      // 34.5s - 36s: Luz e partículas convergem para o ponto focal
-      this.setDomState('state-energy-concentrate');
-      this.entryEl.style.setProperty('--light-intensity', '0.80');
-      if (this.sys && this.sys.audioManager) {
-        this.sys.audioManager.fadeTo(0.75, 1400);
-      }
-    }
-
-    enterClimax() {
-      // 36s - 38.5s: CLÍMAX! Três camadas de luz radiante e acolhedora
-      this.setDomState('state-climax');
-      if (this.climaxContainerEl) {
-        this.climaxContainerEl.classList.add('climax-active');
-      }
-      this.entryEl.style.setProperty('--light-intensity', '1.0');
-      if (this.sys && this.sys.audioManager) {
-        this.sys.audioManager.fadeTo(0.80, 1500);
-      }
-    }
-
-    enterLightTransition() {
-      // 38.5s - 40.5s: A luz radiante se dissipa em névoa dourada acolhedora
-      this.setDomState('state-light-transition');
-      this.entryEl.style.setProperty('--light-intensity', '0.65');
-      if (this.sys && this.sys.audioManager) {
-        this.sys.audioManager.fadeTo(0.60, 1200);
-      }
-    }
-
-    enterCelebrationGlow() {
-      // 40.5s - 43s: Resplendor comemorativo de 18 anos e tributo à Issamara
-      this.setDomState('state-celebration-glow');
-      this.entryEl.style.setProperty('--light-intensity', '0.50');
-      if (this.sys && this.sys.audioManager) {
-        this.sys.audioManager.playSparkleSound(0.9);
-      }
-    }
-
-    enterPromptReady() {
-      // 43s - 45s+: Botão pulsante acolhedor pronto para tocar e começar a jornada
+    scenePromptReady() {
       this.setDomState('state-prompt-ready');
       if (this.startPromptBtn) {
         this.startPromptBtn.classList.add('prompt-visible');
@@ -3302,7 +4074,7 @@
     }
 
     // ------------------------------------------------------------------------
-    // FINALIZAÇÃO E TRANSIÇÃO SUAVE PARA O LIVRO PRINCIPAL
+    // FINALIZAÇÃO E TRANSIÇÃO SUAVE PARA O CONTEÚDO PRINCIPAL
     // ------------------------------------------------------------------------
 
     skipIntro() {
@@ -3320,11 +4092,6 @@
         this.animationFrameId = null;
       }
 
-      // Remove listener de teclado
-      if (this.handleKeydown) {
-        window.removeEventListener('keydown', this.handleKeydown);
-      }
-
       // Garante volume confortável do áudio para leitura
       if (this.sys && this.sys.audioManager) {
         this.sys.audioManager.fadeTo(0.50, 800);
@@ -3336,7 +4103,7 @@
         navBar.classList.add('nav-reveal-active');
       }
 
-      // Revela o palco principal do livro com escala suave
+      // Revela o palco principal com escala suave
       const stage = document.getElementById('stage-wrapper');
       if (stage) {
         stage.classList.add('stage-reveal-active');
@@ -3367,6 +4134,8 @@
       this.soundEffects = new SoundEffects();
       this.progressManager = new ProgressManager();
       this.activeBookController = null;
+      this.activeAnimController = null;
+      this.activeFinaleController = null;
       this.isTransitioningChapter = false;
       this.isPaused = false;
       this.completedChapters = [1];
@@ -3518,6 +4287,10 @@
         if (this.activeFinaleController) {
           this.activeFinaleController.destroy();
           this.activeFinaleController = null;
+        }
+        if (this.activeAnimController) {
+          this.activeAnimController.destroy();
+          this.activeAnimController = null;
         }
         if (this.stage) this.stage.innerHTML = '';
 
@@ -3680,6 +4453,14 @@
       if (this.activeBookController) {
         this.activeBookController.destroy();
         this.activeBookController = null;
+      }
+      if (this.activeFinaleController) {
+        this.activeFinaleController.destroy();
+        this.activeFinaleController = null;
+      }
+      if (this.activeAnimController) {
+        this.activeAnimController.destroy();
+        this.activeAnimController = null;
       }
       if (this.stage) this.stage.innerHTML = '';
       this.isTransitioningChapter = false;

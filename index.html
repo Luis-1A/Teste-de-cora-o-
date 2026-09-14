@@ -47,20 +47,22 @@
   </div>
 
   <!-- ======================================================== -->
-  <!-- ABERTURA CINEMATOGRÁFICA DE 45 SEGUNDOS (HISTÓRIA VIVA) -->
+  <!-- ABERTURA CINEMATOGRÁFICA: NASCIMENTO 2008 -> 18 ANOS EM 2026 -->
   <!-- ======================================================== -->
   <div id="cinematic-entry" class="cinematic-entry" aria-label="Abertura cinematográfica da experiência">
+    <!-- Botão Discreto de Pular Introdução -->
+    <button id="btn-cinematic-skip" class="cinematic-skip-btn" title="Pular introdução" aria-label="Pular introdução">
+      <span>Pular</span> <i class="fas fa-forward ml-1"></i>
+    </button>
+
     <div class="cinematic-scene">
       <div class="cinematic-camera" id="cinematic-camera">
-        <!-- 1. Fundo Espacial / Nebulosa Dinâmica -->
+        <!-- 1. Fundo Suave: Tela Quase Branca com Rosa Muito Suave e Luz Viva -->
         <div class="cinematic-bg" id="cinematic-bg"></div>
         <div class="cinematic-vignette" aria-hidden="true"></div>
 
-        <!-- 2. Camadas de Profundidade de Partículas (Far, Mid, Near) + Canvas Interativo -->
-        <div class="cinematic-depth-far" id="cinematic-stars-far" aria-hidden="true"></div>
-        <div class="cinematic-depth-mid" id="cinematic-particles-mid" aria-hidden="true"></div>
+        <!-- 2. Canvas de Partículas Solares, Esporos e Pétalas Suaves -->
         <canvas id="cinematic-canvas" class="cinematic-canvas" aria-hidden="true"></canvas>
-        <div class="cinematic-depth-near" id="cinematic-petals-near" aria-hidden="true"></div>
 
         <!-- 3. Iluminação Central Evolutiva (Luz que respira) -->
         <div class="cinematic-central-light" id="cinematic-central-light" aria-hidden="true">
@@ -69,47 +71,248 @@
           <div class="light-pulse-aura"></div>
         </div>
 
-        <!-- 4. Elemento Central: Medalhão Astral 18 com Silhueta -> Contorno -> Detalhes -->
-        <div class="cinematic-focal-element" id="cinematic-focal-element" aria-hidden="true">
-          <div class="focal-halo"></div>
-          <div class="focal-shimmer-sweep"></div>
-          <div class="focal-ring"></div>
-          <div class="focal-inner-orb">
-            <span class="focal-year">18</span>
+        <!-- 4. Palco Botânico: A Semente, o Caule, as Folhas e o Desabrochar da Flor -->
+        <div class="cinematic-plant-stage" id="cinematic-plant-stage" aria-hidden="true">
+          <!-- SVG da Flor Viva -->
+          <svg id="botanical-svg" class="botanical-svg" viewBox="0 0 400 620" preserveAspectRatio="xMidYMid meet">
+            <defs>
+              <!-- Gradiente do Caule -->
+              <linearGradient id="stemGrad" x1="0" y1="1" x2="0" y2="0">
+                <stop offset="0%" stop-color="#33691e" />
+                <stop offset="45%" stop-color="#558b2f" />
+                <stop offset="85%" stop-color="#689f38" />
+                <stop offset="100%" stop-color="#7cb342" />
+              </linearGradient>
+
+              <!-- Gradiente das Folhas -->
+              <linearGradient id="leafGrad" x1="0" y1="1" x2="1" y2="0">
+                <stop offset="0%" stop-color="#2e7d32" />
+                <stop offset="60%" stop-color="#4caf50" />
+                <stop offset="100%" stop-color="#81c784" />
+              </linearGradient>
+
+              <!-- Gradiente da Semente -->
+              <radialGradient id="seedGrad" cx="35%" cy="30%" r="70%">
+                <stop offset="0%" stop-color="#c5a059" />
+                <stop offset="40%" stop-color="#8d6e63" />
+                <stop offset="100%" stop-color="#4e342e" />
+              </radialGradient>
+
+              <!-- Gradientes das Pétalas (Rosa delicado com reflexo ouro-rosé) -->
+              <linearGradient id="petalOuterGrad" x1="0" y1="1" x2="0" y2="0">
+                <stop offset="0%" stop-color="#c2185b" />
+                <stop offset="35%" stop-color="#e91e63" />
+                <stop offset="75%" stop-color="#f48fb1" />
+                <stop offset="100%" stop-color="#fff0f5" />
+              </linearGradient>
+
+              <linearGradient id="petalMidGrad" x1="0" y1="1" x2="0" y2="0">
+                <stop offset="0%" stop-color="#d81b60" />
+                <stop offset="50%" stop-color="#ec407a" />
+                <stop offset="90%" stop-color="#f8bbd0" />
+                <stop offset="100%" stop-color="#ffffff" />
+              </linearGradient>
+
+              <linearGradient id="petalInnerGrad" x1="0" y1="1" x2="0" y2="0">
+                <stop offset="0%" stop-color="#e91e63" />
+                <stop offset="60%" stop-color="#ff80ab" />
+                <stop offset="100%" stop-color="#fff5f8" />
+              </linearGradient>
+
+              <!-- Brilho Dourado do Centro da Flor (Pistilos & Estames) -->
+              <radialGradient id="pistilCenterGrad" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stop-color="#ffffff" />
+                <stop offset="30%" stop-color="#fff59d" />
+                <stop offset="70%" stop-color="#ffb300" />
+                <stop offset="100%" stop-color="#f57c00" />
+              </radialGradient>
+
+              <!-- Aura da Flor Aberta -->
+              <radialGradient id="flowerHaloGrad" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stop-color="rgba(255, 220, 235, 0.9)" />
+                <stop offset="45%" stop-color="rgba(255, 182, 205, 0.45)" />
+                <stop offset="75%" stop-color="rgba(255, 230, 180, 0.2)" />
+                <stop offset="100%" stop-color="rgba(255, 255, 255, 0)" />
+              </radialGradient>
+
+              <!-- Sombra Suave da Terra / Solo -->
+              <radialGradient id="soilGrad" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stop-color="rgba(121, 85, 72, 0.35)" />
+                <stop offset="60%" stop-color="rgba(141, 110, 99, 0.15)" />
+                <stop offset="100%" stop-color="rgba(255, 255, 255, 0)" />
+              </radialGradient>
+            </defs>
+
+            <!-- Solo e Sombra Terrena -->
+            <ellipse cx="200" cy="542" rx="75" ry="10" fill="url(#soilGrad)" class="botanical-soil" />
+
+            <!-- Raízes da Planta (Brotam em 2008) -->
+            <g id="plant-roots" class="plant-roots">
+              <path d="M 200 538 Q 198 558 191 578 Q 187 594 182 606" class="root-strand strand-1" />
+              <path d="M 199 544 Q 207 562 216 580 Q 223 596 228 610" class="root-strand strand-2" />
+              <path d="M 194 558 Q 186 572 177 588" class="root-strand strand-3" />
+              <path d="M 206 564 Q 214 576 220 592" class="root-strand strand-4" />
+              <path d="M 192 578 Q 184 592 176 606" class="root-strand strand-5" />
+            </g>
+
+            <!-- Caule Vivo da Planta (Cresce continuamente de 2008 a 2017) -->
+            <path id="plant-stem" class="plant-stem"
+                  d="M 200 534 C 196 480, 206 430, 197 365 C 190 305, 205 250, 200 195"
+                  fill="none" stroke="url(#stemGrad)" stroke-width="4.5" stroke-linecap="round" />
+
+            <!-- As Folhas (Brotam uma a uma conforme os anos passam) -->
+            <g id="plant-foliage" class="plant-foliage">
+              <!-- Folha 1 (2009 - esquerda Y=490) -->
+              <g id="leaf-2009" class="plant-leaf leaf-left" style="--leaf-ox: 198px; --leaf-oy: 490px;">
+                <path d="M 198 490 C 176 484 154 496 138 480 C 154 462 182 474 198 488 Z" fill="url(#leafGrad)" />
+                <path d="M 198 489 Q 168 482 142 481" stroke="#a5d6a7" stroke-width="1.2" fill="none" />
+              </g>
+
+              <!-- Folha 2 (2010 - direita Y=455) -->
+              <g id="leaf-2010" class="plant-leaf leaf-right" style="--leaf-ox: 202px; --leaf-oy: 455px;">
+                <path d="M 202 455 C 224 449 246 461 262 445 C 246 427 218 439 202 453 Z" fill="url(#leafGrad)" />
+                <path d="M 202 454 Q 232 447 258 446" stroke="#a5d6a7" stroke-width="1.2" fill="none" />
+              </g>
+
+              <!-- Folha 3 (2011 - esquerda Y=415) -->
+              <g id="leaf-2011" class="plant-leaf leaf-left" style="--leaf-ox: 201px; --leaf-oy: 415px;">
+                <path d="M 201 415 C 175 407 150 422 132 402 C 150 382 182 396 201 413 Z" fill="url(#leafGrad)" />
+                <path d="M 201 414 Q 166 406 136 403" stroke="#a5d6a7" stroke-width="1.2" fill="none" />
+              </g>
+
+              <!-- Folha 4 (2012 - direita Y=375) -->
+              <g id="leaf-2012" class="plant-leaf leaf-right" style="--leaf-ox: 197px; --leaf-oy: 375px;">
+                <path d="M 197 375 C 222 365 248 380 268 358 C 248 338 217 353 197 373 Z" fill="url(#leafGrad)" />
+                <path d="M 197 374 Q 233 363 264 359" stroke="#a5d6a7" stroke-width="1.2" fill="none" />
+              </g>
+
+              <!-- Folha 5 (2013 - esquerda Y=330) -->
+              <g id="leaf-2013" class="plant-leaf leaf-left" style="--leaf-ox: 194px; --leaf-oy: 330px;">
+                <path d="M 194 330 C 168 318 142 334 122 312 C 142 290 176 306 194 328 Z" fill="url(#leafGrad)" />
+                <path d="M 194 329 Q 158 317 126 313" stroke="#a5d6a7" stroke-width="1.2" fill="none" />
+              </g>
+
+              <!-- Folha 6 (2014 - direita Y=290) -->
+              <g id="leaf-2014" class="plant-leaf leaf-right" style="--leaf-ox: 198px; --leaf-oy: 290px;">
+                <path d="M 198 290 C 224 278 250 294 272 270 C 250 248 218 266 198 288 Z" fill="url(#leafGrad)" />
+                <path d="M 198 289 Q 235 277 268 271" stroke="#a5d6a7" stroke-width="1.2" fill="none" />
+              </g>
+
+              <!-- Folha 7 (2015 - esquerda Y=250) -->
+              <g id="leaf-2015" class="plant-leaf leaf-left" style="--leaf-ox: 202px; --leaf-oy: 250px;">
+                <path d="M 202 250 C 176 238 152 254 134 232 C 152 212 184 228 202 248 Z" fill="url(#leafGrad)" />
+                <path d="M 202 249 Q 168 237 138 233" stroke="#a5d6a7" stroke-width="1.2" fill="none" />
+              </g>
+
+              <!-- Folha 8 (2016 - direita Y=220) -->
+              <g id="leaf-2016" class="plant-leaf leaf-right" style="--leaf-ox: 201px; --leaf-oy: 220px;">
+                <path d="M 201 220 C 224 208 248 224 266 202 C 248 184 218 200 201 218 Z" fill="url(#leafGrad)" />
+                <path d="M 201 219 Q 233 207 262 203" stroke="#a5d6a7" stroke-width="1.2" fill="none" />
+              </g>
+            </g>
+
+            <!-- A Semente Original no Solo (Visível no Começo) -->
+            <g id="plant-seed-group" class="plant-seed-group">
+              <ellipse cx="200" cy="530" rx="9" ry="13" fill="url(#seedGrad)" class="seed-body" />
+              <path d="M 197 520 Q 200 515 203 520 Q 200 528 197 520 Z" fill="#6d4c41" />
+              <ellipse cx="198" cy="527" rx="3" ry="6" fill="rgba(255,255,255,0.4)" />
+            </g>
+
+            <!-- O Botão de Flor Fechado (Surge em 2017 no ápice do caule) -->
+            <g id="plant-bud-group" class="plant-bud-group" style="transform-origin: 200px 195px;">
+              <!-- Pétalas fechadas em botão -->
+              <ellipse cx="200" cy="188" rx="8" ry="14" fill="url(#petalInnerGrad)" class="bud-petal-core" />
+              <!-- Sépalas protetoras do cálice -->
+              <path d="M 195 195 C 193 182 195 174 198 170 C 197 182 198 192 195 195 Z" fill="#558b2f" class="sepal sepal-left" />
+              <path d="M 205 195 C 207 182 205 174 202 170 C 203 182 202 192 205 195 Z" fill="#558b2f" class="sepal sepal-right" />
+              <path d="M 200 196 C 200 186 200 178 200 172 C 200 186 200 194 200 196 Z" stroke="#33691e" stroke-width="2" />
+            </g>
+
+            <!-- A Flor em Desabrochar (Abre de 2018 até 2026 em Plena Glória) -->
+            <g id="plant-flower-group" class="plant-flower-group" style="transform-origin: 200px 185px;">
+              <!-- Halo de Luz Radiante da Flor Aberta -->
+              <circle cx="200" cy="185" r="95" fill="url(#flowerHaloGrad)" class="flower-radiance" />
+
+              <!-- Camada 1: Pétalas Externas (6 pétalas radiais) -->
+              <g class="flower-petals-outer">
+                <path d="M 200 185 C 165 130, 145 95, 200 80 C 255 95, 235 130, 200 185 Z" fill="url(#petalOuterGrad)" class="petal petal-1" />
+                <path d="M 200 185 C 165 130, 145 95, 200 80 C 255 95, 235 130, 200 185 Z" fill="url(#petalOuterGrad)" class="petal petal-2" style="transform: rotate(60deg); transform-origin: 200px 185px;" />
+                <path d="M 200 185 C 165 130, 145 95, 200 80 C 255 95, 235 130, 200 185 Z" fill="url(#petalOuterGrad)" class="petal petal-3" style="transform: rotate(120deg); transform-origin: 200px 185px;" />
+                <path d="M 200 185 C 165 130, 145 95, 200 80 C 255 95, 235 130, 200 185 Z" fill="url(#petalOuterGrad)" class="petal petal-4" style="transform: rotate(180deg); transform-origin: 200px 185px;" />
+                <path d="M 200 185 C 165 130, 145 95, 200 80 C 255 95, 235 130, 200 185 Z" fill="url(#petalOuterGrad)" class="petal petal-5" style="transform: rotate(240deg); transform-origin: 200px 185px;" />
+                <path d="M 200 185 C 165 130, 145 95, 200 80 C 255 95, 235 130, 200 185 Z" fill="url(#petalOuterGrad)" class="petal petal-6" style="transform: rotate(300deg); transform-origin: 200px 185px;" />
+              </g>
+
+              <!-- Camada 2: Pétalas Intermediárias (6 pétalas defasadas em 30deg) -->
+              <g class="flower-petals-mid">
+                <path d="M 200 185 C 172 140, 158 112, 200 98 C 242 112, 228 140, 200 185 Z" fill="url(#petalMidGrad)" class="petal petal-mid-1" style="transform: rotate(30deg); transform-origin: 200px 185px;" />
+                <path d="M 200 185 C 172 140, 158 112, 200 98 C 242 112, 228 140, 200 185 Z" fill="url(#petalMidGrad)" class="petal petal-mid-2" style="transform: rotate(90deg); transform-origin: 200px 185px;" />
+                <path d="M 200 185 C 172 140, 158 112, 200 98 C 242 112, 228 140, 200 185 Z" fill="url(#petalMidGrad)" class="petal petal-mid-3" style="transform: rotate(150deg); transform-origin: 200px 185px;" />
+                <path d="M 200 185 C 172 140, 158 112, 200 98 C 242 112, 228 140, 200 185 Z" fill="url(#petalMidGrad)" class="petal petal-mid-4" style="transform: rotate(210deg); transform-origin: 200px 185px;" />
+                <path d="M 200 185 C 172 140, 158 112, 200 98 C 242 112, 228 140, 200 185 Z" fill="url(#petalMidGrad)" class="petal petal-mid-5" style="transform: rotate(270deg); transform-origin: 200px 185px;" />
+                <path d="M 200 185 C 172 140, 158 112, 200 98 C 242 112, 228 140, 200 185 Z" fill="url(#petalMidGrad)" class="petal petal-mid-6" style="transform: rotate(330deg); transform-origin: 200px 185px;" />
+              </g>
+
+              <!-- Camada 3: Coração da Flor (Pétalas Internas de Rosa) -->
+              <g class="flower-petals-inner">
+                <path d="M 200 185 C 180 152, 170 132, 200 120 C 230 132, 220 152, 200 185 Z" fill="url(#petalInnerGrad)" style="transform: rotate(15deg); transform-origin: 200px 185px;" />
+                <path d="M 200 185 C 180 152, 170 132, 200 120 C 230 132, 220 152, 200 185 Z" fill="url(#petalInnerGrad)" style="transform: rotate(85deg); transform-origin: 200px 185px;" />
+                <path d="M 200 185 C 180 152, 170 132, 200 120 C 230 132, 220 152, 200 185 Z" fill="url(#petalInnerGrad)" style="transform: rotate(160deg); transform-origin: 200px 185px;" />
+                <path d="M 200 185 C 180 152, 170 132, 200 120 C 230 132, 220 152, 200 185 Z" fill="url(#petalInnerGrad)" style="transform: rotate(235deg); transform-origin: 200px 185px;" />
+                <path d="M 200 185 C 180 152, 170 132, 200 120 C 230 132, 220 152, 200 185 Z" fill="url(#petalInnerGrad)" style="transform: rotate(305deg); transform-origin: 200px 185px;" />
+              </g>
+
+              <!-- Centro Luminoso de Pistilos e Estames Dourados -->
+              <g class="flower-center-pistils">
+                <circle cx="200" cy="185" r="16" fill="url(#pistilCenterGrad)" class="pistil-center-core" />
+                <!-- Coroa de Estames Dourados Radiantes -->
+                <circle cx="200" cy="173" r="2.2" fill="#ffe082" />
+                <circle cx="209" cy="176" r="2.2" fill="#ffe082" />
+                <circle cx="212" cy="185" r="2.2" fill="#ffe082" />
+                <circle cx="209" cy="194" r="2.2" fill="#ffe082" />
+                <circle cx="200" cy="197" r="2.2" fill="#ffe082" />
+                <circle cx="191" cy="194" r="2.2" fill="#ffe082" />
+                <circle cx="188" cy="185" r="2.2" fill="#ffe082" />
+                <circle cx="191" cy="176" r="2.2" fill="#ffe082" />
+                <!-- Brilho Estelar Central -->
+                <circle cx="200" cy="185" r="5" fill="#ffffff" opacity="0.9" />
+              </g>
+            </g>
+          </svg>
+        </div>
+
+        <!-- 5. Camada Crônica da Linha do Tempo (Data, Anos e Mensagem) -->
+        <div class="cinematic-chronicle-layer" id="cinematic-chronicle-layer">
+          <!-- Bloco Principal de Data & Ano em Contagem Cinematográfica -->
+          <div class="chrono-date-card" id="chrono-date-card">
+            <!-- Dia (Ex: 24) -->
+            <div class="chrono-day" id="chrono-day">24</div>
+            <!-- Mês (Ex: SETEMBRO ou passagem de meses) -->
+            <div class="chrono-month" id="chrono-month">SETEMBRO</div>
+            <!-- Ano Marco (2008 ... 2026) -->
+            <div class="chrono-year" id="chrono-year">2008</div>
+            <!-- Linha de passagem de tempo / detalhe (ex: 24 SET 2008 -> OUT -> NOV -> DEZ) -->
+            <div class="chrono-flow-badge" id="chrono-flow-badge"></div>
+            <!-- Detalhe adicional (ex: "24 de setembro" em 2024) -->
+            <div class="chrono-detail-badge" id="chrono-detail-badge"></div>
           </div>
-          <div class="focal-sparkles">
-            <span class="sparkle sparkle-1">✦</span>
-            <span class="sparkle sparkle-2">★</span>
-            <span class="sparkle sparkle-3">✦</span>
+
+          <!-- Mensagem Final de Transformação (Clímax dos 18 Anos & Issamara) -->
+          <div class="chrono-transformation-wrap" id="chrono-transformation-wrap">
+            <p class="chrono-poetic-lead" id="chrono-poetic-lead">
+              E depois de todos esses anos...
+            </p>
+            <div class="chrono-18-milestone" id="chrono-18-milestone">
+              <span class="milestone-text">18 ANOS</span>
+            </div>
+            <div class="chrono-hero-name" id="chrono-hero-name">
+              <h1 class="hero-name-title">ISSAMARA</h1>
+              <p class="hero-name-date">24 de setembro de 2026</p>
+            </div>
           </div>
         </div>
 
-        <!-- 5. Camada Textual Poética (Frase 1, Frase 2, Nome ISSAMARA) -->
-        <div class="cinematic-narrative-layer" id="cinematic-narrative-layer">
-          <p class="cinematic-phrase" id="cinematic-phrase-1">
-            Algumas histórias começam de um jeito simples...
-          </p>
-          <p class="cinematic-phrase" id="cinematic-phrase-2">
-            ...mas algumas pessoas fazem questão de deixar uma lembrança.
-          </p>
-          <div class="cinematic-name-wrap" id="cinematic-name-wrap">
-            <div class="name-halo-glow"></div>
-            <h1 class="cinematic-name-title" id="cinematic-name-title">ISSAMARA</h1>
-            <p class="cinematic-name-sub">24 de Setembro • 18 Anos</p>
-          </div>
-        </div>
-
-        <!-- 6. Clímax: Três Camadas de Luz com Expansão Cinematográfica -->
-        <div class="climax-light-container" id="climax-light-container" aria-hidden="true">
-          <!-- Camada 1: Halo pequeno e intenso -->
-          <div class="climax-layer-core" id="climax-layer-core"></div>
-          <!-- Camada 2: Halo intermediário -->
-          <div class="climax-layer-mid" id="climax-layer-mid"></div>
-          <!-- Camada 3: Grande expansão luminosa cobrindo a tela -->
-          <div class="climax-layer-expansion" id="climax-layer-expansion"></div>
-        </div>
-
-        <!-- 7. Prompt Discreto Final: «Toque para começar a jornada» -->
+        <!-- 6. Prompt Final: «Toque para começar a jornada» -->
         <button class="cinematic-start-prompt" id="cinematic-start-prompt" aria-label="Toque para começar a jornada">
           <span class="prompt-pulse-text">Toque para começar a jornada</span>
           <i class="fas fa-sparkles ml-1 text-warning"></i>
