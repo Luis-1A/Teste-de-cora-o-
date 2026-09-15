@@ -180,8 +180,19 @@
       transition: opacity 0.8s ease, transform 1.2s cubic-bezier(0.16, 1, 0.3, 1);
     }
     .plant-flower-group.flower-visible { opacity: 0.75; transform: scale(0.65); }
-    .plant-flower-group.flower-opening { opacity: 0.9; transform: scale(0.9); }
-    .plant-flower-group.flower-full-bloom { opacity: 1; transform: scale(1.18); }
+    .plant-flower-group.flower-opening { opacity: 0.9; transform: scale(0.85); }
+    .plant-flower-group.flower-full-bloom {
+      opacity: 1;
+      transform: scale(1.0);
+      animation: flowerGentleBreathe 4.5s ease-in-out infinite;
+    }
+    .cinematic-camera.camera-elevate {
+      transform: translateY(-48px) scale(0.97);
+    }
+    .cinematic-camera.camera-retreat {
+      transform: translateY(-30px) scale(0.88);
+      transition: transform 3.5s cubic-bezier(0.25, 1, 0.5, 1);
+    }
     .cinematic-chronicle-layer {
       position: absolute;
       inset: 0;
@@ -189,56 +200,172 @@
       flex-direction: column;
       align-items: center;
       justify-content: flex-start;
-      padding-top: 5vh;
+      padding-top: 4.5vh;
       pointer-events: none;
       z-index: 10;
     }
-    .chronicle-date-card {
-      background: rgba(255, 255, 255, 0.82);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border-radius: 20px;
-      padding: 14px 28px 12px;
-      border: 1px solid rgba(240, 185, 210, 0.45);
-      box-shadow: 0 8px 30px rgba(180, 80, 130, 0.12);
-      opacity: 0;
-      transform: translateY(12px);
-      transition: all 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+    .chrono-date-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      min-height: 140px;
+      transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+      will-change: transform, opacity;
     }
-    .chronicle-date-card.date-visible {
+    .chrono-date-card.card-faded {
+      opacity: 0 !important;
+      transform: translateY(-22px) scale(0.92);
+      pointer-events: none;
+    }
+    .chrono-sky-lead-wrap {
+      position: absolute;
+      top: 11vh;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 90%;
+      max-width: 480px;
+      text-align: center;
+      pointer-events: none;
+      z-index: 15;
+    }
+    .chrono-sky-lead-text {
+      font-family: 'Quicksand', sans-serif;
+      font-size: 21px;
+      font-weight: 500;
+      letter-spacing: 1.2px;
+      color: #6a1b4d;
+      margin: 0;
+      opacity: 0;
+      transform: translateY(16px);
+      transition: opacity 0.85s cubic-bezier(0.16, 1, 0.3, 1), transform 0.85s cubic-bezier(0.16, 1, 0.3, 1);
+      text-shadow: 0 2px 10px rgba(255, 255, 255, 0.85);
+    }
+    .chrono-sky-lead-text.lead-visible {
       opacity: 1;
       transform: translateY(0);
     }
-    .chronicle-day {
+    .chrono-sky-lead-text.lead-fade-out {
+      opacity: 0;
+      transform: translateY(-16px);
+      transition: opacity 0.65s ease, transform 0.65s ease;
+    }
+    .chrono-revelation-below {
+      position: absolute;
+      top: 55%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 92%;
+      max-width: 460px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      pointer-events: none;
+      z-index: 16;
+    }
+    .chrono-18-milestone {
+      display: flex;
+      align-items: baseline;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 4px;
+    }
+    .milestone-18-num {
+      font-family: 'Quicksand', 'Roboto', sans-serif;
+      font-size: 66px;
+      font-weight: 800;
+      line-height: 1;
+      letter-spacing: 2px;
+      background: linear-gradient(135deg, #ad1457 0%, #e91e63 50%, #f57c00 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      filter: drop-shadow(0 4px 18px rgba(233, 30, 99, 0.32));
+      opacity: 0;
+      transform: scale(0.85);
+      transition: opacity 0.75s cubic-bezier(0.16, 1, 0.3, 1), transform 0.75s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .milestone-18-num.visible {
+      opacity: 1;
+      transform: scale(1);
+    }
+    .milestone-18-label {
+      font-family: 'Quicksand', sans-serif;
       font-size: 42px;
-      font-weight: 700;
+      font-weight: 800;
+      letter-spacing: 4px;
       line-height: 1;
-      color: #ad1457;
-      letter-spacing: -1px;
+      background: linear-gradient(135deg, #c2185b 0%, #d81b60 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      filter: drop-shadow(0 3px 12px rgba(194, 24, 91, 0.25));
+      opacity: 0;
+      transform: translateY(8px);
+      transition: opacity 0.75s ease, transform 0.75s cubic-bezier(0.16, 1, 0.3, 1);
     }
-    .chronicle-month {
-      font-size: 13px;
-      font-weight: 700;
-      letter-spacing: 3.5px;
-      color: #c2185b;
-      margin: 4px 0 2px;
+    .milestone-18-label.visible {
+      opacity: 1;
+      transform: translateY(0);
     }
-    .chronicle-year {
-      font-size: 34px;
-      font-weight: 700;
-      line-height: 1;
-      color: #880e4f;
+    .chrono-hero-name {
+      margin: 2px 0 6px 0;
+      opacity: 0;
+      transform: translateY(12px);
+      transition: opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1), transform 0.9s cubic-bezier(0.16, 1, 0.3, 1);
     }
-    .chronicle-age-badge {
-      display: inline-block;
-      margin-top: 8px;
-      font-size: 12px;
+    .chrono-hero-name.name-visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .hero-name-title {
+      font-family: 'Quicksand', sans-serif;
+      font-size: 38px;
       font-weight: 700;
-      letter-spacing: 1px;
-      padding: 3px 12px;
-      border-radius: 999px;
-      background: rgba(233, 30, 99, 0.12);
-      color: #ad1457;
+      letter-spacing: 7px;
+      color: #3b0728;
+      margin: 0;
+      text-shadow: 0 2px 14px rgba(180, 80, 130, 0.16);
+    }
+    .chrono-hero-date-wrap {
+      margin: 2px 0 6px 0;
+      opacity: 0;
+      transform: translateY(8px);
+      transition: opacity 0.85s ease, transform 0.85s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .chrono-hero-date-wrap.date-visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .hero-name-date {
+      font-family: 'Quicksand', sans-serif;
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: 3px;
+      color: #8e3a6d;
+      text-transform: uppercase;
+      margin: 0;
+    }
+    .chrono-hero-sub-wrap {
+      margin-top: 4px;
+      opacity: 0;
+      transform: translateY(6px);
+      transition: opacity 0.85s ease, transform 0.85s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .chrono-hero-sub-wrap.sub-visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .hero-name-sub {
+      font-family: 'Quicksand', sans-serif;
+      font-size: 15px;
+      font-weight: 500;
+      letter-spacing: 1.5px;
+      color: #7b2158;
+      font-style: italic;
+      margin: 0;
+      opacity: 0.95;
     }
   </style>
 </head>
@@ -268,22 +395,33 @@
         <div class="cinematic-bg" id="cinematic-bg"></div>
         <div class="cinematic-vignette" aria-hidden="true"></div>
 
-        <!-- Cenário Natural: Horizonte de Colinas Rosadas e Gramado Suave -->
+        <!-- Cenário Natural: Céu, Horizonte de Colinas e Campo Vivo com Gramado e Brotinhos -->
         <div class="cinematic-meadow-scenery" aria-hidden="true">
           <svg class="meadow-hills-svg" viewBox="0 0 1200 380" preserveAspectRatio="none">
-            <path d="M 0 240 Q 320 160 680 210 T 1200 190 L 1200 380 L 0 380 Z" fill="rgba(248, 205, 222, 0.45)" />
-            <path d="M 0 280 Q 360 220 760 250 T 1200 240 L 1200 380 L 0 380 Z" fill="rgba(215, 235, 210, 0.55)" />
-            <path d="M 0 320 Q 420 280 820 310 T 1200 295 L 1200 380 L 0 380 Z" fill="rgba(195, 225, 185, 0.7)" />
+            <!-- Colinas distantes no horizonte rosado -->
+            <path d="M 0 210 Q 320 150 680 190 T 1200 170 L 1200 380 L 0 380 Z" fill="rgba(245, 212, 226, 0.45)" />
+            <!-- Colinas intermediárias suaves verde-sálvia -->
+            <path d="M 0 250 Q 380 195 780 230 T 1200 215 L 1200 380 L 0 380 Z" fill="rgba(205, 228, 200, 0.62)" />
+            <!-- Gramado verde suave principal -->
+            <path d="M 0 295 Q 360 250 820 280 T 1200 265 L 1200 380 L 0 380 Z" fill="rgba(178, 216, 172, 0.82)" />
+            <!-- Relevo terroso do primeiro plano -->
+            <path d="M 0 340 Q 420 315 850 335 T 1200 320 L 1200 380 L 0 380 Z" fill="rgba(152, 198, 145, 0.95)" />
           </svg>
           <div class="meadow-grass-blades">
+            <span class="meadow-flora-item sprout-1">🌱</span>
             <div class="grass-blade b1"></div>
             <div class="grass-blade b2"></div>
+            <span class="meadow-flora-item flora-1">🌸</span>
             <div class="grass-blade b3"></div>
+            <span class="meadow-flora-item sprout-2">🌿</span>
             <div class="grass-blade b4"></div>
+            <span class="meadow-flora-item flora-2">🌼</span>
             <div class="grass-blade b5"></div>
-            <div class="grass-wild-flower f1">🌸</div>
-            <div class="grass-wild-flower f2">🌼</div>
-            <div class="grass-wild-flower f3">🌸</div>
+            <span class="meadow-flora-item sprout-3">🌱</span>
+            <div class="grass-blade b2"></div>
+            <span class="meadow-flora-item flora-3">🌸</span>
+            <div class="grass-blade b1"></div>
+            <span class="meadow-flora-item sprout-4">🌿</span>
           </div>
         </div>
 
@@ -455,62 +593,60 @@
               <path d="M 200 196 C 200 186 200 178 200 172 C 200 186 200 194 200 196 Z" stroke="#33691e" stroke-width="2" />
             </g>
 
-            <!-- A Flor em Desabrochar (Abre de 2018 até 2026 em Plena Glória) -->
+            <!-- A Flor em Desabrochar (Abre gradualmente até 2026 com proporções botânicas elegantes) -->
             <g id="plant-flower-group" class="plant-flower-group" style="transform-origin: 200px 185px; opacity: 0; transform: scale(0.2);">
               <!-- Halo de Luz Radiante da Flor Aberta -->
-              <circle cx="200" cy="185" r="95" fill="url(#flowerHaloGrad)" class="flower-radiance" />
+              <circle cx="200" cy="185" r="76" fill="url(#flowerHaloGrad)" class="flower-radiance" />
 
-              <!-- Camada 1: Pétalas Externas (6 pétalas radiais) -->
+              <!-- Camada 1: Pétalas Externas (6 pétalas radiais delicadas) -->
               <g class="flower-petals-outer">
-                <path d="M 200 185 C 165 130, 145 95, 200 80 C 255 95, 235 130, 200 185 Z" fill="url(#petalOuterGrad)" class="petal petal-1" />
-                <path d="M 200 185 C 165 130, 145 95, 200 80 C 255 95, 235 130, 200 185 Z" fill="url(#petalOuterGrad)" class="petal petal-2" style="transform: rotate(60deg); transform-origin: 200px 185px;" />
-                <path d="M 200 185 C 165 130, 145 95, 200 80 C 255 95, 235 130, 200 185 Z" fill="url(#petalOuterGrad)" class="petal petal-3" style="transform: rotate(120deg); transform-origin: 200px 185px;" />
-                <path d="M 200 185 C 165 130, 145 95, 200 80 C 255 95, 235 130, 200 185 Z" fill="url(#petalOuterGrad)" class="petal petal-4" style="transform: rotate(180deg); transform-origin: 200px 185px;" />
-                <path d="M 200 185 C 165 130, 145 95, 200 80 C 255 95, 235 130, 200 185 Z" fill="url(#petalOuterGrad)" class="petal petal-5" style="transform: rotate(240deg); transform-origin: 200px 185px;" />
-                <path d="M 200 185 C 165 130, 145 95, 200 80 C 255 95, 235 130, 200 185 Z" fill="url(#petalOuterGrad)" class="petal petal-6" style="transform: rotate(300deg); transform-origin: 200px 185px;" />
+                <path d="M 200 185 C 174 142, 160 115, 200 106 C 240 115, 226 142, 200 185 Z" fill="url(#petalOuterGrad)" class="petal petal-1" />
+                <path d="M 200 185 C 174 142, 160 115, 200 106 C 240 115, 226 142, 200 185 Z" fill="url(#petalOuterGrad)" class="petal petal-2" style="transform: rotate(60deg); transform-origin: 200px 185px;" />
+                <path d="M 200 185 C 174 142, 160 115, 200 106 C 240 115, 226 142, 200 185 Z" fill="url(#petalOuterGrad)" class="petal petal-3" style="transform: rotate(120deg); transform-origin: 200px 185px;" />
+                <path d="M 200 185 C 174 142, 160 115, 200 106 C 240 115, 226 142, 200 185 Z" fill="url(#petalOuterGrad)" class="petal petal-4" style="transform: rotate(180deg); transform-origin: 200px 185px;" />
+                <path d="M 200 185 C 174 142, 160 115, 200 106 C 240 115, 226 142, 200 185 Z" fill="url(#petalOuterGrad)" class="petal petal-5" style="transform: rotate(240deg); transform-origin: 200px 185px;" />
+                <path d="M 200 185 C 174 142, 160 115, 200 106 C 240 115, 226 142, 200 185 Z" fill="url(#petalOuterGrad)" class="petal petal-6" style="transform: rotate(300deg); transform-origin: 200px 185px;" />
               </g>
 
-              <!-- Camada 2: Pétalas Intermediárias (6 pétalas defasadas em 30deg) -->
+              <!-- Camada 2: Pétalas Intermediárias (6 pétalas defasadas) -->
               <g class="flower-petals-mid">
-                <path d="M 200 185 C 172 140, 158 112, 200 98 C 242 112, 228 140, 200 185 Z" fill="url(#petalMidGrad)" class="petal petal-mid-1" style="transform: rotate(30deg); transform-origin: 200px 185px;" />
-                <path d="M 200 185 C 172 140, 158 112, 200 98 C 242 112, 228 140, 200 185 Z" fill="url(#petalMidGrad)" class="petal petal-mid-2" style="transform: rotate(90deg); transform-origin: 200px 185px;" />
-                <path d="M 200 185 C 172 140, 158 112, 200 98 C 242 112, 228 140, 200 185 Z" fill="url(#petalMidGrad)" class="petal petal-mid-3" style="transform: rotate(150deg); transform-origin: 200px 185px;" />
-                <path d="M 200 185 C 172 140, 158 112, 200 98 C 242 112, 228 140, 200 185 Z" fill="url(#petalMidGrad)" class="petal petal-mid-4" style="transform: rotate(210deg); transform-origin: 200px 185px;" />
-                <path d="M 200 185 C 172 140, 158 112, 200 98 C 242 112, 228 140, 200 185 Z" fill="url(#petalMidGrad)" class="petal petal-mid-5" style="transform: rotate(270deg); transform-origin: 200px 185px;" />
-                <path d="M 200 185 C 172 140, 158 112, 200 98 C 242 112, 228 140, 200 185 Z" fill="url(#petalMidGrad)" class="petal petal-mid-6" style="transform: rotate(330deg); transform-origin: 200px 185px;" />
+                <path d="M 200 185 C 178 148, 168 126, 200 118 C 232 126, 222 148, 200 185 Z" fill="url(#petalMidGrad)" class="petal petal-mid-1" style="transform: rotate(30deg); transform-origin: 200px 185px;" />
+                <path d="M 200 185 C 178 148, 168 126, 200 118 C 232 126, 222 148, 200 185 Z" fill="url(#petalMidGrad)" class="petal petal-mid-2" style="transform: rotate(90deg); transform-origin: 200px 185px;" />
+                <path d="M 200 185 C 178 148, 168 126, 200 118 C 232 126, 222 148, 200 185 Z" fill="url(#petalMidGrad)" class="petal petal-mid-3" style="transform: rotate(150deg); transform-origin: 200px 185px;" />
+                <path d="M 200 185 C 178 148, 168 126, 200 118 C 232 126, 222 148, 200 185 Z" fill="url(#petalMidGrad)" class="petal petal-mid-4" style="transform: rotate(210deg); transform-origin: 200px 185px;" />
+                <path d="M 200 185 C 178 148, 168 126, 200 118 C 232 126, 222 148, 200 185 Z" fill="url(#petalMidGrad)" class="petal petal-mid-5" style="transform: rotate(270deg); transform-origin: 200px 185px;" />
+                <path d="M 200 185 C 178 148, 168 126, 200 118 C 232 126, 222 148, 200 185 Z" fill="url(#petalMidGrad)" class="petal petal-mid-6" style="transform: rotate(330deg); transform-origin: 200px 185px;" />
               </g>
 
-              <!-- Camada 3: Coração da Flor (Pétalas Internas de Rosa) -->
+              <!-- Camada 3: Coração da Flor -->
               <g class="flower-petals-inner">
-                <path d="M 200 185 C 180 152, 170 132, 200 120 C 230 132, 220 152, 200 185 Z" fill="url(#petalInnerGrad)" style="transform: rotate(15deg); transform-origin: 200px 185px;" />
-                <path d="M 200 185 C 180 152, 170 132, 200 120 C 230 132, 220 152, 200 185 Z" fill="url(#petalInnerGrad)" style="transform: rotate(85deg); transform-origin: 200px 185px;" />
-                <path d="M 200 185 C 180 152, 170 132, 200 120 C 230 132, 220 152, 200 185 Z" fill="url(#petalInnerGrad)" style="transform: rotate(160deg); transform-origin: 200px 185px;" />
-                <path d="M 200 185 C 180 152, 170 132, 200 120 C 230 132, 220 152, 200 185 Z" fill="url(#petalInnerGrad)" style="transform: rotate(235deg); transform-origin: 200px 185px;" />
-                <path d="M 200 185 C 180 152, 170 132, 200 120 C 230 132, 220 152, 200 185 Z" fill="url(#petalInnerGrad)" style="transform: rotate(305deg); transform-origin: 200px 185px;" />
+                <path d="M 200 185 C 184 158, 178 142, 200 134 C 222 142, 216 158, 200 185 Z" fill="url(#petalInnerGrad)" style="transform: rotate(15deg); transform-origin: 200px 185px;" />
+                <path d="M 200 185 C 184 158, 178 142, 200 134 C 222 142, 216 158, 200 185 Z" fill="url(#petalInnerGrad)" style="transform: rotate(85deg); transform-origin: 200px 185px;" />
+                <path d="M 200 185 C 184 158, 178 142, 200 134 C 222 142, 216 158, 200 185 Z" fill="url(#petalInnerGrad)" style="transform: rotate(160deg); transform-origin: 200px 185px;" />
+                <path d="M 200 185 C 184 158, 178 142, 200 134 C 222 142, 216 158, 200 185 Z" fill="url(#petalInnerGrad)" style="transform: rotate(235deg); transform-origin: 200px 185px;" />
+                <path d="M 200 185 C 184 158, 178 142, 200 134 C 222 142, 216 158, 200 185 Z" fill="url(#petalInnerGrad)" style="transform: rotate(305deg); transform-origin: 200px 185px;" />
               </g>
 
               <!-- Centro Luminoso de Pistilos e Estames Dourados -->
               <g class="flower-center-pistils">
-                <circle cx="200" cy="185" r="16" fill="url(#pistilCenterGrad)" class="pistil-center-core" />
-                <!-- Coroa de Estames Dourados Radiantes -->
-                <circle cx="200" cy="173" r="2.2" fill="#ffe082" />
-                <circle cx="209" cy="176" r="2.2" fill="#ffe082" />
-                <circle cx="212" cy="185" r="2.2" fill="#ffe082" />
-                <circle cx="209" cy="194" r="2.2" fill="#ffe082" />
-                <circle cx="200" cy="197" r="2.2" fill="#ffe082" />
-                <circle cx="191" cy="194" r="2.2" fill="#ffe082" />
-                <circle cx="188" cy="185" r="2.2" fill="#ffe082" />
-                <circle cx="191" cy="176" r="2.2" fill="#ffe082" />
-                <!-- Brilho Estelar Central -->
-                <circle cx="200" cy="185" r="5" fill="#ffffff" opacity="0.9" />
+                <circle cx="200" cy="185" r="13" fill="url(#pistilCenterGrad)" class="pistil-center-core" />
+                <circle cx="200" cy="175" r="1.8" fill="#ffe082" />
+                <circle cx="207" cy="177" r="1.8" fill="#ffe082" />
+                <circle cx="210" cy="185" r="1.8" fill="#ffe082" />
+                <circle cx="207" cy="192" r="1.8" fill="#ffe082" />
+                <circle cx="200" cy="195" r="1.8" fill="#ffe082" />
+                <circle cx="193" cy="192" r="1.8" fill="#ffe082" />
+                <circle cx="190" cy="185" r="1.8" fill="#ffe082" />
+                <circle cx="193" cy="177" r="1.8" fill="#ffe082" />
+                <circle cx="200" cy="185" r="4.2" fill="#ffffff" opacity="0.9" />
               </g>
             </g>
           </svg>
         </div>
 
-        <!-- 5. Camada Crônica da Linha do Tempo (Data, Anos e Mensagem) -->
+        <!-- 5. Camada Crônica da Linha do Tempo (Data, Anos e Mensagens Separadas) -->
         <div class="cinematic-chronicle-layer" id="cinematic-chronicle-layer">
-          <!-- Bloco Principal de Data & Ano em Contagem Cinematográfica -->
+          <!-- Bloco Principal de Data & Ano em Contagem Cinematográfica (2008 a 2026) -->
           <div class="chrono-date-card" id="chrono-date-card">
             <!-- Dia (Ex: 24) -->
             <div class="chrono-day" id="chrono-day">24</div>
@@ -526,17 +662,33 @@
             <div class="chrono-detail-badge" id="chrono-detail-badge"></div>
           </div>
 
-          <!-- Mensagem Final de Transformação (Clímax dos 18 Anos & Issamara) -->
-          <div class="chrono-transformation-wrap" id="chrono-transformation-wrap">
-            <p class="chrono-poetic-lead" id="chrono-poetic-lead">
+          <!-- Etapa ②: Frase Poética no Céu (Acima da Flor na região do Céu) -->
+          <div class="chrono-sky-lead-wrap" id="chrono-sky-lead-wrap">
+            <p class="chrono-sky-lead-text" id="chrono-sky-lead-text">
               E depois de todos esses anos...
             </p>
+          </div>
+
+          <!-- Etapas ③ a ⑥: Bloco de Revelação Abaixo da Flor (Espaço Amplo e Arejado) -->
+          <div class="chrono-revelation-below" id="chrono-revelation-below">
+            <!-- ③ 18 ANOS (18 entra primeiro, ANOS logo após) -->
             <div class="chrono-18-milestone" id="chrono-18-milestone">
-              <span class="milestone-text">18 ANOS</span>
+              <span class="milestone-18-num" id="milestone-18-num">18</span>
+              <span class="milestone-18-label" id="milestone-18-label">ANOS</span>
             </div>
+
+            <!-- ④ ISSAMARA (Segundo destaque elegante com espaçamento refinado) -->
             <div class="chrono-hero-name" id="chrono-hero-name">
-              <h1 class="hero-name-title">ISSAMARA</h1>
-              <p class="hero-name-date">24 de setembro de 2026</p>
+              <h1 class="hero-name-title" id="hero-name-title">ISSAMARA</h1>
+            </div>
+
+            <!-- ⑤ Data (24 de setembro de 2026 com fade elegante) -->
+            <div class="chrono-hero-date-wrap" id="chrono-hero-date-wrap">
+              <p class="hero-name-date" id="hero-name-date">24 de setembro de 2026</p>
+            </div>
+
+            <!-- ⑥ Frase final sutil em itálico -->
+            <div class="chrono-hero-sub-wrap" id="chrono-hero-sub-wrap">
               <p class="hero-name-sub" id="hero-name-sub">18 anos de uma história.</p>
             </div>
           </div>

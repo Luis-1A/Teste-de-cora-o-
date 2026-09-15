@@ -3509,12 +3509,15 @@
       this.chronoFlowBadge = document.getElementById('chrono-flow-badge');
       this.chronoDetailBadge = document.getElementById('chrono-detail-badge');
 
-      // Elementos do Clímax e Revelação
-      this.transformWrap = document.getElementById('chrono-transformation-wrap');
-      this.poeticLead = document.getElementById('chrono-poetic-lead');
-      this.milestone18 = document.getElementById('chrono-18-milestone');
-      this.heroName = document.getElementById('chrono-hero-name');
-      this.heroSub = document.getElementById('hero-name-sub');
+      // Elementos do Clímax e Revelação Dividida em Etapas (Flor Protagonista)
+      this.skyLeadWrap = document.getElementById('chrono-sky-lead-wrap');
+      this.skyLeadText = document.getElementById('chrono-sky-lead-text');
+      this.revelationBelow = document.getElementById('chrono-revelation-below');
+      this.milestone18Num = document.getElementById('milestone-18-num');
+      this.milestone18Label = document.getElementById('milestone-18-label');
+      this.heroNameWrap = document.getElementById('chrono-hero-name');
+      this.heroDateWrap = document.getElementById('chrono-hero-date-wrap');
+      this.heroSubWrap = document.getElementById('chrono-hero-sub-wrap');
 
       // Estado e Motor de Timeline
       this.isCompleted = false;
@@ -3589,11 +3592,35 @@
         { time: 43400, state: 'SCENE_8_D_21', action: () => this.scene8DayTick('21') },
         { time: 43700, state: 'SCENE_8_D_22', action: () => this.scene8DayTick('22') },
         { time: 44000, state: 'SCENE_8_D_23', action: () => this.scene8DayTick('23') },
-        { time: 44400, state: 'SCENE_8_BLOOM_EXACT', action: () => this.scene8BloomFull() },
 
-        // Clímax e Revelação Poética de 18 Anos & Issamara
-        { time: 45200, state: 'SCENE_8_REVEAL', action: () => this.scene8RevealText() },
-        { time: 47200, state: 'PROMPT_READY', action: () => this.scenePromptReady() }
+        // 🌸 ETAPA ①: 44400ms — A flor termina de abrir em 24/09/2026 e FICA SOZINHA no gramado por 1.8s
+        // Sem textos, sem interferências, a flor respira em seu cenário amplo
+        { time: 44400, state: 'SCENE_FLOWER_ALONE', action: () => this.sceneFlowerAlone() },
+
+        // ✨ ETAPA ②: 46200ms (1.8s depois) — Frase no céu (acima da flor)
+        // "E depois de todos esses anos..." surge com suavidade
+        { time: 46200, state: 'SCENE_SKY_LEAD_IN', action: () => this.sceneSkyLeadIn() },
+        // Permanece por 1.5s e depois desaparece suavemente criando expectativa
+        { time: 47700, state: 'SCENE_SKY_LEAD_OUT', action: () => this.sceneSkyLeadOut() },
+
+        // 🌸 ETAPA ③: 48400ms — Câmera se eleva suavemente; entra "18" e "ANOS" abaixo da flor
+        { time: 48400, state: 'SCENE_18_NUM', action: () => this.scene18Num() },
+        { time: 48800, state: 'SCENE_18_ANOS', action: () => this.scene18Anos() },
+
+        // 🌸 ETAPA ④: 50800ms (2.0s depois) — "ISSAMARA" surge abaixo de 18 ANOS
+        { time: 50800, state: 'SCENE_NAME_ISSAMARA', action: () => this.sceneNameIssamara() },
+
+        // 🌸 ETAPA ⑤: 51900ms (1.1s depois) — Data "24 DE SETEMBRO DE 2026"
+        { time: 51900, state: 'SCENE_DATE_BELOW', action: () => this.sceneDateBelow() },
+
+        // 🌸 ETAPA ⑥: 53000ms (1.1s depois) — Frase final poética "18 anos de uma história."
+        { time: 53000, state: 'SCENE_SUB_STORY', action: () => this.sceneSubStory() },
+
+        // 🌸 ETAPA ⑦: 55200ms (2.2s de contemplação tranquila) — Câmera começa a se afastar um pouco mais
+        { time: 55200, state: 'SCENE_CAMERA_RETREAT', action: () => this.sceneCameraRetreat() },
+
+        // 🌸 ETAPAS ⑧ & ⑨ & ⑩: 56500ms — Pétala se solta da flor, passa em frente à câmera e abre o livro
+        { time: 56500, state: 'SCENE_TRANSITION_BOOK', action: () => this.transitionToBook(false) }
       ];
 
       this.init();
@@ -3669,10 +3696,14 @@
       if (this.chronoFlowBadge) this.chronoFlowBadge.classList.remove('flow-visible');
       if (this.chronoDetailBadge) this.chronoDetailBadge.classList.remove('detail-visible');
       if (this.chronoDateCard) this.chronoDateCard.classList.remove('card-faded');
-      if (this.transformWrap) this.transformWrap.classList.remove('wrap-visible');
-      if (this.poeticLead) this.poeticLead.classList.remove('lead-visible');
-      if (this.milestone18) this.milestone18.classList.remove('milestone-visible');
-      if (this.heroName) this.heroName.classList.remove('name-visible');
+      if (this.cameraEl) this.cameraEl.classList.remove('camera-elevate', 'camera-retreat');
+      if (this.skyLeadText) this.skyLeadText.classList.remove('lead-visible', 'lead-fade-out');
+      if (this.revelationBelow) this.revelationBelow.classList.remove('revelation-visible');
+      if (this.milestone18Num) this.milestone18Num.classList.remove('visible');
+      if (this.milestone18Label) this.milestone18Label.classList.remove('visible');
+      if (this.heroNameWrap) this.heroNameWrap.classList.remove('name-visible');
+      if (this.heroDateWrap) this.heroDateWrap.classList.remove('date-visible');
+      if (this.heroSubWrap) this.heroSubWrap.classList.remove('sub-visible');
       if (this.startPromptBtn) this.startPromptBtn.classList.remove('prompt-visible');
     }
 
@@ -3724,8 +3755,13 @@
             this.updateAudioBtnUI();
           }
 
-          // Se a flor já desabrochou e revelou os 18 anos, avança para o livro
-          if (this.currentState === 'SCENE_8_REVEAL' || this.currentState === 'PROMPT_READY' || this.currentState === 'SCENE_8_BLOOM_EXACT') {
+          // Se a flor já desabrochou e revelou os textos, permite avançar para o livro por toque
+          if (this.currentState.startsWith('SCENE_18_') ||
+              this.currentState === 'SCENE_NAME_ISSAMARA' ||
+              this.currentState === 'SCENE_DATE_BELOW' ||
+              this.currentState === 'SCENE_SUB_STORY' ||
+              this.currentState === 'SCENE_CAMERA_RETREAT' ||
+              this.currentState === 'SCENE_TRANSITION_BOOK') {
             this.transitionToBook(false);
           }
         });
@@ -3784,7 +3820,7 @@
 
       const centerX = this.canvasWidth / 2;
       const centerY = this.canvasHeight / 2;
-      const isBloom = state.startsWith('SCENE_8_') || state === 'PROMPT_READY';
+      const isBloom = state.startsWith('SCENE_8_') || state.startsWith('SCENE_18_') || state.startsWith('SCENE_FLOWER_') || state.startsWith('SCENE_SKY_') || state.startsWith('SCENE_NAME_') || state.startsWith('SCENE_DATE_') || state.startsWith('SCENE_SUB_') || state.startsWith('SCENE_CAMERA_') || state === 'PROMPT_READY';
       const burst = isBloom ? 0.65 : 0;
 
       for (let i = 0; i < this.canvasParticles.length; i++) {
@@ -4187,60 +4223,137 @@
       }
     }
 
-    scene8BloomFull() {
-      this.setDomState('state-scene-8-bloom');
+    // ------------------------------------------------------------------------
+    // 🌸 ETAPA ①: 24 DE SETEMBRO DE 2026 — FLOR TERMINA DE ABRIR E FICA SOZINHA
+    // Sem textos, sem interferências, a flor respira no gramado e céu aberto por ~1.8s
+    // ------------------------------------------------------------------------
+    sceneFlowerAlone() {
+      this.setDomState('state-scene-flower-alone');
       if (this.chronoDay) this.chronoDay.textContent = '24';
       if (this.chronoMonth) this.chronoMonth.textContent = 'SETEMBRO';
       if (this.chronoYear) this.chronoYear.textContent = '2026';
 
-      // A flor desabrocha por completo em celebração
+      // Remove o card da data para deixar o cenário limpo e a flor em evidência absoluta
+      if (this.chronoDateCard) {
+        this.chronoDateCard.classList.add('card-faded');
+      }
+
+      // Flor termina de desabrochar completamente no centro do gramado
       if (this.flowerGroup) {
         this.flowerGroup.style.opacity = '1';
+        this.flowerGroup.classList.remove('flower-opening');
         this.flowerGroup.classList.add('flower-full-bloom', 'flower-celebrating');
       }
 
-      // Dispara confetes delicados
+      // Chuva sutil e delicada de pétalas/confetes botânicos
       if (window.confetti) {
         window.confetti({
-          particleCount: 65,
-          spread: 85,
-          origin: { y: 0.62 },
+          particleCount: 50,
+          spread: 80,
+          origin: { y: 0.58 },
           colors: ['#ff4081', '#f50057', '#ffd54f', '#ffffff', '#81c784']
         });
       }
 
       if (this.sys && this.sys.audioManager) {
-        this.sys.audioManager.playSparkleSound(1.0);
-        this.sys.audioManager.fadeTo(0.80, 2000);
+        this.sys.audioManager.playSparkleSound(0.95);
+        this.sys.audioManager.fadeTo(0.78, 2000);
       }
     }
 
-    scene8RevealText() {
-      this.setDomState('state-scene-8-reveal');
-      if (this.chronoDateCard) {
-        this.chronoDateCard.classList.add('card-faded');
+    // ------------------------------------------------------------------------
+    // ✨ ETAPA ②: FRASE NO CÉU (ACIMA DA FLOR)
+    // "E depois de todos esses anos..." surge no alto, fica 1.5s e depois some
+    // ------------------------------------------------------------------------
+    sceneSkyLeadIn() {
+      this.setDomState('state-scene-sky-lead-in');
+      if (this.skyLeadText) {
+        this.skyLeadText.classList.remove('lead-fade-out');
+        this.skyLeadText.classList.add('lead-visible');
       }
-      if (this.transformWrap) {
-        this.transformWrap.classList.add('wrap-visible');
+    }
+
+    sceneSkyLeadOut() {
+      this.setDomState('state-scene-sky-lead-out');
+      if (this.skyLeadText) {
+        this.skyLeadText.classList.remove('lead-visible');
+        this.skyLeadText.classList.add('lead-fade-out');
       }
-      if (this.poeticLead) {
-        this.poeticLead.classList.add('lead-visible');
+    }
+
+    // ------------------------------------------------------------------------
+    // 🌸 ETAPA ③: 18 ANOS (ABAIXO DA FLOR)
+    // A câmera se eleva suavemente, flor continua respirando no topo e "18 ANOS" surge abaixo
+    // ------------------------------------------------------------------------
+    scene18Num() {
+      this.setDomState('state-scene-18-num');
+      // Elevação suave da câmera para revelar a parte inferior com amplitude
+      if (this.cameraEl) {
+        this.cameraEl.classList.add('camera-elevate');
       }
-      if (this.milestone18) {
-        this.milestone18.classList.add('milestone-visible');
+      if (this.revelationBelow) {
+        this.revelationBelow.classList.add('revelation-visible');
       }
-      if (this.heroName) {
-        this.heroName.classList.add('name-visible');
+      if (this.milestone18Num) {
+        this.milestone18Num.classList.add('visible');
+      }
+      if (this.sys && this.sys.audioManager) {
+        this.sys.audioManager.playSparkleSound(0.75);
+      }
+    }
+
+    scene18Anos() {
+      this.setDomState('state-scene-18-anos');
+      if (this.milestone18Label) {
+        this.milestone18Label.classList.add('visible');
+      }
+    }
+
+    // ------------------------------------------------------------------------
+    // 🌸 ETAPA ④: ISSAMARA (ABAIXO DE 18 ANOS)
+    // ------------------------------------------------------------------------
+    sceneNameIssamara() {
+      this.setDomState('state-scene-name-issamara');
+      if (this.heroNameWrap) {
+        this.heroNameWrap.classList.add('name-visible');
       }
       if (this.sys && this.sys.audioManager) {
         this.sys.audioManager.playSparkleSound(0.9);
       }
     }
 
-    scenePromptReady() {
-      this.setDomState('state-prompt-ready');
+    // ------------------------------------------------------------------------
+    // 🌸 ETAPA ⑤: 24 DE SETEMBRO DE 2026 (ABAIXO DO NOME)
+    // ------------------------------------------------------------------------
+    sceneDateBelow() {
+      this.setDomState('state-scene-date-below');
+      if (this.heroDateWrap) {
+        this.heroDateWrap.classList.add('date-visible');
+      }
+    }
+
+    // ------------------------------------------------------------------------
+    // 🌸 ETAPA ⑥: 18 anos de uma história. (SUB-TEXTO POÉTICO EM ITÁLICO)
+    // ------------------------------------------------------------------------
+    sceneSubStory() {
+      this.setDomState('state-scene-sub-story');
+      if (this.heroSubWrap) {
+        this.heroSubWrap.classList.add('sub-visible');
+      }
+      // Botão discreto para toque consciente
       if (this.startPromptBtn) {
         this.startPromptBtn.classList.add('prompt-visible');
+      }
+    }
+
+    // ------------------------------------------------------------------------
+    // 🌸 ETAPA ⑦: CÂMERA COMEÇA A SE AFASTAR MOSTRANDO O CENÁRIO AMPLO
+    // ------------------------------------------------------------------------
+    sceneCameraRetreat() {
+      this.setDomState('state-scene-camera-retreat');
+      if (this.cameraEl) {
+        this.cameraEl.classList.remove('camera-elevate');
+        this.cameraEl.classList.add('camera-retreat');
       }
     }
 

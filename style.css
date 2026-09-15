@@ -1340,6 +1340,16 @@ html {
   will-change: transform;
 }
 
+.cinematic-camera.camera-elevate {
+  transform: translateY(-48px) scale(0.97) !important;
+  transition: transform 1.8s cubic-bezier(0.2, 0.8, 0.25, 1) !important;
+}
+
+.cinematic-camera.camera-retreat {
+  transform: translateY(-28px) scale(0.86) !important;
+  transition: transform 3.6s cubic-bezier(0.25, 1, 0.4, 1) !important;
+}
+
 /* Fundo: Tela Quase Branca com Rosa Muito Suave */
 .cinematic-bg {
   position: absolute;
@@ -1359,7 +1369,7 @@ html {
   z-index: 1;
 }
 
-/* Cenário Natural: Horizonte de Colinas Rosadas e Gramado Suave */
+/* Cenário Natural: Céu Aberto, Colinas e Campo Vivo com Brotinhos e Flores */
 .cinematic-meadow-scenery {
   position: absolute;
   inset: 0;
@@ -1374,8 +1384,8 @@ html {
 
 .meadow-hills-svg {
   width: 100%;
-  height: 38%;
-  max-height: 280px;
+  height: 40%;
+  max-height: 290px;
   display: block;
 }
 
@@ -1384,7 +1394,7 @@ html {
   bottom: 0;
   left: 0;
   right: 0;
-  height: 60px;
+  height: 64px;
   display: flex;
   justify-content: space-around;
   align-items: flex-end;
@@ -1406,25 +1416,30 @@ html {
 .grass-blade.b4 { height: 26px; animation-delay: 1.1s; }
 .grass-blade.b5 { height: 32px; animation-delay: 0.6s; }
 
-.grass-wild-flower {
-  font-size: 14px;
-  opacity: 0.8;
+.meadow-flora-item {
+  font-size: 16px;
+  opacity: 0.85;
   transform-origin: bottom center;
-  animation: flowerBreeze 5s ease-in-out infinite alternate;
+  animation: floraBreeze 4.5s ease-in-out infinite alternate;
+  user-select: none;
 }
 
-.grass-wild-flower.f1 { animation-delay: 0.3s; }
-.grass-wild-flower.f2 { animation-delay: 1.2s; }
-.grass-wild-flower.f3 { animation-delay: 0.7s; }
+.meadow-flora-item.sprout-1 { animation-delay: 0.1s; }
+.meadow-flora-item.sprout-2 { animation-delay: 0.9s; font-size: 18px; }
+.meadow-flora-item.sprout-3 { animation-delay: 0.4s; }
+.meadow-flora-item.sprout-4 { animation-delay: 1.3s; font-size: 17px; }
+.meadow-flora-item.flora-1 { animation-delay: 0.3s; font-size: 15px; }
+.meadow-flora-item.flora-2 { animation-delay: 1.1s; font-size: 15px; }
+.meadow-flora-item.flora-3 { animation-delay: 0.7s; font-size: 15px; }
 
 @keyframes bladeSway {
   0% { transform: rotate(-4deg); }
   100% { transform: rotate(5deg); }
 }
 
-@keyframes flowerBreeze {
-  0% { transform: rotate(-3deg) scale(0.95); }
-  100% { transform: rotate(4deg) scale(1.05); }
+@keyframes floraBreeze {
+  0% { transform: rotate(-4deg) translateY(0); }
+  100% { transform: rotate(5deg) translateY(-2px); }
 }
 
 /* Canvas de Partículas Solares & Esporos */
@@ -1645,7 +1660,7 @@ html {
 
 .plant-flower-group.flower-full-bloom {
   opacity: 1;
-  transform: scale(1.18);
+  transform: scale(1.0);
   animation: flowerGentleBreathe 4.5s ease-in-out infinite;
 }
 
@@ -1654,17 +1669,17 @@ html {
 }
 
 @keyframes flowerCelebrationPulse {
-  0% { transform: scale(1.18); filter: brightness(1); }
-  40% { transform: scale(1.38); filter: brightness(1.25) drop-shadow(0 0 32px rgba(255, 64, 129, 0.85)); }
-  100% { transform: scale(1.22); filter: brightness(1.1) drop-shadow(0 0 20px rgba(255, 64, 129, 0.5)); }
+  0% { transform: scale(1.0); filter: brightness(1); }
+  40% { transform: scale(1.18); filter: brightness(1.2) drop-shadow(0 0 28px rgba(255, 64, 129, 0.75)); }
+  100% { transform: scale(1.04); filter: brightness(1.06) drop-shadow(0 0 16px rgba(255, 64, 129, 0.45)); }
 }
 
 @keyframes flowerGentleBreathe {
   0%, 100% {
-    transform: scale(1.15) rotate(0deg);
+    transform: scale(0.98) rotate(0deg);
   }
   50% {
-    transform: scale(1.2) rotate(1.5deg);
+    transform: scale(1.03) rotate(1.2deg);
   }
 }
 
@@ -1923,77 +1938,124 @@ html {
 }
 
 /* ========================================================================== */
-/* MENSAGEM FINAL DE TRANSFORMAÇÃO (18 ANOS & ISSAMARA)                       */
+/* ETAPA ②: FRASE POÉTICA NO CÉU (ACIMA DA FLOR)                              */
 /* ========================================================================== */
-.chrono-transformation-wrap {
+.chrono-sky-lead-wrap {
   position: absolute;
-  top: 50%;
+  top: 11vh;
   left: 50%;
-  transform: translate(-50%, -50%);
+  transform: translateX(-50%);
+  width: 90%;
+  max-width: 480px;
+  text-align: center;
+  pointer-events: none;
+  z-index: 15;
+}
+
+.chrono-sky-lead-text {
+  font-family: 'Quicksand', sans-serif;
+  font-size: 22px;
+  font-weight: 500;
+  letter-spacing: 1.5px;
+  color: #6a1b4d;
+  margin: 0;
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity 0.85s cubic-bezier(0.16, 1, 0.3, 1), transform 0.85s cubic-bezier(0.16, 1, 0.3, 1);
+  text-shadow: 0 2px 12px rgba(255, 255, 255, 0.9);
+}
+
+.chrono-sky-lead-text.lead-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.chrono-sky-lead-text.lead-fade-out {
+  opacity: 0;
+  transform: translateY(-16px);
+  transition: opacity 0.65s ease, transform 0.65s ease;
+}
+
+/* ========================================================================== */
+/* ETAPAS ③ a ⑥: REVELAÇÃO ABAIXO DA FLOR (ESPAÇO AMPLO E AREJADO)            */
+/* ========================================================================== */
+.chrono-revelation-below {
+  position: absolute;
+  top: 55%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 92%;
+  max-width: 460px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   text-align: center;
-  width: 92%;
-  max-width: 580px;
-  opacity: 0;
   pointer-events: none;
-  transition: opacity 1.3s cubic-bezier(0.16, 1, 0.3, 1);
-  z-index: 10;
-}
-
-.chrono-transformation-wrap.wrap-visible {
-  opacity: 1;
-}
-
-.chrono-poetic-lead {
-  font-family: 'Quicksand', sans-serif;
-  font-size: 23px;
-  font-weight: 500;
-  letter-spacing: 1.5px;
-  color: #5c1840;
-  margin-bottom: 12px;
+  z-index: 16;
   opacity: 0;
-  transform: translateY(14px);
-  transition: opacity 1s ease, transform 1s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: opacity 0.6s ease;
 }
 
-.chrono-poetic-lead.lead-visible {
+.chrono-revelation-below.revelation-visible {
   opacity: 1;
-  transform: translateY(0);
 }
 
+/* ③ 18 ANOS */
 .chrono-18-milestone {
   display: flex;
-  align-items: center;
+  align-items: baseline;
   justify-content: center;
-  margin: 8px 0 16px 0;
-  opacity: 0;
-  transform: scale(0.75);
-  transition: opacity 1.2s ease, transform 1.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  gap: 12px;
+  margin: 0 0 4px 0;
 }
 
-.chrono-18-milestone.milestone-visible {
+.milestone-18-num {
+  font-family: 'Quicksand', 'Roboto', sans-serif;
+  font-size: 66px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: 2px;
+  background: linear-gradient(135deg, #ad1457 0%, #e91e63 50%, #f57c00 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 4px 18px rgba(233, 30, 99, 0.32));
+  opacity: 0;
+  transform: scale(0.82);
+  transition: opacity 0.75s cubic-bezier(0.16, 1, 0.3, 1), transform 0.75s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.milestone-18-num.visible {
   opacity: 1;
   transform: scale(1);
 }
 
-.milestone-text {
-  font-family: 'Quicksand', 'Roboto', sans-serif;
-  font-size: 68px;
+.milestone-18-label {
+  font-family: 'Quicksand', sans-serif;
+  font-size: 42px;
   font-weight: 800;
-  letter-spacing: 6px;
-  background: linear-gradient(135deg, #c2185b 0%, #e91e63 45%, #ffb300 100%);
+  letter-spacing: 4px;
+  line-height: 1;
+  background: linear-gradient(135deg, #c2185b 0%, #d81b60 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  filter: drop-shadow(0 4px 22px rgba(233, 30, 99, 0.38));
+  filter: drop-shadow(0 3px 12px rgba(194, 24, 91, 0.25));
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.75s ease, transform 0.75s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+.milestone-18-label.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ④ ISSAMARA */
 .chrono-hero-name {
+  margin: 2px 0 6px 0;
   opacity: 0;
-  transform: translateY(16px);
-  transition: opacity 1.2s ease, transform 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transform: translateY(12px);
+  transition: opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1), transform 0.9s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .chrono-hero-name.name-visible {
@@ -2003,33 +2065,59 @@ html {
 
 .hero-name-title {
   font-family: 'Quicksand', sans-serif;
-  font-size: 56px;
-  font-weight: 800;
-  letter-spacing: 8px;
-  color: #380727;
-  margin: 0 0 6px 0;
-  text-shadow: 0 3px 20px rgba(160, 30, 95, 0.22);
+  font-size: 40px;
+  font-weight: 700;
+  letter-spacing: 7px;
+  color: #3b0728;
+  margin: 0;
+  text-shadow: 0 2px 14px rgba(180, 80, 130, 0.16);
+}
+
+/* ⑤ 24 DE SETEMBRO DE 2026 */
+.chrono-hero-date-wrap {
+  margin: 2px 0 6px 0;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.85s ease, transform 0.85s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.chrono-hero-date-wrap.date-visible {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .hero-name-date {
   font-family: 'Quicksand', sans-serif;
-  font-size: 17px;
+  font-size: 15px;
   font-weight: 600;
-  letter-spacing: 4px;
+  letter-spacing: 3px;
   color: #8e3a6d;
   text-transform: uppercase;
   margin: 0;
 }
 
+/* ⑥ 18 anos de uma história. */
+.chrono-hero-sub-wrap {
+  margin-top: 4px;
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 0.85s ease, transform 0.85s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.chrono-hero-sub-wrap.sub-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
 .hero-name-sub {
   font-family: 'Quicksand', sans-serif;
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 500;
-  letter-spacing: 2px;
+  letter-spacing: 1.5px;
   color: #7b2158;
   font-style: italic;
-  margin: 8px 0 0 0;
-  opacity: 0.9;
+  margin: 0;
+  opacity: 0.95;
 }
 
 /* ========================================================================== */
