@@ -14,6 +14,17 @@ app.use((req, res, next) => {
   next();
 });
 
+// Explicit static handlers to guarantee correct MIME types across any host/proxy/serverless
+app.get('/style.css', (req, res) => {
+  res.setHeader('Content-Type', 'text/css; charset=utf-8');
+  res.sendFile(path.resolve(__dirname, 'style.css'));
+});
+
+app.get('/script.js', (req, res) => {
+  res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
+  res.sendFile(path.resolve(__dirname, 'script.js'));
+});
+
 // Serve all static files from root directory with explicit MIME type handling
 app.use(express.static(__dirname, {
   dotfiles: 'ignore',

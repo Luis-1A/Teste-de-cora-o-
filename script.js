@@ -4370,7 +4370,7 @@
       // Stage click for easy mobile advance
       if (this.stage) {
         this.stage.addEventListener('click', (e) => {
-          if (e.target.closest('button') || e.target.closest('input') || e.target.closest('a') || e.target.closest('.maracuja-box') || e.target.closest('.book-stage')) {
+          if (e.target.closest('button') || e.target.closest('input') || e.target.closest('a') || e.target.closest('.book-stage')) {
             return;
           }
           this.handleTapAdvance();
