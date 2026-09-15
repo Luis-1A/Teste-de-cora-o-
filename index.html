@@ -30,58 +30,85 @@
       text-align: center;
     }
     .initial-start-overlay {
-      position: fixed;
+      position: absolute;
       top: 0; left: 0; right: 0; bottom: 0;
       width: 100vw;
       height: 100vh;
-      z-index: 999999;
+      z-index: 100;
       display: flex;
+      flex-direction: column;
       align-items: center;
-      justify-content: center;
-      background: radial-gradient(circle at 50% 45%, #fff5f8 0%, #ffd9e4 50%, #fec0cd 100%);
+      justify-content: flex-start;
+      padding-top: 25px;
+      background: transparent;
+      pointer-events: none;
+      transition: opacity 0.85s cubic-bezier(0.16, 1, 0.3, 1), transform 0.85s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .initial-start-overlay.overlay-hidden {
+      opacity: 0;
+      transform: translateY(-24px) scale(0.96);
+      pointer-events: none;
     }
     .initial-start-card {
-      background: rgba(255, 255, 255, 0.94);
-      border-radius: 28px;
-      padding: 38px 28px 30px;
+      pointer-events: auto;
+      background: rgba(255, 255, 255, 0.92);
+      border-radius: 22px;
+      padding: 20px 24px 16px;
       width: 90%;
-      max-width: 420px;
-      box-shadow: 0 16px 40px rgba(255, 105, 135, 0.28);
-      border: 2px solid rgba(255, 182, 193, 0.6);
+      max-width: 380px;
+      box-shadow: 0 14px 40px rgba(255, 105, 135, 0.22), 0 3px 12px rgba(0, 0, 0, 0.04);
+      border: 1.5px solid rgba(255, 182, 193, 0.7);
       text-align: center;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
     }
     .initial-invitation-title {
-      font-size: 26px;
+      font-size: 22px;
       font-weight: 700;
       color: #ad1457;
-      margin: 0 0 6px;
+      margin: 0 0 4px;
     }
     .initial-invitation-sub {
-      font-size: 15px;
+      font-size: 14px;
       color: #c2185b;
-      margin: 0 0 24px;
+      margin: 0 0 16px;
     }
     .btn-initial-start {
       background: linear-gradient(135deg, #e91e63, #ff4081);
       color: #ffffff;
       border: none;
-      padding: 14px 28px;
+      padding: 12px 26px;
       border-radius: 50px;
-      font-size: 16px;
+      font-size: 15px;
       font-weight: 700;
       cursor: pointer;
       box-shadow: 0 8px 24px rgba(233, 30, 99, 0.35);
       display: inline-flex;
       align-items: center;
       justify-content: center;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .btn-initial-start:hover, .btn-initial-start:active {
+      transform: scale(1.04);
+      box-shadow: 0 10px 28px rgba(233, 30, 99, 0.45);
     }
     .cinematic-entry {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
       width: 100vw;
       height: 100vh;
-      z-index: 99999;
-      display: none;
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(circle at 50% 30%, #fff7f9 0%, #fdecf2 40%, #f7dbe7 75%, #ecd2df 100%);
+      overflow: hidden;
+      transition: opacity 1.2s ease, visibility 1.2s ease;
+    }
+    .cinematic-entry.fade-out, .cinematic-entry.fade-out-complete {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
     }
   </style>
 </head>
@@ -91,42 +118,44 @@
   <audio id="background-music" src="./music/monokrom.mp3" preload="auto" loop></audio>
 
   <!-- ======================================================== -->
-  <!-- TELA INICIAL DE INTERAÇÃO (GATILHO AUTOPLAY & INÍCIO)    -->
-  <!-- ======================================================== -->
-  <div id="initial-start-overlay" class="initial-start-overlay" aria-label="Iniciar experiência">
-    <div class="initial-start-backdrop"></div>
-    <div class="initial-start-card">
-      <div class="initial-star-aura">
-        <span class="initial-sparkle">✦</span>
-      </div>
-      <h2 class="initial-invitation-title">Uma lembrança especial</h2>
-      <p class="initial-invitation-sub">Para Issamara • 18 Anos</p>
-      <button id="btn-initial-start" class="btn-initial-start" aria-label="Toque para começar">
-        <span class="btn-start-pulse-dot"></span>
-        <span class="btn-start-label">Toque para começar</span>
-        <i class="fas fa-play ml-2" style="font-size: 11px;"></i>
-      </button>
-      <div class="initial-hint-audio">
-        <i class="fas fa-volume-up mr-1 text-muted"></i>
-        <span>Experiência com áudio imersivo</span>
-      </div>
-    </div>
-  </div>
-
-  <!-- ======================================================== -->
   <!-- ABERTURA CINEMATOGRÁFICA: NASCIMENTO 2008 -> 18 ANOS EM 2026 -->
   <!-- ======================================================== -->
   <div id="cinematic-entry" class="cinematic-entry" aria-label="Abertura cinematográfica da experiência">
-    <!-- Botão Discreto de Pular Introdução -->
-    <button id="btn-cinematic-skip" class="cinematic-skip-btn" title="Pular introdução" aria-label="Pular introdução">
-      <span>Pular</span> <i class="fas fa-forward ml-1"></i>
-    </button>
+    <!-- Controles Discretos do Topo (Música & Pular) -->
+    <div class="cinematic-header-controls" id="cinematic-header-controls">
+      <button id="btn-cinematic-audio" class="cinematic-audio-btn" title="Controle de música" aria-label="Controle de música">
+        <i class="fas fa-volume-up" id="cinematic-audio-icon"></i>
+        <span id="cinematic-audio-label">Música</span>
+      </button>
+      <button id="btn-cinematic-skip" class="cinematic-skip-btn" title="Pular introdução" aria-label="Pular introdução">
+        <span>Pular</span> <i class="fas fa-forward ml-1"></i>
+      </button>
+    </div>
 
     <div class="cinematic-scene">
       <div class="cinematic-camera" id="cinematic-camera">
-        <!-- 1. Fundo Suave: Tela Quase Branca com Rosa Muito Suave e Luz Viva -->
+        <!-- 1. Fundo Suave: Tela Quase Branca com Rosa Muito Suave e Luz de Amanhecer -->
         <div class="cinematic-bg" id="cinematic-bg"></div>
         <div class="cinematic-vignette" aria-hidden="true"></div>
+
+        <!-- Cenário Natural: Horizonte de Colinas Rosadas e Gramado Suave -->
+        <div class="cinematic-meadow-scenery" aria-hidden="true">
+          <svg class="meadow-hills-svg" viewBox="0 0 1200 380" preserveAspectRatio="none">
+            <path d="M 0 240 Q 320 160 680 210 T 1200 190 L 1200 380 L 0 380 Z" fill="rgba(248, 205, 222, 0.45)" />
+            <path d="M 0 280 Q 360 220 760 250 T 1200 240 L 1200 380 L 0 380 Z" fill="rgba(215, 235, 210, 0.55)" />
+            <path d="M 0 320 Q 420 280 820 310 T 1200 295 L 1200 380 L 0 380 Z" fill="rgba(195, 225, 185, 0.7)" />
+          </svg>
+          <div class="meadow-grass-blades">
+            <div class="grass-blade b1"></div>
+            <div class="grass-blade b2"></div>
+            <div class="grass-blade b3"></div>
+            <div class="grass-blade b4"></div>
+            <div class="grass-blade b5"></div>
+            <div class="grass-wild-flower f1">🌸</div>
+            <div class="grass-wild-flower f2">🌼</div>
+            <div class="grass-wild-flower f3">🌸</div>
+          </div>
+        </div>
 
         <!-- 2. Canvas de Partículas Solares, Esporos e Pétalas Suaves -->
         <canvas id="cinematic-canvas" class="cinematic-canvas" aria-hidden="true"></canvas>
@@ -214,79 +243,80 @@
             <ellipse cx="200" cy="542" rx="75" ry="10" fill="url(#soilGrad)" class="botanical-soil" />
 
             <!-- Raízes da Planta (Brotam em 2008) -->
-            <g id="plant-roots" class="plant-roots">
-              <path d="M 200 538 Q 198 558 191 578 Q 187 594 182 606" class="root-strand strand-1" />
-              <path d="M 199 544 Q 207 562 216 580 Q 223 596 228 610" class="root-strand strand-2" />
-              <path d="M 194 558 Q 186 572 177 588" class="root-strand strand-3" />
-              <path d="M 206 564 Q 214 576 220 592" class="root-strand strand-4" />
-              <path d="M 192 578 Q 184 592 176 606" class="root-strand strand-5" />
+            <g id="plant-roots" class="plant-roots" style="opacity: 0;">
+              <path d="M 200 538 Q 198 558 191 578 Q 187 594 182 606" class="root-strand strand-1" style="stroke-dashoffset: 75;" />
+              <path d="M 199 544 Q 207 562 216 580 Q 223 596 228 610" class="root-strand strand-2" style="stroke-dashoffset: 75;" />
+              <path d="M 194 558 Q 186 572 177 588" class="root-strand strand-3" style="stroke-dashoffset: 75;" />
+              <path d="M 206 564 Q 214 576 220 592" class="root-strand strand-4" style="stroke-dashoffset: 75;" />
+              <path d="M 192 578 Q 184 592 176 606" class="root-strand strand-5" style="stroke-dashoffset: 75;" />
             </g>
 
             <!-- Caule Vivo da Planta (Cresce continuamente de 2008 a 2017) -->
             <path id="plant-stem" class="plant-stem"
                   d="M 200 534 C 196 480, 206 430, 197 365 C 190 305, 205 250, 200 195"
-                  fill="none" stroke="url(#stemGrad)" stroke-width="4.5" stroke-linecap="round" />
+                  fill="none" stroke="url(#stemGrad)" stroke-width="4.5" stroke-linecap="round"
+                  style="stroke-dashoffset: 360;" />
 
             <!-- As Folhas (Brotam uma a uma conforme os anos passam) -->
             <g id="plant-foliage" class="plant-foliage">
               <!-- Folha 1 (2009 - esquerda Y=490) -->
-              <g id="leaf-2009" class="plant-leaf leaf-left" style="--leaf-ox: 198px; --leaf-oy: 490px;">
+              <g id="leaf-2009" class="plant-leaf leaf-left" style="--leaf-ox: 198px; --leaf-oy: 490px; opacity: 0; transform: scale(0);">
                 <path d="M 198 490 C 176 484 154 496 138 480 C 154 462 182 474 198 488 Z" fill="url(#leafGrad)" />
                 <path d="M 198 489 Q 168 482 142 481" stroke="#a5d6a7" stroke-width="1.2" fill="none" />
               </g>
 
               <!-- Folha 2 (2010 - direita Y=455) -->
-              <g id="leaf-2010" class="plant-leaf leaf-right" style="--leaf-ox: 202px; --leaf-oy: 455px;">
+              <g id="leaf-2010" class="plant-leaf leaf-right" style="--leaf-ox: 202px; --leaf-oy: 455px; opacity: 0; transform: scale(0);">
                 <path d="M 202 455 C 224 449 246 461 262 445 C 246 427 218 439 202 453 Z" fill="url(#leafGrad)" />
                 <path d="M 202 454 Q 232 447 258 446" stroke="#a5d6a7" stroke-width="1.2" fill="none" />
               </g>
 
               <!-- Folha 3 (2011 - esquerda Y=415) -->
-              <g id="leaf-2011" class="plant-leaf leaf-left" style="--leaf-ox: 201px; --leaf-oy: 415px;">
+              <g id="leaf-2011" class="plant-leaf leaf-left" style="--leaf-ox: 201px; --leaf-oy: 415px; opacity: 0; transform: scale(0);">
                 <path d="M 201 415 C 175 407 150 422 132 402 C 150 382 182 396 201 413 Z" fill="url(#leafGrad)" />
                 <path d="M 201 414 Q 166 406 136 403" stroke="#a5d6a7" stroke-width="1.2" fill="none" />
               </g>
 
               <!-- Folha 4 (2012 - direita Y=375) -->
-              <g id="leaf-2012" class="plant-leaf leaf-right" style="--leaf-ox: 197px; --leaf-oy: 375px;">
+              <g id="leaf-2012" class="plant-leaf leaf-right" style="--leaf-ox: 197px; --leaf-oy: 375px; opacity: 0; transform: scale(0);">
                 <path d="M 197 375 C 222 365 248 380 268 358 C 248 338 217 353 197 373 Z" fill="url(#leafGrad)" />
                 <path d="M 197 374 Q 233 363 264 359" stroke="#a5d6a7" stroke-width="1.2" fill="none" />
               </g>
 
               <!-- Folha 5 (2013 - esquerda Y=330) -->
-              <g id="leaf-2013" class="plant-leaf leaf-left" style="--leaf-ox: 194px; --leaf-oy: 330px;">
+              <g id="leaf-2013" class="plant-leaf leaf-left" style="--leaf-ox: 194px; --leaf-oy: 330px; opacity: 0; transform: scale(0);">
                 <path d="M 194 330 C 168 318 142 334 122 312 C 142 290 176 306 194 328 Z" fill="url(#leafGrad)" />
                 <path d="M 194 329 Q 158 317 126 313" stroke="#a5d6a7" stroke-width="1.2" fill="none" />
               </g>
 
               <!-- Folha 6 (2014 - direita Y=290) -->
-              <g id="leaf-2014" class="plant-leaf leaf-right" style="--leaf-ox: 198px; --leaf-oy: 290px;">
+              <g id="leaf-2014" class="plant-leaf leaf-right" style="--leaf-ox: 198px; --leaf-oy: 290px; opacity: 0; transform: scale(0);">
                 <path d="M 198 290 C 224 278 250 294 272 270 C 250 248 218 266 198 288 Z" fill="url(#leafGrad)" />
                 <path d="M 198 289 Q 235 277 268 271" stroke="#a5d6a7" stroke-width="1.2" fill="none" />
               </g>
 
               <!-- Folha 7 (2015 - esquerda Y=250) -->
-              <g id="leaf-2015" class="plant-leaf leaf-left" style="--leaf-ox: 202px; --leaf-oy: 250px;">
+              <g id="leaf-2015" class="plant-leaf leaf-left" style="--leaf-ox: 202px; --leaf-oy: 250px; opacity: 0; transform: scale(0);">
                 <path d="M 202 250 C 176 238 152 254 134 232 C 152 212 184 228 202 248 Z" fill="url(#leafGrad)" />
                 <path d="M 202 249 Q 168 237 138 233" stroke="#a5d6a7" stroke-width="1.2" fill="none" />
               </g>
 
               <!-- Folha 8 (2016 - direita Y=220) -->
-              <g id="leaf-2016" class="plant-leaf leaf-right" style="--leaf-ox: 201px; --leaf-oy: 220px;">
+              <g id="leaf-2016" class="plant-leaf leaf-right" style="--leaf-ox: 201px; --leaf-oy: 220px; opacity: 0; transform: scale(0);">
                 <path d="M 201 220 C 224 208 248 224 266 202 C 248 184 218 200 201 218 Z" fill="url(#leafGrad)" />
                 <path d="M 201 219 Q 233 207 262 203" stroke="#a5d6a7" stroke-width="1.2" fill="none" />
               </g>
             </g>
 
             <!-- A Semente Original no Solo (Visível no Começo) -->
-            <g id="plant-seed-group" class="plant-seed-group">
+            <g id="plant-seed-group" class="plant-seed-group" style="opacity: 0; transform: scale(0.2); transform-origin: 200px 530px;">
               <ellipse cx="200" cy="530" rx="9" ry="13" fill="url(#seedGrad)" class="seed-body" />
               <path d="M 197 520 Q 200 515 203 520 Q 200 528 197 520 Z" fill="#6d4c41" />
               <ellipse cx="198" cy="527" rx="3" ry="6" fill="rgba(255,255,255,0.4)" />
             </g>
 
             <!-- O Botão de Flor Fechado (Surge em 2017 no ápice do caule) -->
-            <g id="plant-bud-group" class="plant-bud-group" style="transform-origin: 200px 195px;">
+            <g id="plant-bud-group" class="plant-bud-group" style="transform-origin: 200px 195px; opacity: 0; transform: scale(0);">
               <!-- Pétalas fechadas em botão -->
               <ellipse cx="200" cy="188" rx="8" ry="14" fill="url(#petalInnerGrad)" class="bud-petal-core" />
               <!-- Sépalas protetoras do cálice -->
@@ -296,7 +326,7 @@
             </g>
 
             <!-- A Flor em Desabrochar (Abre de 2018 até 2026 em Plena Glória) -->
-            <g id="plant-flower-group" class="plant-flower-group" style="transform-origin: 200px 185px;">
+            <g id="plant-flower-group" class="plant-flower-group" style="transform-origin: 200px 185px; opacity: 0; transform: scale(0.2);">
               <!-- Halo de Luz Radiante da Flor Aberta -->
               <circle cx="200" cy="185" r="95" fill="url(#flowerHaloGrad)" class="flower-radiance" />
 
@@ -358,6 +388,8 @@
             <div class="chrono-month" id="chrono-month">SETEMBRO</div>
             <!-- Ano Marco (2008 ... 2026) -->
             <div class="chrono-year" id="chrono-year">2008</div>
+            <!-- Idade em sincronia com o crescimento botânico -->
+            <div class="chrono-age-badge" id="chrono-age-badge">0 anos</div>
             <!-- Linha de passagem de tempo / detalhe (ex: 24 SET 2008 -> OUT -> NOV -> DEZ) -->
             <div class="chrono-flow-badge" id="chrono-flow-badge"></div>
             <!-- Detalhe adicional (ex: "24 de setembro" em 2024) -->
@@ -375,8 +407,16 @@
             <div class="chrono-hero-name" id="chrono-hero-name">
               <h1 class="hero-name-title">ISSAMARA</h1>
               <p class="hero-name-date">24 de setembro de 2026</p>
+              <p class="hero-name-sub" id="hero-name-sub">18 anos de uma história.</p>
             </div>
           </div>
+        </div>
+
+        <!-- Pétala que se desprende e voa em direção à tela na transição do Livro -->
+        <div id="cinematic-falling-petal" class="cinematic-falling-petal" aria-hidden="true">
+          <svg viewBox="0 0 60 90" class="falling-petal-svg">
+            <path d="M 30 5 C 12 28, 6 60, 30 85 C 54 60, 48 28, 30 5 Z" fill="url(#petalOuterGrad)" />
+          </svg>
         </div>
 
         <!-- 6. Prompt Final: «Toque para começar a jornada» -->

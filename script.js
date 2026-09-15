@@ -2041,79 +2041,50 @@
       }
     },
 
-    // Cap 11 - Maracujá
+    // Cap 11 - O Tempo e Você
     {
       id: 11,
-      title: "Maracujá",
+      title: "O Tempo e Você",
       audioLevel: 0.7,
       render: (stage, sys) => {
         const container = document.createElement('div');
         container.className = 'kotak animate__animated animate__fadeIn';
         container.innerHTML = `
           <div class="py-2">
-            <div id="maracuja-interactive" class="maracuja-box animate__animated animate__bounce" title="Toque no maracujá!">
-              <!-- Custom clean vector maracuja -->
-              <svg class="maracuja-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                <!-- Leaf & Stem -->
-                <path d="M 50 16 C 55 8, 68 8, 72 14 C 65 20, 56 18, 50 16 Z" fill="#48bb78" />
-                <path d="M 50 20 Q 52 10 50 8" stroke="#38a169" stroke-width="4" fill="none" stroke-linecap="round" />
-                <!-- Fruit Body -->
-                <ellipse cx="50" cy="56" rx="36" ry="34" fill="#ECC94B" stroke="#D69E2E" stroke-width="3" />
-                <!-- Highlights & texture spots -->
-                <circle cx="38" cy="48" r="3" fill="#D69E2E" opacity="0.6"/>
-                <circle cx="58" cy="52" r="3" fill="#D69E2E" opacity="0.6"/>
-                <circle cx="48" cy="66" r="3.5" fill="#D69E2E" opacity="0.6"/>
-                <circle cx="62" cy="68" r="2.5" fill="#D69E2E" opacity="0.6"/>
-                <circle cx="35" cy="62" r="2.5" fill="#D69E2E" opacity="0.6"/>
-                <!-- Cut pulp glimpse / cheerful expression -->
-                <ellipse cx="50" cy="56" rx="20" ry="18" fill="#F6E05E" stroke="#DD6B20" stroke-dasharray="3 2" />
-                <circle cx="45" cy="53" r="2" fill="#2D3748" />
-                <circle cx="55" cy="53" r="2" fill="#2D3748" />
-                <circle cx="50" cy="60" r="2.5" fill="#2D3748" />
-                <path d="M 44 60 Q 50 64 56 60" stroke="#DD6B20" stroke-width="2" fill="none" stroke-linecap="round"/>
-              </svg>
+            <div class="chapter-flower-emblem mb-3 animate__animated animate__zoomIn">
+              <span style="font-size: 42px; display: inline-block; filter: drop-shadow(0 4px 12px rgba(255, 105, 180, 0.4));">🌸</span>
             </div>
-            <p class="small text-muted font-italic mb-2">(Toque no maracujá!)</p>
-            <p id="p11_1" class="lead-text font-weight-bold animate__animated animate__fadeIn">Sim.</p>
-            <p id="p11_2" class="sub-text d-none animate__animated animate__fadeIn">Eu coloquei um maracujá aqui.</p>
-            <p id="p11_3" class="lead-text text-primary d-none animate__animated animate__fadeIn">Você sabe exatamente o motivo.</p>
-            <p id="p11_4" class="font-italic text-danger d-none animate__animated animate__fadeIn mt-2">E não vou explicar. 😂</p>
+            <p id="p11_1" class="lead-text font-weight-bold animate__animated animate__fadeIn" style="font-size: 21px; color: #ad1457;">
+              Dezoito anos não são apenas números em um calendário.
+            </p>
+            <p id="p11_2" class="sub-text d-none animate__animated animate__fadeIn mt-3 text-dark">
+              São histórias vividas, aprendizados silenciosos, sorrisos compartilhados e cada detalhe que construiu quem você é hoje.
+            </p>
+            <p id="p11_3" class="lead-text d-none animate__animated animate__fadeIn mt-3" style="color: #c2185b;">
+              Cada ano foi como uma pétala que encontrou o seu lugar para brotar e se firmar.
+            </p>
+            <p id="p11_4" class="font-italic d-none animate__animated animate__fadeIn mt-3 text-secondary" style="font-size: 17px;">
+              E ver você chegar aos 18 é ver essa flor em sua forma mais luminosa e especial. ✨
+            </p>
           </div>
         `;
         stage.appendChild(container);
 
-        const maracuja = document.getElementById('maracuja-interactive');
-        if (maracuja) {
-          maracuja.addEventListener('click', () => {
-            maracuja.classList.remove('animate__bounce');
-            void maracuja.offsetWidth; // trigger reflow
-            maracuja.classList.add('animate__rubberBand');
-            if (window.confetti) {
-              window.confetti({
-                particleCount: 25,
-                spread: 60,
-                origin: { y: 0.6 },
-                colors: ['#ECC94B', '#F6E05E', '#48BB78', '#DD6B20']
-              });
-            }
-          });
-        }
-
         sys.timer.setTimeout(() => {
           const el = document.getElementById('p11_2');
           if (el) el.classList.remove('d-none');
-        }, 1400);
+        }, 1500);
 
         sys.timer.setTimeout(() => {
           const el = document.getElementById('p11_3');
           if (el) el.classList.remove('d-none');
-        }, 2800);
+        }, 3400);
 
         sys.timer.setTimeout(() => {
           const el = document.getElementById('p11_4');
           if (el) el.classList.remove('d-none');
           sys.showTapPrompt();
-        }, 4200);
+        }, 5200);
       }
     },
 
@@ -3497,9 +3468,7 @@
   }
 
   // ==========================================================================
-  // 4.5. CINEMATIC ENTRY CONTROLLER (45s State-Based Orchestrator)
-  // ==========================================================================
-  // 4.5. CINEMATIC ENTRY CONTROLLER (Narrativa Botânica: 2008 a 2026)
+  // 4.5. CINEMATIC ENTRY CONTROLLER (Prólogo Cinematográfico: 2008 a 2026)
   // ==========================================================================
   class CinematicEntryController {
     constructor(experienceSystem) {
@@ -3510,8 +3479,9 @@
       this.cameraEl = document.getElementById('cinematic-camera');
       this.bgEl = document.getElementById('cinematic-bg');
       this.canvasEl = document.getElementById('cinematic-canvas');
-      this.skipBtn = document.getElementById('btn-skip-cinematic');
+      this.skipBtn = document.getElementById('btn-cinematic-skip') || document.getElementById('btn-skip-cinematic');
       this.startPromptBtn = document.getElementById('cinematic-start-prompt');
+      this.fallingPetal = document.getElementById('cinematic-falling-petal');
 
       // Elementos do Palco Botânico (SVG)
       this.seedGroup = document.getElementById('plant-seed-group');
@@ -3535,6 +3505,7 @@
       this.chronoDay = document.getElementById('chrono-day');
       this.chronoMonth = document.getElementById('chrono-month');
       this.chronoYear = document.getElementById('chrono-year');
+      this.chronoAgeBadge = document.getElementById('chrono-age-badge');
       this.chronoFlowBadge = document.getElementById('chrono-flow-badge');
       this.chronoDetailBadge = document.getElementById('chrono-detail-badge');
 
@@ -3543,9 +3514,11 @@
       this.poeticLead = document.getElementById('chrono-poetic-lead');
       this.milestone18 = document.getElementById('chrono-18-milestone');
       this.heroName = document.getElementById('chrono-hero-name');
+      this.heroSub = document.getElementById('hero-name-sub');
 
       // Estado e Motor de Timeline
       this.isCompleted = false;
+      this.isTransitioning = false;
       this.currentState = 'INIT';
       this.startTime = 0;
       this.animationFrameId = null;
@@ -3558,53 +3531,69 @@
       this.canvasWidth = 0;
       this.canvasHeight = 0;
 
-      // Definição da Linha do Tempo Poética Rítmica (2008 a 2026)
-      // A contagem e o crescimento da flor são perfeitamente sincronizados
+      // Definição da Linha do Tempo Cinematográfica Sincronizada (2008 a 2026)
       this.timelineEvents = [
-        // CENA 1 — O COMEÇO (0s - 10s)
+        // CENA 1 — O COMEÇO (Nascimento em 24 de Setembro de 2008)
         { time: 0, state: 'SCENE_1_START', action: () => this.scene1Start() },
-        { time: 2200, state: 'SCENE_1_SEED', action: () => this.scene1Seed() },
-        { time: 4200, state: 'SCENE_1_DAY', action: () => this.scene1Day() },
-        { time: 5800, state: 'SCENE_1_MONTH', action: () => this.scene1Month() },
-        { time: 7400, state: 'SCENE_1_YEAR', action: () => this.scene1Year() },
-        { time: 9000, state: 'SCENE_1_ROOTS', action: () => this.scene1Roots() },
+        { time: 1500, state: 'SCENE_1_SEED', action: () => this.scene1Seed() },
+        { time: 3200, state: 'SCENE_1_DAY', action: () => this.scene1Day() },
+        { time: 4600, state: 'SCENE_1_MONTH', action: () => this.scene1Month() },
+        { time: 6000, state: 'SCENE_1_YEAR', action: () => this.scene1Year() },
+        { time: 7400, state: 'SCENE_1_ROOTS', action: () => this.scene1Roots() },
+        { time: 8600, state: 'SCENE_1_SPROUT', action: () => this.scene1Sprout() },
 
-        // CENA 2 — 2008: BROTAMENTO & SIMULAÇÃO DOS MESES
-        { time: 10600, state: 'SCENE_2_2008_OCT', action: () => this.scene2Month('OUT 2008', 335) },
-        { time: 11600, state: 'SCENE_2_2008_NOV', action: () => this.scene2Month('NOV 2008', 320) },
-        { time: 12600, state: 'SCENE_2_2008_DEC', action: () => this.scene2Month('DEZ 2008', 305) },
+        // CENA 2 — O PRIMEIRO ANO (Meses de 2008 até a virada de 2009)
+        { time: 9800, state: 'SCENE_2_OCT', action: () => this.scene2Month('outubro de 2008', 328) },
+        { time: 11000, state: 'SCENE_2_NOV', action: () => this.scene2Month('novembro de 2008', 316) },
+        { time: 12200, state: 'SCENE_2_DEC', action: () => this.scene2Month('dezembro de 2008', 304) },
 
-        // CENA 3 — 2009: O CAULE SOBE, PRIMEIRA FOLHA
+        // CENA 3 — 2009: O ANO VIRA COM PRESENÇA, 1 ANO, PRIMEIRA FOLHA
         { time: 13600, state: 'SCENE_3_2009', action: () => this.scene3Year2009() },
 
-        // CENA 4 — 2010 A 2016: A INFÂNCIA, CRESCIMENTO COMPASSADO
-        { time: 15400, state: 'SCENE_4_2010', action: () => this.scene4Year(2010, 260, 'leaf-2010', 'MAI • OUT') },
-        { time: 17200, state: 'SCENE_4_2011', action: () => this.scene4Year(2011, 225, 'leaf-2011', 'JUN • NOV') },
-        { time: 19000, state: 'SCENE_4_2012', action: () => this.scene4Year(2012, 190, 'leaf-2012', 'MAR • SET') },
-        { time: 20800, state: 'SCENE_4_2013', action: () => this.scene4Year(2013, 155, 'leaf-2013', 'JUL • DEZ') },
-        { time: 22600, state: 'SCENE_4_2014', action: () => this.scene4Year(2014, 120, 'leaf-2014', 'ABR • OUT') },
-        { time: 24400, state: 'SCENE_4_2015', action: () => this.scene4Year(2015, 80, 'leaf-2015', 'AGO • NOV') },
-        { time: 26200, state: 'SCENE_4_2016', action: () => this.scene4Year(2016, 40, 'leaf-2016', 'FEV • DEZ') },
+        // CENA 4 — A INFÂNCIA E O CRESCIMENTO (2010 A 2016, 2 A 8 ANOS)
+        { time: 15400, state: 'SCENE_4_2010', action: () => this.scene4Year(2010, 2, 256, 2010) },
+        { time: 17200, state: 'SCENE_4_2011', action: () => this.scene4Year(2011, 3, 224, 2011) },
+        { time: 19000, state: 'SCENE_4_2012', action: () => this.scene4Year(2012, 4, 192, 2012) },
+        { time: 20800, state: 'SCENE_4_2013', action: () => this.scene4Year(2013, 5, 156, 2013) },
+        { time: 22600, state: 'SCENE_4_2014', action: () => this.scene4Year(2014, 6, 120, 2014) },
+        { time: 24400, state: 'SCENE_4_2015', action: () => this.scene4Year(2015, 7, 80, 2015) },
+        { time: 26200, state: 'SCENE_4_2016', action: () => this.scene4Year(2016, 8, 40, 2016) },
 
-        // CENA 5 — 2017: O BOTÃO DE FLOR SURGE NO ÁPICE
+        // CENA 5 — A TRANSFORMAÇÃO (2017 A 2023): O BOTÃO DE FLOR
         { time: 28200, state: 'SCENE_5_2017', action: () => this.scene5BudForms() },
-        { time: 30000, state: 'SCENE_5_2018', action: () => this.scene5Year(2018) },
-        { time: 31600, state: 'SCENE_5_2019', action: () => this.scene5Year(2019) },
-        { time: 33200, state: 'SCENE_5_2020', action: () => this.scene5Year(2020) },
-        { time: 34800, state: 'SCENE_5_2021', action: () => this.scene5Year(2021) },
-        { time: 36400, state: 'SCENE_5_2022', action: () => this.scene5Year(2022) },
-        { time: 38000, state: 'SCENE_5_2023', action: () => this.scene5BudSwells() },
+        { time: 30000, state: 'SCENE_5_2018', action: () => this.scene5Year(2018, 10) },
+        { time: 31400, state: 'SCENE_5_2023', action: () => this.scene5BudSwells() },
 
-        // CENA 6 — 2024: DESACELERAÇÃO, 24 DE SETEMBRO, PRIMEIROS SINAIS
-        { time: 39800, state: 'SCENE_6_2024', action: () => this.scene6Year2024() },
+        // CENA 6 — APROXIMAÇÃO (2024 E 2025): DESACELERAÇÃO E ABERTURA SUAVE
+        { time: 33200, state: 'SCENE_6_2024', action: () => this.scene6Year2024() },
+        { time: 35200, state: 'SCENE_7_2025', action: () => this.scene7Year2025() },
 
-        // CENA 7 — 2025: RITMO AINDA MAIS LENTO, PÉTALAS SE AFASTANDO
-        { time: 42200, state: 'SCENE_7_2025', action: () => this.scene7Year2025() },
+        // CENA 7 — O DESABROCHAR COMPLETO (2026: 18 ANOS)
+        { time: 37400, state: 'SCENE_8_2026_START', action: () => this.scene8Start2026() },
+        // Passagem compassada dos meses de 2026
+        { time: 38000, state: 'SCENE_8_M_JAN', action: () => this.scene8MonthTick('JANEIRO') },
+        { time: 38400, state: 'SCENE_8_M_FEB', action: () => this.scene8MonthTick('FEVEREIRO') },
+        { time: 38800, state: 'SCENE_8_M_MAR', action: () => this.scene8MonthTick('MARÇO') },
+        { time: 39200, state: 'SCENE_8_M_APR', action: () => this.scene8MonthTick('ABRIL') },
+        { time: 39600, state: 'SCENE_8_M_MAY', action: () => this.scene8MonthTick('MAIO') },
+        { time: 40000, state: 'SCENE_8_M_JUN', action: () => this.scene8MonthTick('JUNHO') },
+        { time: 40400, state: 'SCENE_8_M_JUL', action: () => this.scene8MonthTick('JULHO') },
+        { time: 40800, state: 'SCENE_8_M_AUG', action: () => this.scene8MonthTick('AGOSTO') },
+        { time: 41300, state: 'SCENE_8_M_SEP', action: () => this.scene8MonthTick('SETEMBRO') },
+        // Avanço dos dias até 24 de Setembro
+        { time: 41900, state: 'SCENE_8_D_01', action: () => this.scene8DayTick('01') },
+        { time: 42200, state: 'SCENE_8_D_05', action: () => this.scene8DayTick('05') },
+        { time: 42500, state: 'SCENE_8_D_10', action: () => this.scene8DayTick('10') },
+        { time: 42800, state: 'SCENE_8_D_15', action: () => this.scene8DayTick('15') },
+        { time: 43100, state: 'SCENE_8_D_20', action: () => this.scene8DayTick('20') },
+        { time: 43400, state: 'SCENE_8_D_21', action: () => this.scene8DayTick('21') },
+        { time: 43700, state: 'SCENE_8_D_22', action: () => this.scene8DayTick('22') },
+        { time: 44000, state: 'SCENE_8_D_23', action: () => this.scene8DayTick('23') },
+        { time: 44400, state: 'SCENE_8_BLOOM_EXACT', action: () => this.scene8BloomFull() },
 
-        // CENA 8 — 2026: O DESABROCHAR COMPLETO, 18 ANOS, ISSAMARA
-        { time: 45000, state: 'SCENE_8_2026', action: () => this.scene8Bloom() },
-        { time: 47200, state: 'SCENE_8_REVEAL', action: () => this.scene8RevealText() },
-        { time: 49500, state: 'PROMPT_READY', action: () => this.scenePromptReady() }
+        // Clímax e Revelação Poética de 18 Anos & Issamara
+        { time: 45200, state: 'SCENE_8_REVEAL', action: () => this.scene8RevealText() },
+        { time: 47200, state: 'PROMPT_READY', action: () => this.scenePromptReady() }
       ];
 
       this.init();
@@ -3613,54 +3602,149 @@
     init() {
       if (!this.entryEl) return;
 
-      // Suporte a Preferência de Movimento Reduzido (Acessibilidade)
+      // Respeito à preferência de movimento reduzido
       const prefersReduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       if (prefersReduced) {
         this.finishCinematicSequence(true);
         return;
       }
 
-      // 1. Inicializa canvas interativo de partículas
+      // 1. Inicializa o sistema de partículas ambientais do canvas
       this.initCanvasParticleSystem();
 
-      // 2. Vincula eventos de interação e botão de pular
+      // 2. Prepara o palco em estado inicial (solo limpo e semente pronta)
+      this.resetPlantToInitialState();
+
+      // 3. Vincula eventos de controles (áudio, pular e interação por toque)
       this.bindControls();
 
-      // 3. Se o overlay de interação com áudio não estiver bloqueando, inicia a timeline
-      const startOverlay = document.getElementById('initial-start-overlay');
-      if (!startOverlay || startOverlay.classList.contains('overlay-hidden') || startOverlay.style.display === 'none') {
-        this.startSequence();
+      // 4. Inicia a animação cinematográfica IMEDIATAMENTE e SUAVEMENTE ao entrar no site!
+      this.startSequence();
+    }
+
+    resetPlantToInitialState() {
+      // Caule recolhido no solo
+      if (this.stem) {
+        this.stem.style.strokeDashoffset = '360';
       }
+      // Folhas recolhidas
+      if (this.leaves) {
+        Object.values(this.leaves).forEach(leaf => {
+          if (leaf) {
+            leaf.classList.remove('leaf-visible');
+            leaf.style.opacity = '0';
+            leaf.style.transform = 'scale(0)';
+          }
+        });
+      }
+      // Botão fechado oculto
+      if (this.budGroup) {
+        this.budGroup.classList.remove('bud-visible', 'bud-swelling');
+        this.budGroup.style.opacity = '0';
+        this.budGroup.style.transform = 'scale(0)';
+      }
+      // Flor desabrochada oculta
+      if (this.flowerGroup) {
+        this.flowerGroup.classList.remove('flower-visible', 'flower-opening', 'flower-full-bloom', 'flower-celebrating');
+        this.flowerGroup.style.opacity = '0';
+        this.flowerGroup.style.transform = 'scale(0.2)';
+      }
+      // Raízes ocultas
+      if (this.rootsGroup) {
+        this.rootsGroup.classList.remove('roots-visible');
+        const strands = this.rootsGroup.querySelectorAll('.root-strand');
+        strands.forEach(s => { s.style.strokeDashoffset = '80'; });
+      }
+      // Semente no centro pronta
+      if (this.seedGroup) {
+        this.seedGroup.classList.remove('seed-visible', 'seed-sprouted');
+        this.seedGroup.style.opacity = '0';
+        this.seedGroup.style.transform = 'scale(0.2)';
+      }
+      // Reset dos textos e badges da cronologia
+      if (this.chronoDay) this.chronoDay.classList.remove('day-visible');
+      if (this.chronoMonth) this.chronoMonth.classList.remove('month-visible');
+      if (this.chronoYear) this.chronoYear.classList.remove('year-visible', 'year-tick-bump');
+      if (this.chronoAgeBadge) this.chronoAgeBadge.classList.remove('age-visible');
+      if (this.chronoFlowBadge) this.chronoFlowBadge.classList.remove('flow-visible');
+      if (this.chronoDetailBadge) this.chronoDetailBadge.classList.remove('detail-visible');
+      if (this.chronoDateCard) this.chronoDateCard.classList.remove('card-faded');
+      if (this.transformWrap) this.transformWrap.classList.remove('wrap-visible');
+      if (this.poeticLead) this.poeticLead.classList.remove('lead-visible');
+      if (this.milestone18) this.milestone18.classList.remove('milestone-visible');
+      if (this.heroName) this.heroName.classList.remove('name-visible');
+      if (this.startPromptBtn) this.startPromptBtn.classList.remove('prompt-visible');
     }
 
     bindControls() {
-      // Botão de pular abertura
-      if (this.skipBtn) {
-        this.skipBtn.addEventListener('click', (e) => {
+      // Botão discreto de áudio / música no topo
+      const audioBtn = document.getElementById('btn-cinematic-audio');
+      if (audioBtn) {
+        audioBtn.addEventListener('click', (e) => {
           e.stopPropagation();
-          this.finishCinematicSequence(true);
-        });
-      }
-
-      // Botão "Toque para começar a jornada"
-      if (this.startPromptBtn) {
-        this.startPromptBtn.addEventListener('click', (e) => {
-          e.stopPropagation();
-          this.finishCinematicSequence(false);
-        });
-      }
-
-      // Toque em qualquer lugar da tela após a celebração
-      if (this.entryEl) {
-        this.entryEl.addEventListener('click', () => {
-          if (this.currentState === 'SCENE_8_2026' || this.currentState === 'SCENE_8_REVEAL' || this.currentState === 'PROMPT_READY') {
-            this.finishCinematicSequence(false);
+          if (this.sys && this.sys.audioManager) {
+            if (!this.sys.audioManager.isPlaying) {
+              this.sys.audioManager.startExperienceAudio();
+            } else {
+              this.sys.audioManager.toggleMute();
+            }
+            this.updateAudioBtnUI();
           }
         });
       }
 
-      // Redimensionamento responsivo do Canvas
+      // Botão discreto de pular introdução
+      const skipButton = document.getElementById('btn-cinematic-skip') || document.getElementById('btn-skip-cinematic');
+      if (skipButton) {
+        skipButton.addEventListener('click', (e) => {
+          e.stopPropagation();
+          if (this.sys && this.sys.audioManager) {
+            this.sys.audioManager.startExperienceAudio();
+          }
+          this.transitionToBook(true);
+        });
+      }
+
+      // Botão "Toque para começar a jornada" (após a revelação final de 18 anos)
+      if (this.startPromptBtn) {
+        this.startPromptBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          this.transitionToBook(false);
+        });
+      }
+
+      // Toque em qualquer ponto da tela
+      if (this.entryEl) {
+        this.entryEl.addEventListener('click', (e) => {
+          if (e.target.closest('#cinematic-header-controls')) return;
+
+          // Se áudio estiver bloqueado pelo navegador até o primeiro gesto, desbloqueia suavemente
+          if (this.sys && this.sys.audioManager && !this.sys.audioManager.isPlaying) {
+            this.sys.audioManager.startExperienceAudio();
+            this.updateAudioBtnUI();
+          }
+
+          // Se a flor já desabrochou e revelou os 18 anos, avança para o livro
+          if (this.currentState === 'SCENE_8_REVEAL' || this.currentState === 'PROMPT_READY' || this.currentState === 'SCENE_8_BLOOM_EXACT') {
+            this.transitionToBook(false);
+          }
+        });
+      }
+
       window.addEventListener('resize', () => this.resizeCanvas());
+    }
+
+    updateAudioBtnUI() {
+      const audioIcon = document.getElementById('cinematic-audio-icon');
+      const audioLabel = document.getElementById('cinematic-audio-label');
+      if (!this.sys || !this.sys.audioManager) return;
+      const isMuted = this.sys.audioManager.isMuted || !this.sys.audioManager.isPlaying;
+      if (audioIcon) {
+        audioIcon.className = isMuted ? 'fas fa-volume-mute' : 'fas fa-volume-up';
+      }
+      if (audioLabel) {
+        audioLabel.textContent = isMuted ? 'Ativar som' : 'Música';
+      }
     }
 
     initCanvasParticleSystem() {
@@ -3668,19 +3752,19 @@
       this.canvasCtx = this.canvasEl.getContext('2d');
       this.resizeCanvas();
 
-      const particleCount = window.innerWidth <= 768 ? 20 : 38;
+      const particleCount = window.innerWidth <= 768 ? 22 : 40;
       this.canvasParticles = [];
       for (let i = 0; i < particleCount; i++) {
         this.canvasParticles.push({
           x: Math.random() * this.canvasWidth,
           y: Math.random() * this.canvasHeight,
-          radius: Math.random() * 2.0 + 0.8,
-          alpha: Math.random() * 0.5 + 0.15,
-          speedX: (Math.random() - 0.5) * 0.3,
-          speedY: -Math.random() * 0.45 - 0.1, // Movimento suave ascendente de pólen e seiva
+          radius: Math.random() * 2.2 + 0.8,
+          alpha: Math.random() * 0.45 + 0.15,
+          speedX: (Math.random() - 0.5) * 0.28,
+          speedY: -Math.random() * 0.42 - 0.1,
           angle: Math.random() * Math.PI * 2,
           angularSpeed: (Math.random() - 0.5) * 0.012,
-          color: Math.random() > 0.4 ? '230, 160, 70' : '233, 30, 99'
+          color: Math.random() > 0.4 ? '248, 187, 208' : '233, 30, 99'
         });
       }
     }
@@ -3700,10 +3784,8 @@
 
       const centerX = this.canvasWidth / 2;
       const centerY = this.canvasHeight / 2;
-
-      // Na cena do desabrochar em 2026, irradiação suave de luz e pétalas
-      const isBloom = state === 'SCENE_8_2026' || state === 'SCENE_8_REVEAL' || state === 'PROMPT_READY';
-      const burst = isBloom ? 0.75 : 0;
+      const isBloom = state.startsWith('SCENE_8_') || state === 'PROMPT_READY';
+      const burst = isBloom ? 0.65 : 0;
 
       for (let i = 0; i < this.canvasParticles.length; i++) {
         const p = this.canvasParticles[i];
@@ -3712,30 +3794,28 @@
           const dx = p.x - centerX;
           const dy = p.y - centerY;
           const dist = Math.sqrt(dx * dx + dy * dy) || 1;
-          p.x += (dx / dist) * (burst * (p.radius + 0.8));
-          p.y += (dy / dist) * (burst * (p.radius + 0.8)) - 0.2;
+          p.x += (dx / dist) * (burst * (p.radius + 0.6));
+          p.y += (dy / dist) * (burst * (p.radius + 0.6)) - 0.2;
         } else {
           p.x += p.speedX;
           p.y += p.speedY;
           p.angle += p.angularSpeed;
-          p.x += Math.cos(p.angle) * 0.25;
+          p.x += Math.cos(p.angle) * 0.22;
         }
 
-        // Reposicionamento cíclico suave nas bordas
         if (p.x < -15) p.x = this.canvasWidth + 15;
         if (p.x > this.canvasWidth + 15) p.x = -15;
         if (p.y < -15) p.y = this.canvasHeight + 15;
         if (p.y > this.canvasHeight + 15) p.y = -15;
 
-        // Pulsação suave de brilho
         const pulse = Math.sin((elapsedMs * 0.0018) + i) * 0.2;
         const currentAlpha = Math.max(0.06, Math.min(0.85, p.alpha + pulse));
 
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
         ctx.fillStyle = `rgba(${p.color}, ${currentAlpha})`;
-        ctx.shadowColor = `rgba(${p.color}, 0.6)`;
-        ctx.shadowBlur = 8;
+        ctx.shadowColor = `rgba(${p.color}, 0.5)`;
+        ctx.shadowBlur = 6;
         ctx.fill();
       }
     }
@@ -3749,21 +3829,19 @@
       this.executedEventIndices.clear();
       this.startTime = performance.now();
 
-      // Inicia reprodução sutil de áudio com fade-in confortável
+      // Inicia música de abertura imediatamente com monokrom.mp3
       if (this.sys && this.sys.audioManager) {
         try {
-          this.sys.audioManager.currentVolume = 0.08;
-          this.sys.audioManager.play();
+          this.sys.audioManager.startExperienceAudio();
+          this.updateAudioBtnUI();
         } catch (e) {}
       }
 
-      // Loop contínuo com requestAnimationFrame
+      // Loop de execução sincronizada da linha do tempo
       const tick = (now) => {
         if (this.isCompleted) return;
-
         const elapsed = now - this.startTime;
 
-        // Dispara eventos da timeline no momento exato
         for (let i = 0; i < this.timelineEvents.length; i++) {
           const ev = this.timelineEvents[i];
           if (elapsed >= ev.time && !this.executedEventIndices.has(i)) {
@@ -3773,13 +3851,8 @@
           }
         }
 
-        // Câmera contínua com respiração suave
         this.updateContinuousCamera(elapsed);
-
-        // Renderização contínua das partículas do Canvas
         this.renderCanvasParticles(this.currentState, elapsed);
-
-        // Continua o loop até ser completado
         this.animationFrameId = requestAnimationFrame(tick);
       };
 
@@ -3788,8 +3861,6 @@
 
     updateContinuousCamera(elapsed) {
       if (!this.cameraEl) return;
-
-      // Leve oscilação de rotação (0.2 graus) e translação para vida contínua
       const driftRot = Math.sin(elapsed * 0.0003) * 0.2;
       const driftY = Math.cos(elapsed * 0.00035) * 2.5;
 
@@ -3798,7 +3869,7 @@
       else if (this.currentState.startsWith('SCENE_5_')) baseScale = 1.04;
       else if (this.currentState === 'SCENE_6_2024') baseScale = 1.05;
       else if (this.currentState === 'SCENE_7_2025') baseScale = 1.06;
-      else if (this.currentState === 'SCENE_8_2026' || this.currentState === 'SCENE_8_REVEAL') baseScale = 1.05;
+      else if (this.currentState.startsWith('SCENE_8_')) baseScale = 1.05;
 
       this.entryEl.style.setProperty('--camera-scale', baseScale.toString());
       this.entryEl.style.setProperty('--camera-rot', `${driftRot.toFixed(2)}deg`);
@@ -3813,19 +3884,16 @@
     }
 
     // ------------------------------------------------------------------------
-    // MÉTODOS DE CADA CENA DA LINHA DO TEMPO BOTÂNICA
+    // CENA 1: O COMEÇO (NASCIMENTO EM 24 DE SETEMBRO DE 2008)
     // ------------------------------------------------------------------------
-
     scene1Start() {
       this.setDomState('state-scene-1-start');
-      if (this.sys && this.sys.audioManager) {
-        this.sys.audioManager.fadeTo(0.15, 2000);
-      }
     }
 
     scene1Seed() {
       this.setDomState('state-scene-1-seed');
       if (this.seedGroup) {
+        this.seedGroup.style.opacity = '1';
         this.seedGroup.classList.add('seed-visible');
       }
     }
@@ -3833,6 +3901,7 @@
     scene1Day() {
       this.setDomState('state-scene-1-day');
       if (this.chronoDay) {
+        this.chronoDay.textContent = '24';
         this.chronoDay.classList.add('day-visible');
       }
     }
@@ -3840,6 +3909,7 @@
     scene1Month() {
       this.setDomState('state-scene-1-month');
       if (this.chronoMonth) {
+        this.chronoMonth.textContent = 'SETEMBRO';
         this.chronoMonth.classList.add('month-visible');
       }
     }
@@ -3848,12 +3918,15 @@
       this.setDomState('state-scene-1-year');
       if (this.chronoYear) {
         this.chronoYear.textContent = '2008';
-        this.chronoYear.classList.add('year-visible');
-        this.chronoYear.classList.add('year-tick-bump');
+        this.chronoYear.classList.add('year-visible', 'year-tick-bump');
+      }
+      if (this.chronoAgeBadge) {
+        this.chronoAgeBadge.textContent = '0 anos';
+        this.chronoAgeBadge.classList.add('age-visible');
       }
       if (this.sys && this.sys.audioManager) {
-        this.sys.audioManager.playSparkleSound(0.6);
-        this.sys.audioManager.fadeTo(0.25, 2000);
+        this.sys.audioManager.playSparkleSound(0.5);
+        this.sys.audioManager.fadeTo(0.28, 2000);
       }
     }
 
@@ -3861,23 +3934,38 @@
       this.setDomState('state-scene-1-roots');
       if (this.rootsGroup) {
         this.rootsGroup.classList.add('roots-visible');
+        const strands = this.rootsGroup.querySelectorAll('.root-strand');
+        strands.forEach(s => { s.style.strokeDashoffset = '0'; });
       }
       if (this.seedGroup) {
         this.seedGroup.classList.add('seed-sprouted');
       }
     }
 
-    scene2Month(monthLabel, stemOffset) {
-      this.setDomState('state-scene-2-2008');
+    scene1Sprout() {
+      this.setDomState('state-scene-1-sprout');
+      if (this.stem) {
+        this.stem.style.strokeDashoffset = '340';
+      }
+    }
+
+    // ------------------------------------------------------------------------
+    // CENA 2: O PRIMEIRO ANO (MESES DE 2008)
+    // ------------------------------------------------------------------------
+    scene2Month(label, stemOffset) {
+      this.setDomState('state-scene-2-month');
       if (this.stem) {
         this.stem.style.strokeDashoffset = stemOffset.toString();
       }
       if (this.chronoFlowBadge) {
-        this.chronoFlowBadge.textContent = monthLabel;
+        this.chronoFlowBadge.textContent = label;
         this.chronoFlowBadge.classList.add('flow-visible');
       }
     }
 
+    // ------------------------------------------------------------------------
+    // CENA 3: 2009 (1 ANO) - PRIMEIRA FOLHA
+    // ------------------------------------------------------------------------
     scene3Year2009() {
       this.setDomState('state-scene-3-2009');
       if (this.chronoYear) {
@@ -3886,21 +3974,29 @@
         void this.chronoYear.offsetWidth;
         this.chronoYear.classList.add('year-tick-bump');
       }
+      if (this.chronoAgeBadge) {
+        this.chronoAgeBadge.textContent = '1 ano';
+      }
       if (this.stem) {
-        this.stem.style.strokeDashoffset = '295';
+        this.stem.style.strokeDashoffset = '288';
       }
       if (this.leaves && this.leaves[2009]) {
         this.leaves[2009].classList.add('leaf-visible');
+        this.leaves[2009].style.opacity = '1';
+        this.leaves[2009].style.transform = 'scale(1)';
       }
       if (this.chronoFlowBadge) {
         this.chronoFlowBadge.textContent = '2009';
       }
       if (this.sys && this.sys.audioManager) {
-        this.sys.audioManager.fadeTo(0.32, 1800);
+        this.sys.audioManager.fadeTo(0.35, 1800);
       }
     }
 
-    scene4Year(year, stemOffset, leafKey, flowMonths) {
+    // ------------------------------------------------------------------------
+    // CENA 4: A INFÂNCIA (2010 A 2016, 2 A 8 ANOS)
+    // ------------------------------------------------------------------------
+    scene4Year(year, age, stemOffset, leafKey) {
       this.setDomState(`state-scene-4-${year}`);
       if (this.chronoYear) {
         this.chronoYear.textContent = year.toString();
@@ -3908,22 +4004,29 @@
         void this.chronoYear.offsetWidth;
         this.chronoYear.classList.add('year-tick-bump');
       }
+      if (this.chronoAgeBadge) {
+        this.chronoAgeBadge.textContent = `${age} anos`;
+      }
       if (this.stem) {
         this.stem.style.strokeDashoffset = stemOffset.toString();
       }
-      const yrNum = parseInt(year, 10);
-      if (this.leaves && this.leaves[yrNum]) {
-        this.leaves[yrNum].classList.add('leaf-visible');
+      if (this.leaves && this.leaves[leafKey]) {
+        this.leaves[leafKey].classList.add('leaf-visible');
+        this.leaves[leafKey].style.opacity = '1';
+        this.leaves[leafKey].style.transform = 'scale(1)';
       }
       if (this.chronoFlowBadge) {
-        this.chronoFlowBadge.textContent = flowMonths;
+        this.chronoFlowBadge.textContent = `${year}`;
       }
       if (this.sys && this.sys.audioManager) {
-        const vol = 0.32 + ((yrNum - 2010) * 0.03);
-        this.sys.audioManager.fadeTo(Math.min(0.55, vol), 1200);
+        const vol = 0.35 + ((age - 2) * 0.035);
+        this.sys.audioManager.fadeTo(Math.min(0.60, vol), 1200);
       }
     }
 
+    // ------------------------------------------------------------------------
+    // CENA 5: A TRANSFORMAÇÃO (2017 A 2023)
+    // ------------------------------------------------------------------------
     scene5BudForms() {
       this.setDomState('state-scene-5-2017');
       if (this.chronoYear) {
@@ -3932,28 +4035,36 @@
         void this.chronoYear.offsetWidth;
         this.chronoYear.classList.add('year-tick-bump');
       }
+      if (this.chronoAgeBadge) {
+        this.chronoAgeBadge.textContent = '9 anos';
+      }
       if (this.stem) {
         this.stem.style.strokeDashoffset = '0';
       }
       if (this.budGroup) {
+        this.budGroup.style.opacity = '1';
         this.budGroup.classList.add('bud-visible');
+        this.budGroup.style.transform = 'scale(1)';
       }
       if (this.chronoFlowBadge) {
         this.chronoFlowBadge.textContent = '2017';
       }
       if (this.sys && this.sys.audioManager) {
-        this.sys.audioManager.playSparkleSound(0.75);
-        this.sys.audioManager.fadeTo(0.58, 1500);
+        this.sys.audioManager.playSparkleSound(0.7);
+        this.sys.audioManager.fadeTo(0.62, 1600);
       }
     }
 
-    scene5Year(year) {
+    scene5Year(year, age) {
       this.setDomState(`state-scene-5-${year}`);
       if (this.chronoYear) {
         this.chronoYear.textContent = year.toString();
         this.chronoYear.classList.remove('year-tick-bump');
         void this.chronoYear.offsetWidth;
         this.chronoYear.classList.add('year-tick-bump');
+      }
+      if (this.chronoAgeBadge) {
+        this.chronoAgeBadge.textContent = `${age} anos`;
       }
       if (this.chronoFlowBadge) {
         this.chronoFlowBadge.textContent = year.toString();
@@ -3968,17 +4079,24 @@
         void this.chronoYear.offsetWidth;
         this.chronoYear.classList.add('year-tick-bump');
       }
+      if (this.chronoAgeBadge) {
+        this.chronoAgeBadge.textContent = '15 anos';
+      }
       if (this.budGroup) {
         this.budGroup.classList.add('bud-swelling');
+        this.budGroup.style.transform = 'scale(1.35)';
       }
       if (this.chronoFlowBadge) {
         this.chronoFlowBadge.textContent = '2023';
       }
       if (this.sys && this.sys.audioManager) {
-        this.sys.audioManager.fadeTo(0.62, 1400);
+        this.sys.audioManager.fadeTo(0.66, 1400);
       }
     }
 
+    // ------------------------------------------------------------------------
+    // CENA 6: APROXIMAÇÃO (2024 E 2025)
+    // ------------------------------------------------------------------------
     scene6Year2024() {
       this.setDomState('state-scene-6-2024');
       if (this.chronoYear) {
@@ -3987,6 +4105,9 @@
         void this.chronoYear.offsetWidth;
         this.chronoYear.classList.add('year-tick-bump');
       }
+      if (this.chronoAgeBadge) {
+        this.chronoAgeBadge.textContent = '16 anos';
+      }
       if (this.chronoFlowBadge) {
         this.chronoFlowBadge.classList.remove('flow-visible');
       }
@@ -3994,16 +4115,18 @@
         this.chronoDetailBadge.textContent = '24 de setembro';
         this.chronoDetailBadge.classList.add('detail-visible');
       }
-      // Primeiros sinais do desabrochar da flor
+      // Primeiras pétalas começam a abrir
       if (this.flowerGroup) {
+        this.flowerGroup.style.opacity = '1';
         this.flowerGroup.classList.add('flower-visible');
+        this.flowerGroup.style.transform = 'scale(0.65)';
       }
       if (this.budGroup) {
         this.budGroup.style.opacity = '0';
       }
       if (this.sys && this.sys.audioManager) {
         this.sys.audioManager.playSparkleSound(0.85);
-        this.sys.audioManager.fadeTo(0.66, 1600);
+        this.sys.audioManager.fadeTo(0.70, 1600);
       }
     }
 
@@ -4015,16 +4138,22 @@
         void this.chronoYear.offsetWidth;
         this.chronoYear.classList.add('year-tick-bump');
       }
-      // Pétalas começam a se afastar suavemente
+      if (this.chronoAgeBadge) {
+        this.chronoAgeBadge.textContent = '17 anos';
+      }
       if (this.flowerGroup) {
         this.flowerGroup.classList.add('flower-opening');
+        this.flowerGroup.style.transform = 'scale(0.9)';
       }
       if (this.sys && this.sys.audioManager) {
-        this.sys.audioManager.fadeTo(0.70, 2000);
+        this.sys.audioManager.fadeTo(0.74, 2000);
       }
     }
 
-    scene8Bloom() {
+    // ------------------------------------------------------------------------
+    // CENA 7: O DESABROCHAR (2026: 18 ANOS)
+    // ------------------------------------------------------------------------
+    scene8Start2026() {
       this.setDomState('state-scene-8-2026');
       if (this.chronoYear) {
         this.chronoYear.textContent = '2026';
@@ -4032,23 +4161,65 @@
         void this.chronoYear.offsetWidth;
         this.chronoYear.classList.add('year-tick-bump');
       }
-      // A flor se abre em plena glória
-      if (this.flowerGroup) {
-        this.flowerGroup.classList.add('flower-full-bloom');
+      if (this.chronoAgeBadge) {
+        this.chronoAgeBadge.textContent = '18 ANOS';
       }
+      if (this.chronoDetailBadge) {
+        this.chronoDetailBadge.classList.remove('detail-visible');
+      }
+    }
+
+    scene8MonthTick(monthName) {
+      if (this.chronoMonth) {
+        this.chronoMonth.textContent = monthName;
+        this.chronoMonth.classList.remove('month-visible');
+        void this.chronoMonth.offsetWidth;
+        this.chronoMonth.classList.add('month-visible');
+      }
+    }
+
+    scene8DayTick(dayStr) {
+      if (this.chronoDay) {
+        this.chronoDay.textContent = dayStr;
+        this.chronoDay.classList.remove('day-visible');
+        void this.chronoDay.offsetWidth;
+        this.chronoDay.classList.add('day-visible');
+      }
+    }
+
+    scene8BloomFull() {
+      this.setDomState('state-scene-8-bloom');
+      if (this.chronoDay) this.chronoDay.textContent = '24';
+      if (this.chronoMonth) this.chronoMonth.textContent = 'SETEMBRO';
+      if (this.chronoYear) this.chronoYear.textContent = '2026';
+
+      // A flor desabrocha por completo em celebração
+      if (this.flowerGroup) {
+        this.flowerGroup.style.opacity = '1';
+        this.flowerGroup.classList.add('flower-full-bloom', 'flower-celebrating');
+      }
+
+      // Dispara confetes delicados
+      if (window.confetti) {
+        window.confetti({
+          particleCount: 65,
+          spread: 85,
+          origin: { y: 0.62 },
+          colors: ['#ff4081', '#f50057', '#ffd54f', '#ffffff', '#81c784']
+        });
+      }
+
       if (this.sys && this.sys.audioManager) {
         this.sys.audioManager.playSparkleSound(1.0);
-        this.sys.audioManager.fadeTo(0.78, 1800);
+        this.sys.audioManager.fadeTo(0.80, 2000);
       }
     }
 
     scene8RevealText() {
       this.setDomState('state-scene-8-reveal');
-      // Transição harmoniosa: a data anterior sobe suavemente
       if (this.chronoDateCard) {
         this.chronoDateCard.classList.add('card-faded');
       }
-      // Revelação do marco de 18 anos e nome
       if (this.transformWrap) {
         this.transformWrap.classList.add('wrap-visible');
       }
@@ -4062,7 +4233,7 @@
         this.heroName.classList.add('name-visible');
       }
       if (this.sys && this.sys.audioManager) {
-        this.sys.audioManager.playSparkleSound(1.0);
+        this.sys.audioManager.playSparkleSound(0.9);
       }
     }
 
@@ -4074,50 +4245,66 @@
     }
 
     // ------------------------------------------------------------------------
-    // FINALIZAÇÃO E TRANSIÇÃO SUAVE PARA O CONTEÚDO PRINCIPAL
+    // TRANSIÇÃO CINEMATOGRÁFICA PARA O LIVRO (PÉTALA CAINDO)
     // ------------------------------------------------------------------------
+    transitionToBook(isInstant = false) {
+      if (this.isTransitioning || this.isCompleted) return;
+      this.isTransitioning = true;
 
-    skipIntro() {
-      if (this.isCompleted) return;
-      this.finishCinematicSequence(true);
+      if (isInstant) {
+        this.finishCinematicSequence(true);
+        return;
+      }
+
+      // Animação da pétala se desprendendo e caindo em direção à tela/câmera
+      if (this.fallingPetal) {
+        this.fallingPetal.classList.add('petal-falling');
+      }
+
+      // Som autêntico da virada de página / abertura do livro
+      if (this.sys && this.sys.soundEffects) {
+        try {
+          this.sys.soundEffects.playPageTurn();
+        } catch (e) {}
+      }
+
+      // Após a pétala cobrir a câmera, revela o livro no Capítulo 1
+      setTimeout(() => {
+        this.finishCinematicSequence(false);
+      }, 1900);
     }
 
     finishCinematicSequence(isInstant = false) {
       if (this.isCompleted) return;
       this.isCompleted = true;
 
-      // Interrompe o loop de animação
       if (this.animationFrameId) {
         cancelAnimationFrame(this.animationFrameId);
         this.animationFrameId = null;
       }
 
-      // Garante volume confortável do áudio para leitura
       if (this.sys && this.sys.audioManager) {
         this.sys.audioManager.fadeTo(0.50, 800);
       }
 
-      // Revela a barra de navegação superior com transição suave
       const navBar = document.getElementById('top-nav-bar');
       if (navBar) {
         navBar.classList.add('nav-reveal-active');
       }
 
-      // Revela o palco principal com escala suave
       const stage = document.getElementById('stage-wrapper');
       if (stage) {
         stage.classList.add('stage-reveal-active');
       }
 
-      // Transição de fade-out do overlay de abertura
       if (this.entryEl) {
         this.entryEl.classList.add('fade-out-complete');
-        const cleanupDelay = isInstant ? 300 : 1100;
+        const delay = isInstant ? 200 : 1000;
         setTimeout(() => {
           if (this.entryEl) {
             this.entryEl.style.display = 'none';
           }
-        }, cleanupDelay);
+        }, delay);
       }
     }
   }
@@ -4224,37 +4411,6 @@
           this.closeRestartModal();
           this.restartExperience();
         });
-      }
-
-      // Gatilho oficial da tela inicial de interação ("Toque para começar")
-      const startOverlay = document.getElementById('initial-start-overlay');
-      const btnInitialStart = document.getElementById('btn-initial-start');
-
-      if (btnInitialStart) {
-        const handleStartExperience = (e) => {
-          if (e) e.stopPropagation();
-          // 1. Inicia áudio global com monokrom.mp3 (instância única contínua)
-          this.audioManager.startExperienceAudio();
-          // 2. Remove o overlay inicial com transição suave
-          if (startOverlay) {
-            startOverlay.classList.add('overlay-hidden');
-            setTimeout(() => {
-              if (startOverlay.parentNode) {
-                startOverlay.style.display = 'none';
-              }
-            }, 900);
-          }
-          // 3. Garante que o controlador cinematográfico continue em sincronia perfeita
-          if (this.cinematicIntro && !this.cinematicIntro.isCompleted) {
-            this.cinematicIntro.startSequence();
-          }
-        };
-
-        btnInitialStart.addEventListener('click', handleStartExperience);
-        btnInitialStart.addEventListener('touchstart', handleStartExperience, { passive: true });
-        if (startOverlay) {
-          startOverlay.addEventListener('click', handleStartExperience);
-        }
       }
 
       // PDF Modal elements
