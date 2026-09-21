@@ -23,6 +23,20 @@ html {
 }
 
 /* ========================================================================== */
+/* VIEWPORT ROSE PETALS SYSTEM (Queda Constante de Pétalas Suaves)            */
+/* ========================================================================== */
+.global-viewport-petals-canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 1500;
+  overflow: hidden;
+}
+
+/* ========================================================================== */
 /* TELA INICIAL DE INTERAÇÃO (GATILHO DE ÁUDIO GLOBAL E AUTOPLAY)            */
 /* 100% Identidade Visual Rosa, Acolhedora e Luminous                         */
 /* ========================================================================== */
@@ -179,90 +193,13 @@ html {
   flex: 1;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: center;
+  align-items: center;
   min-height: 100vh;
   position: relative;
   z-index: 2;
   box-sizing: border-box;
-  padding: 60px 12px 60px 12px;
-}
-
-/* Top Navigation Bar */
-.top-nav-bar {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 54px;
-  background: rgba(255, 255, 255, 0.88);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 14px;
-  z-index: 100;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
-}
-
-.nav-left, .nav-right {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.nav-btn {
-  background: transparent;
-  border: 1px solid rgba(0, 0, 0, 0.12);
-  color: #4a4a4a;
-  border-radius: 20px;
-  padding: 5px 12px;
-  font-size: 13px;
-  font-weight: 600;
-  font-family: 'Quicksand', sans-serif;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  min-height: 36px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-}
-
-.nav-btn:hover:not(:disabled) {
-  background: #f0f0f0;
-  color: #111;
-  border-color: #bbb;
-}
-
-.nav-btn:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-
-.nav-btn.active {
-  background: #ff758c;
-  color: #fff;
-  border-color: #ff758c;
-}
-
-.chapter-badge {
-  font-size: 13px;
-  font-weight: 700;
-  color: #333;
-  padding: 5px 12px;
-  background: #ffe3e8;
-  border-radius: 20px;
-  max-width: 230px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.chapter-badge:hover {
-  background: #ffd0da;
+  padding: 24px 16px;
 }
 
 /* Stage Area */
@@ -484,31 +421,6 @@ html {
   transform: scale(1.1) rotate(-6deg);
 }
 
-/* Bottom Tap indicator from ZIP */
-.bottom-tap-bar {
-  position: fixed;
-  bottom: 12px;
-  left: 0;
-  right: 0;
-  text-align: center;
-  z-index: 50;
-  pointer-events: auto;
-}
-
-#tap {
-  display: inline-block;
-  margin: 0 auto;
-  padding: 8px 20px;
-  background: rgba(255, 255, 255, 0.9);
-  border-radius: 25px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  user-select: none;
-  border: 1px solid rgba(0, 0, 0, 0.05);
-}
-
 /* Modal styles for chapter selector & PDF & restart confirm */
 .custom-modal-backdrop {
   position: fixed;
@@ -652,17 +564,6 @@ html {
 
 /* Responsive considerations */
 @media (max-width: 576px) {
-  .top-nav-bar {
-    padding: 0 8px;
-  }
-  .nav-btn {
-    padding: 5px 8px;
-    font-size: 12px;
-  }
-  .chapter-badge {
-    font-size: 12px;
-    max-width: 150px;
-  }
   .display-18 {
     font-size: 76px;
   }
@@ -1236,87 +1137,6 @@ html {
   pointer-events: none;
 }
 
-/* Controles Discretos do Topo (Áudio & Pular) */
-.cinematic-header-controls {
-  position: absolute;
-  top: 18px;
-  right: 20px;
-  z-index: 100;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  pointer-events: auto;
-}
-
-.cinematic-audio-btn {
-  font-family: 'Quicksand', sans-serif;
-  font-size: 13px;
-  font-weight: 600;
-  letter-spacing: 0.5px;
-  padding: 8px 16px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.88);
-  border: 1px solid rgba(225, 175, 200, 0.55);
-  color: #8e3a6d;
-  box-shadow: 0 4px 16px rgba(180, 100, 140, 0.12);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.cinematic-audio-btn:hover,
-.cinematic-audio-btn:focus-visible {
-  background: rgba(255, 255, 255, 0.98);
-  border-color: rgba(210, 140, 180, 0.8);
-  color: #5c1642;
-  transform: translateY(-1px);
-  box-shadow: 0 6px 22px rgba(180, 100, 140, 0.22);
-  outline: none;
-}
-
-.cinematic-audio-btn i {
-  color: #e91e63;
-  font-size: 12px;
-}
-
-/* Botão Discreto de Pular */
-.cinematic-skip-btn {
-  position: relative;
-  top: auto;
-  right: auto;
-  font-family: 'Quicksand', sans-serif;
-  font-size: 13px;
-  font-weight: 600;
-  letter-spacing: 1px;
-  padding: 8px 18px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.85);
-  border: 1px solid rgba(225, 175, 200, 0.45);
-  color: #8e3a6d;
-  box-shadow: 0 4px 16px rgba(180, 100, 140, 0.12);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.cinematic-skip-btn:hover,
-.cinematic-skip-btn:focus-visible {
-  background: rgba(255, 255, 255, 0.98);
-  border-color: rgba(210, 140, 180, 0.7);
-  color: #5c1642;
-  transform: translateY(-1px);
-  box-shadow: 0 6px 22px rgba(180, 100, 140, 0.22);
-  outline: none;
-}
-
 /* Cena e Câmera Cinematográfica */
 .cinematic-scene {
   position: relative;
@@ -1503,6 +1323,9 @@ html {
 /* ========================================================================== */
 .cinematic-plant-stage {
   position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   width: 100%;
   max-width: 440px;
   height: 82vh;
@@ -1510,6 +1333,7 @@ html {
   display: flex;
   align-items: center;
   justify-content: center;
+  margin: 0;
   pointer-events: auto;
   cursor: pointer;
   z-index: 3;
@@ -1519,8 +1343,46 @@ html {
 .botanical-svg {
   width: 100%;
   height: 100%;
+  display: block;
+  margin: 0 auto;
   overflow: visible;
   filter: drop-shadow(0 10px 28px rgba(180, 80, 130, 0.12));
+}
+
+/* Interação com o SVG da Planta: Crescimento e Ampliação Temporária ao Clicar */
+#botanical-svg {
+  cursor: pointer;
+  transform-origin: 50% 88%;
+  transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.5s ease;
+  will-change: transform, filter;
+  -webkit-tap-highlight-color: transparent;
+}
+
+#botanical-svg:hover {
+  filter: drop-shadow(0 12px 32px rgba(255, 105, 180, 0.28)) brightness(1.03);
+}
+
+@keyframes plantGrowTemporary {
+  0% {
+    transform: scale(1);
+    filter: drop-shadow(0 10px 28px rgba(180, 80, 130, 0.12));
+  }
+  30% {
+    transform: scale(1.2) translateY(-10px);
+    filter: drop-shadow(0 20px 45px rgba(255, 105, 180, 0.5)) drop-shadow(0 0 24px rgba(255, 230, 150, 0.65)) brightness(1.12);
+  }
+  65% {
+    transform: scale(1.1) translateY(-4px);
+    filter: drop-shadow(0 15px 34px rgba(255, 105, 180, 0.38)) drop-shadow(0 0 14px rgba(255, 230, 150, 0.45)) brightness(1.06);
+  }
+  100% {
+    transform: scale(1);
+    filter: drop-shadow(0 10px 28px rgba(180, 80, 130, 0.12));
+  }
+}
+
+#botanical-svg.plant-grow-active {
+  animation: plantGrowTemporary 1.15s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
 /* Solo / Sombra Terrena */
@@ -2237,8 +2099,12 @@ html {
     letter-spacing: 2.5px;
   }
   .cinematic-plant-stage {
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
     max-width: 320px;
     height: 72vh;
+    margin: 0;
   }
   .cinematic-start-prompt {
     font-size: 13.5px;
@@ -2410,609 +2276,757 @@ html {
 }
 
 /* ========================================================================== */
-/* CENA FINAL DEFINITIVA (30 SEGUNDOS CONTÍNUOS DE ESPETÁCULO VISUAL PURO)     */
+/* 🎂 CENA FINAL — “APAGANDO A VELA”                                          */
 /* 100% IDENTIDADE VISUAL ROSA DO SITE: Rosa Claro, Rosa Médio, Rosa, Branco  */
+/* Sem fundos pretos, roxos ou escuros. Estética poética, calorosa e delicada */
 /* ========================================================================== */
 
 .df-finale-viewport {
   position: relative;
   width: 100%;
-  min-height: 82vh;
-  max-width: 780px;
+  min-height: 84vh;
+  max-width: 820px;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  border-radius: 24px;
+  border-radius: 28px;
   overflow: hidden;
-  /* Paleta 100% fiel ao restante do site */
-  background: radial-gradient(circle at 50% 40%, #ffffff 0%, #fff2f6 30%, #ffe4ec 65%, #fec0cd 100%);
-  border: 2px solid rgba(255, 174, 192, 0.75);
-  box-shadow: 0 16px 45px rgba(255, 107, 139, 0.22), 0 4px 18px rgba(0, 0, 0, 0.04), inset 0 0 45px rgba(255, 255, 255, 0.9);
-  perspective: 1400px;
+  background: radial-gradient(circle at 50% 40%, #ffffff 0%, #fff4f7 28%, #ffe8ef 60%, #fec0cd 100%);
+  border: 2px solid rgba(255, 174, 192, 0.85);
+  box-shadow: 0 18px 50px rgba(255, 107, 139, 0.22), 0 4px 18px rgba(0, 0, 0, 0.04), inset 0 0 50px rgba(255, 255, 255, 0.95);
+  perspective: 1200px;
   user-select: none;
 }
 
 /* Camada de Lavagem Rosada de Fundo (Atmosphere Glow Suave) */
 .df-ambient-wash {
   position: absolute;
-  inset: -20%;
-  background: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.95) 0%, rgba(255, 174, 192, 0.35) 45%, transparent 75%);
-  filter: blur(40px);
+  inset: -15%;
+  background: radial-gradient(circle at 50% 45%, rgba(255, 255, 255, 0.95) 0%, rgba(255, 182, 198, 0.45) 45%, rgba(254, 192, 205, 0.25) 75%, transparent 100%);
+  filter: blur(35px);
   pointer-events: none;
   z-index: 1;
   transition: opacity 2s ease, transform 3s ease;
 }
 
-/* Canvas Dinâmico de Flores e Partículas */
+/* Canvas Dinâmico de Pétalas, Partículas e Luzes do Sopro */
 .df-particles-canvas {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
   pointer-events: none;
-  z-index: 4;
+  z-index: 9;
 }
 
 /* -------------------------------------------------------------------------- */
-/* 0s → 4s: A ÚLTIMA PÁGINA E O LIVRO FECHANDO (3D SUAVE & REALISTA)          */
+/* ETAPA 1: O LIVRO ABERTO & LUZ ROSA TRASEIRA (0s → 5s)                      */
 /* -------------------------------------------------------------------------- */
-.df-book-stage {
-  position: relative;
-  z-index: 3;
-  perspective: 1200px;
-  width: 320px;
-  height: 400px;
+.df-prologue-book-stage {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  transition: opacity 1.8s cubic-bezier(0.16, 1, 0.3, 1), transform 2.2s cubic-bezier(0.16, 1, 0.3, 1), filter 1.8s ease;
+  padding: 24px;
+  transition: opacity 1.8s cubic-bezier(0.16, 1, 0.3, 1), transform 2s cubic-bezier(0.16, 1, 0.3, 1), filter 1.6s ease;
+  will-change: opacity, transform, filter;
 }
 
-.df-book-stage.book-dissolve {
+.df-prologue-book-stage.stage-hidden {
   opacity: 0;
   transform: scale(0.92);
   filter: blur(14px);
   pointer-events: none;
 }
 
-.df-book-wrap {
-  position: relative;
-  width: 270px;
-  height: 350px;
-  transform-style: preserve-3d;
-  transition: transform 3.4s cubic-bezier(0.25, 0.1, 0.25, 1);
-  box-shadow: 0 16px 45px rgba(255, 107, 139, 0.22), 0 4px 15px rgba(0, 0, 0, 0.05);
-  border-radius: 10px;
+/* Luz rosa suave que surge por trás das páginas do livro */
+.df-book-pink-backlight {
+  position: absolute;
+  width: 380px;
+  height: 440px;
+  border-radius: 40px;
+  background: radial-gradient(circle, rgba(255, 174, 192, 0.75) 0%, rgba(255, 107, 139, 0.45) 50%, transparent 80%);
+  filter: blur(28px);
+  opacity: 0;
+  transform: scale(0.8);
+  transition: opacity 2.5s ease, transform 2.8s ease;
+  pointer-events: none;
+  z-index: 1;
 }
 
-/* Contracapa / Corpo do Livro */
-.df-book-base {
-  position: absolute;
-  inset: 0;
-  background: #fff8fa;
-  border-radius: 6px 10px 10px 6px;
-  border: 1.5px solid rgba(255, 174, 192, 0.5);
-  box-shadow: inset 18px 0 25px rgba(255, 182, 193, 0.15);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 24px;
-  border-left: 5px solid #ff758c;
+.df-book-pink-backlight.backlight-active {
+  opacity: 1;
+  transform: scale(1.18);
+}
+
+.df-open-book-card {
+  position: relative;
+  z-index: 2;
+  width: 320px;
+  max-width: 90vw;
+  min-height: 380px;
+  background: #fffbfa;
+  border-radius: 12px;
+  border: 1.5px solid rgba(255, 174, 192, 0.65);
+  box-shadow: 0 16px 40px rgba(255, 107, 139, 0.25), inset 22px 0 30px rgba(255, 182, 193, 0.18);
+  border-left: 6px solid #ff758c;
   background-image: 
     linear-gradient(to right, rgba(225, 78, 85, 0.45) 1px, transparent 1px),
     linear-gradient(to bottom, rgba(175, 195, 218, 0.35) 1px, transparent 1px);
-  background-size: 100% 100%, 100% 26px;
-  background-position: 28px 0, 0 28px;
-}
-
-.df-book-base-text {
-  font-family: 'Handlee', cursive;
-  font-size: 19px;
-  color: #3b0f2a;
-  line-height: 1.5;
+  background-size: 100% 100%, 100% 28px;
+  background-position: 30px 0, 0 32px;
+  padding: 34px 26px 28px 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
   text-align: center;
+  transition: filter 2s ease, opacity 2s ease;
 }
 
-/* Capa Frontal que se fecha em 3D */
-.df-book-cover {
+.df-open-book-card.text-dissolve .df-book-quote {
+  opacity: 0.12;
+  filter: blur(3px);
+  transition: opacity 2s ease, filter 2s ease;
+}
+
+.df-book-quote {
+  font-family: 'Handlee', 'Quicksand', cursive;
+  font-size: 21px;
+  color: #3b0f2a;
+  line-height: 1.6;
+  margin: 0;
+  transition: all 1.8s ease;
+}
+
+/* Pétala de Destaque da Transição da Câmera */
+.df-hero-transition-petal {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 140px;
+  height: 180px;
+  transform: translate(-50%, -50%) scale(0.05) rotate(-35deg);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 12;
+  transition: transform 2.2s cubic-bezier(0.22, 1, 0.36, 1), opacity 1.8s ease;
+  filter: drop-shadow(0 10px 25px rgba(255, 107, 139, 0.45));
+}
+
+.df-hero-transition-petal.sweep-in {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1.6) rotate(10deg);
+}
+
+.df-hero-transition-petal.fill-screen {
+  opacity: 0.98;
+  transform: translate(-50%, -50%) scale(16) rotate(45deg);
+}
+
+.df-hero-transition-petal.glide-away {
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(22) rotate(65deg);
+  transition: transform 1.6s ease-in, opacity 1.2s ease-out;
+}
+
+/* -------------------------------------------------------------------------- */
+/* ETAPA 2: 🎀 A CENA DO ANIVERSÁRIO (CENÁRIO ACONCHEGANTE ROSA E BRANCO)      */
+/* -------------------------------------------------------------------------- */
+.df-birthday-scene {
   position: absolute;
   inset: 0;
-  transform-origin: left center;
-  transform-style: preserve-3d;
-  border-radius: 8px 12px 12px 8px;
-  background: linear-gradient(135deg, #ff758c 0%, #ff5277 50%, #e04167 100%);
-  border: 2px solid rgba(255, 255, 255, 0.95);
-  box-shadow: 4px 10px 30px rgba(255, 107, 139, 0.35), inset 0 0 20px rgba(255, 255, 255, 0.35);
+  z-index: 5;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  transform: rotateY(-175deg); /* Aberto inicialmente */
-  transition: transform 3.2s cubic-bezier(0.25, 0.1, 0.25, 1);
+  justify-content: flex-end;
+  padding-bottom: 24px;
+  opacity: 0;
+  transform: scale(0.96);
+  transition: opacity 1.8s cubic-bezier(0.16, 1, 0.3, 1), transform 2s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+
+.df-birthday-scene.scene-visible {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Câmera Virtual que se aproxima/afasta suavemente */
+.df-bday-camera-wrap {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  transition: transform 2.4s cubic-bezier(0.25, 1, 0.5, 1);
   will-change: transform;
 }
 
-.df-book-cover.is-closed {
-  transform: rotateY(0deg); /* Fecha suavemente com perspectiva */
-  box-shadow: 0 14px 40px rgba(255, 107, 139, 0.45), 0 0 35px rgba(255, 174, 192, 0.6);
+.df-bday-camera-wrap.zoom-candle {
+  transform: scale(1.12) translateY(30px);
 }
 
-.df-cover-emblem {
-  width: 90px;
-  height: 90px;
+.df-bday-camera-wrap.pan-sky {
+  transform: scale(1.04) translateY(-45px);
+}
+
+.df-bday-camera-wrap.retreat-calm {
+  transform: scale(0.96) translateY(12px);
+}
+
+/* Luzes Bokeh Desfocadas Flutuando ao Fundo */
+.df-bokeh-lights {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  overflow: hidden;
+}
+
+.df-bokeh-orb {
+  position: absolute;
   border-radius: 50%;
-  border: 2.5px solid rgba(255, 255, 255, 0.95);
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.45) 0%, rgba(255, 107, 139, 0.3) 100%);
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.9) 0%, rgba(255, 174, 192, 0.6) 45%, rgba(254, 192, 205, 0) 80%);
+  filter: blur(12px);
+  animation: bokehFloat 7s ease-in-out infinite alternate;
+}
+
+@keyframes bokehFloat {
+  0% { transform: translateY(0) scale(1); opacity: 0.5; }
+  50% { transform: translateY(-16px) scale(1.12); opacity: 0.85; }
+  100% { transform: translateY(8px) scale(0.95); opacity: 0.6; }
+}
+
+/* Decorações Florais nos Cantos */
+.df-corner-flowers {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.df-flower-cluster-left,
+.df-flower-cluster-right {
+  position: absolute;
+  bottom: 60px;
+  width: 140px;
+  height: 180px;
+  opacity: 0.85;
+  filter: drop-shadow(0 4px 12px rgba(255, 107, 139, 0.25));
+  transition: transform 2s ease, opacity 2s ease;
+}
+
+.df-flower-cluster-left { left: 16px; }
+.df-flower-cluster-right { right: 16px; transform: scaleX(-1); }
+
+/* Personagem Inspirada na Issamara */
+.df-character-issamara {
+  position: absolute;
+  bottom: 155px;
+  z-index: 3;
+  width: 250px;
+  height: 290px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 1.8s cubic-bezier(0.25, 1, 0.5, 1);
+  animation: issamaraGentleBreathe 4.5s ease-in-out infinite alternate;
+}
+
+@keyframes issamaraGentleBreathe {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-4px); }
+}
+
+.df-character-issamara.leaning-to-blow {
+  transform: translateY(12px) scale(1.03);
+  animation: none;
+}
+
+.df-character-issamara.serene-smile {
+  transform: translateY(0) scale(1.02);
+}
+
+.df-issamara-svg {
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 8px 24px rgba(255, 107, 139, 0.28));
+}
+
+/* Controle dos Olhos e Boca no SVG da Issamara */
+.df-eyes-closed {
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.df-character-issamara.eyes-shut .df-eyes-open {
+  opacity: 0;
+}
+
+.df-character-issamara.eyes-shut .df-eyes-closed {
+  opacity: 1;
+}
+
+.df-lips-blow {
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.df-character-issamara.blowing .df-lips-normal {
+  opacity: 0;
+}
+
+.df-character-issamara.blowing .df-lips-blow {
+  opacity: 1;
+}
+
+/* Soprinho Visível (Fluxo Suave de Ar) */
+.df-blow-gust-stream {
+  position: absolute;
+  bottom: 235px;
+  left: 50%;
+  transform: translateX(-50%) scale(0);
+  width: 110px;
+  height: 50px;
+  z-index: 4;
+  pointer-events: none;
+  opacity: 0;
+  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.5s ease;
+}
+
+.df-blow-gust-stream.gust-active {
+  opacity: 0.9;
+  transform: translateX(-50%) translateY(22px) scale(1.2);
+}
+
+/* Mesa do Bolo com Toalha Drapeada e Pétalas */
+.df-table-wrapper {
+  position: relative;
+  z-index: 5;
+  width: 90%;
+  max-width: 520px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  color: #ffffff;
-  box-shadow: 0 0 25px rgba(255, 255, 255, 0.8);
 }
 
-.df-cover-year {
-  font-family: 'Quicksand', sans-serif;
-  font-size: 38px;
-  font-weight: 700;
-  line-height: 1;
-  letter-spacing: 2px;
-}
-
-.df-cover-name {
-  font-family: 'Quicksand', sans-serif;
-  font-size: 15px;
-  font-weight: 700;
-  letter-spacing: 3px;
-  color: #fff6f8;
-  margin-top: 14px;
-  text-shadow: 0 2px 8px rgba(216, 27, 96, 0.4);
-}
-
-/* -------------------------------------------------------------------------- */
-/* 4s → 7s: A PRIMEIRA LUZ (PONTO CENTRAL & 3 PULSOS LUMINOSOS ROSA/BRANCO)   */
-/* -------------------------------------------------------------------------- */
-.df-light-core-wrap {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 200px;
-  height: 200px;
+.df-table-cloth {
+  width: 100%;
+  height: 120px;
+  background: linear-gradient(180deg, #ffffff 0%, #fff0f4 55%, #fed3dd 100%);
+  border-radius: 24px 24px 12px 12px;
+  border: 1.5px solid rgba(255, 174, 192, 0.7);
+  box-shadow: 0 14px 35px rgba(255, 107, 139, 0.22), inset 0 2px 12px rgba(255, 255, 255, 0.9);
+  position: relative;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  pointer-events: none;
-  z-index: 5;
-}
-
-.df-first-light-dot {
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  background: #ffffff;
-  box-shadow: 0 0 20px #ffffff, 0 0 45px #ffaec0, 0 0 70px #ff6b8b;
-  opacity: 0;
-  transform: scale(0.2);
-  transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.df-first-light-dot.pulse-1 {
-  opacity: 1;
-  transform: scale(0.9);
-  box-shadow: 0 0 25px #ffffff, 0 0 55px #ffaec0, 0 0 85px #ff6b8b;
-}
-
-.df-first-light-dot.pulse-2 {
-  opacity: 1;
-  transform: scale(1.65);
-  box-shadow: 0 0 35px #ffffff, 0 0 75px #ffaec0, 0 0 115px #ff6b8b;
-}
-
-.df-light-ripple {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%) scale(0.1);
-  width: 100px;
-  height: 100px;
-  border-radius: 50%;
-  border: 2.5px solid rgba(255, 255, 255, 0.95);
-  background: radial-gradient(circle, rgba(255, 174, 192, 0.45) 0%, transparent 70%);
-  opacity: 0;
-  pointer-events: none;
-}
-
-.df-light-ripple.ripple-active {
-  animation: lightRippleOut 2.4s cubic-bezier(0.1, 0.8, 0.2, 1) forwards;
-}
-
-@keyframes lightRippleOut {
-  0% { transform: translate(-50%, -50%) scale(0.1); opacity: 0.95; }
-  60% { opacity: 0.6; }
-  100% { transform: translate(-50%, -50%) scale(7.5); opacity: 0; }
-}
-
-/* -------------------------------------------------------------------------- */
-/* 7s → 15s: O JARDIM DE LUZ & FLORES BOTÂNICAS EM EXPANSÃO (ROSA & BRANCO)   */
-/* Feitas 100% em SVG / CSS nativo: Pétalas, Centro, Brilho, Rotação Suave   */
-/* -------------------------------------------------------------------------- */
-.df-flowers-container {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  z-index: 6;
   overflow: hidden;
 }
 
-.df-flower {
+/* Borda com babados delicados na toalha */
+.df-table-cloth::after {
+  content: '';
   position: absolute;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  opacity: 0;
-  transform: scale(0) rotate(0deg);
-  transition: opacity 1.8s cubic-bezier(0.16, 1, 0.3, 1), transform 2.2s cubic-bezier(0.16, 1, 0.3, 1), filter 1.6s ease;
-  will-change: transform, opacity;
-  filter: drop-shadow(0 2px 8px rgba(255, 107, 139, 0.35));
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 14px;
+  background-image: radial-gradient(circle, #ffccd7 6px, transparent 7px);
+  background-size: 20px 20px;
+  background-position: 0 10px;
 }
 
-.df-flower.bloomed {
-  opacity: 1;
-}
-
-.df-flower.flower-fade-out {
-  opacity: 0;
-  transform: scale(0.3) !important;
-  filter: blur(6px);
-}
-
-/* Variações de Profundidade (Escala, Blur, Opacidade) */
-.df-flower.depth-near {
-  filter: drop-shadow(0 4px 14px rgba(255, 107, 139, 0.4));
-  z-index: 8;
-}
-
-.df-flower.depth-mid {
-  filter: drop-shadow(0 2px 8px rgba(255, 107, 139, 0.3));
-  z-index: 6;
-}
-
-.df-flower.depth-far {
-  opacity: 0.65;
-  filter: blur(1.5px) drop-shadow(0 1px 4px rgba(255, 174, 192, 0.25));
-  z-index: 4;
-}
-
-/* Animação Contínua de Rotação e Flutuação */
-@keyframes flowerFloat {
-  0% { transform: translate(0, 0) rotate(0deg); }
-  50% { transform: translate(8px, -12px) rotate(15deg); }
-  100% { transform: translate(-6px, 6px) rotate(-10deg); }
-}
-
-/* -------------------------------------------------------------------------- */
-/* 15s → 18s: O CENTRO COMEÇA A BRILHAR (CONVERGÊNCIA & MÚLTIPLOS HALOS)     */
-/* -------------------------------------------------------------------------- */
-.df-halos-group {
+.df-table-petals-scatter {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 500px;
-  height: 500px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  top: 8px;
+  left: 0;
+  right: 0;
+  height: 40px;
   pointer-events: none;
-  z-index: 5;
-  opacity: 0;
-  transition: opacity 1.8s ease;
 }
 
-.df-halos-group.halos-visible {
+/* O Bolo de Aniversário */
+.df-cake-wrapper {
+  position: absolute;
+  bottom: 85px;
+  z-index: 6;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  filter: drop-shadow(0 10px 25px rgba(255, 107, 139, 0.3));
+}
+
+/* Prato / Suporte de Porcelana do Bolo */
+.df-cake-plate {
+  width: 220px;
+  height: 18px;
+  background: linear-gradient(180deg, #ffffff 0%, #fae6ed 100%);
+  border-radius: 50%;
+  border: 1.5px solid rgba(255, 182, 193, 0.85);
+  box-shadow: 0 6px 16px rgba(255, 107, 139, 0.25);
+  margin-top: -8px;
+}
+
+/* Velas 1 e 8 */
+.df-candles-row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: -4px;
+  z-index: 7;
+}
+
+.df-candle-item {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.df-candle-num-svg {
+  width: 32px;
+  height: 44px;
+  filter: drop-shadow(0 2px 6px rgba(255, 107, 139, 0.3));
+}
+
+.df-candle-wick {
+  width: 2.5px;
+  height: 8px;
+  background: #4a3838;
+  border-radius: 1px;
+  margin-bottom: -2px;
+}
+
+/* Chamas das Velas com Cintilação Realista */
+.df-candle-flame {
+  width: 14px;
+  height: 24px;
+  border-radius: 50% 50% 35% 35% / 60% 60% 40% 40%;
+  background: radial-gradient(circle at 50% 80%, #ffffff 0%, #fff7b3 25%, #ffb443 60%, #ff5277 90%, transparent 100%);
+  box-shadow: 0 0 16px #ffea79, 0 0 32px #ffaec0, 0 0 48px #ff6b8b;
+  transform-origin: 50% 90%;
+  animation: candleFlicker 1.4s ease-in-out infinite alternate;
+  transition: opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1), transform 0.25s ease;
+}
+
+.df-candle-flame.flame-sway-left {
+  animation: candleFlickerLeft 1.2s ease-in-out infinite alternate;
+}
+
+.df-candle-flame.flame-blown-out {
+  opacity: 0 !important;
+  transform: scale(0.1) translateY(-6px) !important;
+  box-shadow: none !important;
+}
+
+@keyframes candleFlicker {
+  0% { transform: scale(1) rotate(-1deg); }
+  25% { transform: scale(1.05, 0.96) rotate(2deg); }
+  50% { transform: scale(0.97, 1.04) rotate(-2deg); }
+  75% { transform: scale(1.04, 0.98) rotate(1deg); }
+  100% { transform: scale(1.02, 1.02) rotate(-1deg); }
+}
+
+@keyframes candleFlickerLeft {
+  0% { transform: scale(1.02, 1) rotate(1deg); }
+  35% { transform: scale(0.96, 1.06) rotate(-2deg); }
+  70% { transform: scale(1.06, 0.95) rotate(2deg); }
+  100% { transform: scale(0.98, 1.02) rotate(-1deg); }
+}
+
+/* Fumaça Translúcida pós-apagar */
+.df-candle-smoke {
+  position: absolute;
+  top: -18px;
+  width: 18px;
+  height: 35px;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(0) scale(0.5);
+}
+
+.df-candle-smoke.smoke-rising {
+  animation: smokeWispRise 2.8s cubic-bezier(0.16, 0.85, 0.45, 1) forwards;
+}
+
+@keyframes smokeWispRise {
+  0% { opacity: 0.85; transform: translateY(0) scale(0.5) rotate(0deg); }
+  40% { opacity: 0.6; transform: translateY(-16px) scale(1.1) rotate(12deg); }
+  80% { opacity: 0.25; transform: translateY(-32px) scale(1.5) rotate(-10deg); }
+  100% { opacity: 0; transform: translateY(-46px) scale(1.8) rotate(15deg); }
+}
+
+/* -------------------------------------------------------------------------- */
+/* ETAPA 3 & 4: ✨ CONSTELAÇÃO DE LUZ: 18 ACIMA DELA                         */
+/* -------------------------------------------------------------------------- */
+.df-constellation-18 {
+  position: absolute;
+  top: 45px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 260px;
+  height: 180px;
+  z-index: 8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 1.8s cubic-bezier(0.16, 1, 0.3, 1), transform 2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.df-constellation-18.constellation-visible {
   opacity: 1;
 }
 
-.df-halo-1 {
+.df-constellation-svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.df-constellation-dot {
+  opacity: 0;
+  transform: scale(0);
+  transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.df-constellation-dot.dot-lit {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.df-constellation-line {
+  stroke-dasharray: 200;
+  stroke-dashoffset: 200;
+  opacity: 0;
+  transition: stroke-dashoffset 1.8s cubic-bezier(0.16, 1, 0.3, 1), opacity 1.2s ease;
+}
+
+.df-constellation-line.line-drawn {
+  stroke-dashoffset: 0;
+  opacity: 0.85;
+}
+
+.df-constellation-glow-fill {
+  opacity: 0;
+  transition: opacity 2s ease, filter 2s ease;
+  filter: drop-shadow(0 0 25px rgba(255, 107, 139, 0.8)) drop-shadow(0 0 45px rgba(255, 255, 255, 0.95));
+}
+
+.df-constellation-18.fully-illuminated .df-constellation-glow-fill {
+  opacity: 1;
+  animation: glowPulsate 3.5s ease-in-out infinite alternate;
+}
+
+@keyframes glowPulsate {
+  0% { filter: drop-shadow(0 0 20px rgba(255, 107, 139, 0.6)) drop-shadow(0 0 35px rgba(255, 255, 255, 0.85)); }
+  100% { filter: drop-shadow(0 0 35px rgba(255, 107, 139, 0.95)) drop-shadow(0 0 65px rgba(255, 255, 255, 1)); }
+}
+
+/* -------------------------------------------------------------------------- */
+/* ETAPA 5: 🎉 A GRANDE COMEMORAÇÃO (ONDA SUAVE DE LUZ ROSA E TIPOGRAFIA)     */
+/* -------------------------------------------------------------------------- */
+.df-celebration-wave {
   position: absolute;
+  top: 35%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.1);
   width: 140px;
   height: 140px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.95) 0%, rgba(255, 174, 192, 0.7) 50%, transparent 80%);
-  filter: blur(12px);
-  animation: haloBreathFast 2s ease-in-out infinite alternate;
-}
-
-.df-halo-2 {
-  position: absolute;
-  width: 260px;
-  height: 260px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(255, 174, 192, 0.5) 0%, rgba(255, 107, 139, 0.25) 60%, transparent 85%);
-  filter: blur(24px);
-  animation: haloBreathMid 3.4s ease-in-out infinite alternate;
-}
-
-.df-halo-3 {
-  position: absolute;
-  width: 420px;
-  height: 420px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(255, 174, 192, 0.35) 0%, rgba(255, 107, 139, 0.15) 65%, transparent 85%);
-  filter: blur(40px);
-  animation: haloBreathSlow 5s ease-in-out infinite alternate;
-}
-
-.df-energy-ring {
-  position: absolute;
-  width: 200px;
-  height: 200px;
-  border-radius: 50%;
-  border: 2px dashed rgba(255, 255, 255, 0.95);
-  box-shadow: 0 0 25px rgba(255, 174, 192, 0.8), inset 0 0 20px rgba(255, 107, 139, 0.4);
-  animation: energyRingSpin 8s linear infinite;
-}
-
-@keyframes haloBreathFast {
-  0% { transform: scale(0.92); opacity: 0.75; }
-  100% { transform: scale(1.12); opacity: 1; }
-}
-
-@keyframes haloBreathMid {
-  0% { transform: scale(0.95); opacity: 0.6; }
-  100% { transform: scale(1.08); opacity: 0.9; }
-}
-
-@keyframes haloBreathSlow {
-  0% { transform: scale(0.96); opacity: 0.4; }
-  100% { transform: scale(1.05); opacity: 0.75; }
-}
-
-@keyframes energyRingSpin {
-  from { transform: rotate(0deg) scale(1); }
-  50% { transform: rotate(180deg) scale(1.05); }
-  to { transform: rotate(360deg) scale(1); }
-}
-
-/* -------------------------------------------------------------------------- */
-/* 18s → 21s: O MOMENTO DE TENSÃO (SUSPENSÃO & RESPIRAÇÃO CENTRAL)           */
-/* -------------------------------------------------------------------------- */
-.df-tension-layer {
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(circle at center, rgba(255, 255, 255, 0.45) 0%, rgba(255, 174, 192, 0.22) 50%, transparent 80%);
-  opacity: 0;
-  pointer-events: none;
-  z-index: 7;
-  transition: opacity 1.8s ease;
-}
-
-.df-tension-layer.tension-active {
-  opacity: 1;
-}
-
-/* -------------------------------------------------------------------------- */
-/* 21s → 24s: O GRANDE CLÍMAX (ONDA, ANEL, FLARES H/V, PARTÍCULAS, CONFETES)  */
-/* -------------------------------------------------------------------------- */
-.df-climax-stage {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  z-index: 9;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-}
-
-/* 1. Onda Circular Enorme */
-.df-climax-shockwave {
-  position: absolute;
-  width: 120px;
-  height: 120px;
-  border-radius: 50%;
-  border: 4px solid #ffffff;
-  box-shadow: 0 0 50px #ffffff, 0 0 90px #ff6b8b;
-  opacity: 0;
-  transform: scale(0.1);
-}
-
-.df-climax-shockwave.fire-climax {
-  animation: shockwaveExplode 1.9s cubic-bezier(0.1, 0.9, 0.2, 1) forwards;
-}
-
-@keyframes shockwaveExplode {
-  0% { transform: scale(0.1); opacity: 1; }
-  50% { opacity: 0.9; }
-  100% { transform: scale(8.5); opacity: 0; }
-}
-
-/* 2. Anel Luminoso que se expande */
-.df-climax-ring {
-  position: absolute;
-  width: 220px;
-  height: 220px;
-  border-radius: 50%;
-  border: 2.5px solid rgba(255, 255, 255, 0.98);
-  box-shadow: 0 0 35px #ff6b8b, inset 0 0 25px #ffaec0;
-  opacity: 0;
-}
-
-.df-climax-ring.fire-climax {
-  animation: ringSurge 2.2s cubic-bezier(0.15, 0.85, 0.25, 1) forwards;
-}
-
-@keyframes ringSurge {
-  0% { transform: scale(0.2) rotate(0deg); opacity: 1; }
-  100% { transform: scale(6.2) rotate(180deg); opacity: 0; }
-}
-
-/* 3. Flare Horizontal */
-.df-climax-flare-h {
-  position: absolute;
-  width: 100%;
-  height: 6px;
-  background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.98) 50%, transparent 100%);
-  box-shadow: 0 0 30px #ffffff, 0 0 50px #ff6b8b;
-  opacity: 0;
-  transform: scaleX(0.1);
-}
-
-.df-climax-flare-h.fire-climax {
-  animation: flareHExp 1.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-@keyframes flareHExp {
-  0% { transform: scaleX(0.05); opacity: 0; }
-  35% { transform: scaleX(1); opacity: 1; height: 10px; }
-  75% { opacity: 0.7; height: 4px; }
-  100% { transform: scaleX(1.4); opacity: 0; height: 1px; }
-}
-
-/* 4. Flare Vertical */
-.df-climax-flare-v {
-  position: absolute;
-  height: 100%;
-  width: 6px;
-  background: linear-gradient(180deg, transparent 0%, rgba(255, 255, 255, 0.98) 50%, transparent 100%);
-  box-shadow: 0 0 30px #ffffff, 0 0 50px #ffaec0;
-  opacity: 0;
-  transform: scaleY(0.1);
-}
-
-.df-climax-flare-v.fire-climax {
-  animation: flareVExp 1.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-@keyframes flareVExp {
-  0% { transform: scaleY(0.05); opacity: 0; }
-  35% { transform: scaleY(1); opacity: 1; width: 10px; }
-  75% { opacity: 0.7; width: 4px; }
-  100% { transform: scaleY(1.4); opacity: 0; width: 1px; }
-}
-
-/* 5. Expansão Cinematográfica Total (Flash Branco-Rosa Luminoso - NUNCA escuro!) */
-.df-climax-flash {
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(circle at 50% 50%, #ffffff 0%, rgba(255, 240, 245, 0.95) 45%, rgba(255, 174, 192, 0.75) 75%, transparent 100%);
+  border: 3px solid #ffffff;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.95) 0%, rgba(255, 174, 192, 0.45) 50%, transparent 80%);
+  box-shadow: 0 0 45px #ffffff, 0 0 85px #ffaec0;
   opacity: 0;
   pointer-events: none;
   z-index: 10;
 }
 
-.df-climax-flash.fire-climax {
-  animation: fullCinematicFlash 2.4s cubic-bezier(0.15, 0.9, 0.25, 1) forwards;
+.df-celebration-wave.fire-wave {
+  animation: celebrationWaveSmooth 2.8s cubic-bezier(0.12, 0.85, 0.25, 1) forwards;
 }
 
-@keyframes fullCinematicFlash {
-  0% { opacity: 0; }
-  30% { opacity: 0.95; }
-  65% { opacity: 0.75; }
-  100% { opacity: 0; }
+@keyframes celebrationWaveSmooth {
+  0% { transform: translate(-50%, -50%) scale(0.1); opacity: 1; }
+  50% { opacity: 0.8; }
+  100% { transform: translate(-50%, -50%) scale(9.5); opacity: 0; }
 }
 
-/* -------------------------------------------------------------------------- */
-/* 24s → 26s: FELIZ ANIVERSÁRIO ISSAMARA 18 ANOS (COMPOSIÇÃO REUNIDA NOBRE)   */
-/* -------------------------------------------------------------------------- */
-.df-hbd-reveal-wrap {
-  position: relative;
+/* Banner de Texto comemorativo ritmado */
+.df-hbd-banner-wrap {
+  position: absolute;
+  top: 48%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   z-index: 12;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   text-align: center;
-  padding: 24px;
-  opacity: 0;
-  transform: scale(0.92);
-  filter: blur(14px);
-  transition: opacity 1.6s cubic-bezier(0.16, 1, 0.3, 1), transform 1.6s cubic-bezier(0.16, 1, 0.3, 1), filter 1.6s ease;
+  width: 90%;
+  max-width: 580px;
   pointer-events: none;
 }
 
-.df-hbd-reveal-wrap.reveal-active {
+.df-banner-title {
+  font-family: 'Quicksand', sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: 6px;
+  color: #d81b60;
+  text-transform: uppercase;
+  margin: 0 0 10px;
+  opacity: 0;
+  transform: translateY(12px);
+  filter: blur(8px);
+  text-shadow: 0 2px 8px rgba(255, 255, 255, 0.9), 0 0 16px rgba(255, 174, 192, 0.8);
+  transition: all 1.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.df-banner-title.banner-shown {
   opacity: 1;
-  transform: scale(1);
+  transform: translateY(0);
   filter: blur(0);
 }
 
-.df-hbd-reveal-wrap.reveal-fade-calm {
-  opacity: 0;
-  transform: scale(1.05);
-  filter: blur(8px);
-  transition: all 1.8s ease;
-}
-
-.df-hbd-tagline {
+.df-banner-name {
   font-family: 'Quicksand', sans-serif;
-  font-size: 20px;
-  font-weight: 700;
-  letter-spacing: 5px;
-  color: #d81b60;
-  text-transform: uppercase;
-  margin: 0 0 8px;
-  text-shadow: 0 0 15px rgba(255, 174, 192, 0.8), 0 2px 6px rgba(255, 255, 255, 0.9);
-  animation: letterSpacingSwell 4s ease-in-out infinite alternate;
-}
-
-@keyframes letterSpacingSwell {
-  0% { letter-spacing: 4px; }
-  100% { letter-spacing: 7px; }
-}
-
-.df-hbd-name {
-  font-family: 'Quicksand', sans-serif;
-  font-size: 52px;
+  font-size: 54px;
   font-weight: 800;
-  letter-spacing: 8px;
-  margin: 0;
-  line-height: 1.1;
+  letter-spacing: 9px;
+  margin: 0 0 12px;
+  line-height: 1.05;
   background: linear-gradient(135deg, #ff4071 0%, #d81b60 50%, #ad1457 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  filter: drop-shadow(0 4px 18px rgba(255, 107, 139, 0.45));
+  filter: drop-shadow(0 4px 20px rgba(255, 107, 139, 0.45));
+  opacity: 0;
+  transform: scale(0.92);
+  transition: all 1.6s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.df-hbd-sub-badge {
+.df-banner-name.banner-shown {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.df-banner-sub {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  margin-top: 14px;
-  padding: 8px 24px;
+  padding: 8px 26px;
   background: rgba(255, 255, 255, 0.95);
   border: 1.5px solid #ff758c;
   border-radius: 30px;
-  box-shadow: 0 4px 18px rgba(255, 107, 139, 0.25);
+  box-shadow: 0 4px 18px rgba(255, 107, 139, 0.28);
+  opacity: 0;
+  transform: translateY(12px);
+  transition: all 1.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.df-hbd-sub-text {
+.df-banner-sub.banner-shown {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.df-banner-sub-text {
   font-family: 'Quicksand', sans-serif;
-  font-size: 15.5px;
+  font-size: 16px;
   font-weight: 700;
   letter-spacing: 3px;
   color: #d81b60;
 }
 
+.df-hbd-banner-wrap.banner-fade-out {
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(1.05);
+  filter: blur(10px);
+  transition: all 2s ease;
+}
+
 /* -------------------------------------------------------------------------- */
-/* 28s → 30s+: CRÉDITOS FINAIS & ENCERRAMENTO (100% IDENTIDADE ROSA DO SITE)  */
-/* Elegantes, acolhedores, no mesmo fundo rosa claro e sofisticado do site    */
+/* ETAPA 6: 🌸 ÚLTIMO MOMENTO (A MENSAGEM PROFUNDA E POÉTICA)                  */
+/* -------------------------------------------------------------------------- */
+.df-final-quote-screen {
+  position: absolute;
+  inset: 0;
+  z-index: 14;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 24px;
+  opacity: 0;
+  pointer-events: none;
+  background: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.88) 0%, rgba(255, 242, 246, 0.82) 60%, rgba(254, 192, 205, 0.75) 100%);
+  backdrop-filter: blur(4px);
+  transition: opacity 2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.df-final-quote-screen.quote-visible {
+  opacity: 1;
+}
+
+.df-final-quote-screen.quote-fade-out {
+  opacity: 0;
+  transition: opacity 2.2s ease;
+}
+
+.df-final-quote-box {
+  max-width: 560px;
+  width: 90%;
+  padding: 36px 30px;
+  background: rgba(255, 255, 255, 0.95);
+  border: 2px solid rgba(255, 174, 192, 0.8);
+  border-radius: 24px;
+  box-shadow: 0 16px 45px rgba(255, 107, 139, 0.22);
+  text-align: center;
+}
+
+.df-quote-p {
+  font-family: 'Handlee', 'Quicksand', cursive;
+  font-size: 21.5px;
+  color: #3b0f2a;
+  line-height: 1.65;
+  margin: 0 0 14px;
+  text-shadow: 0 1px 4px rgba(255, 182, 193, 0.35);
+}
+
+.df-quote-p.df-quote-highlight {
+  font-weight: 700;
+  color: #d81b60;
+  margin-top: 18px;
+  margin-bottom: 0;
+  font-size: 22.5px;
+}
+
+/* -------------------------------------------------------------------------- */
+/* ETAPA 7: 🎬 ENCERRAMENTO E CRÉDITOS FINAIS DEFINITIVOS                     */
+/* Fundo rosa 100% harmônico com o site, sem cortes secos ou telas pretas     */
 /* -------------------------------------------------------------------------- */
 .df-credits-screen {
   position: absolute;
   inset: 0;
-  z-index: 15;
+  z-index: 16;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   text-align: center;
   padding: 32px 24px;
-  /* Fundo rosa idêntico ao site */
   background: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.98) 0%, rgba(255, 240, 245, 0.96) 55%, rgba(254, 192, 205, 0.95) 100%);
   opacity: 0;
   pointer-events: none;
@@ -3029,20 +3043,20 @@ html {
   display: flex;
   flex-direction: column;
   align-items: center;
-  max-width: 500px;
-  width: 90%;
-  padding: 34px 26px 28px;
-  background: rgba(255, 255, 255, 0.92);
-  border: 2px solid rgba(255, 174, 192, 0.7);
-  border-radius: 24px;
-  box-shadow: 0 16px 45px rgba(255, 107, 139, 0.22);
+  max-width: 520px;
+  width: 92%;
+  padding: 36px 28px 30px;
+  background: rgba(255, 255, 255, 0.94);
+  border: 2px solid rgba(255, 174, 192, 0.75);
+  border-radius: 26px;
+  box-shadow: 0 18px 45px rgba(255, 107, 139, 0.22);
 }
 
 .df-credits-line-1 {
   font-family: 'Handlee', cursive;
   font-size: 23px;
   color: #842029;
-  margin: 0 0 14px;
+  margin: 0 0 16px;
   line-height: 1.5;
   max-width: 540px;
   text-shadow: 0 2px 10px rgba(255, 174, 192, 0.4);
@@ -3050,7 +3064,7 @@ html {
 
 .df-credits-author {
   font-family: 'Quicksand', sans-serif;
-  font-size: 16.5px;
+  font-size: 17px;
   font-weight: 700;
   letter-spacing: 2px;
   color: #b83256;
@@ -3059,14 +3073,14 @@ html {
 
 .df-credits-date {
   font-family: 'Quicksand', sans-serif;
-  font-size: 14px;
+  font-size: 14.5px;
   font-weight: 600;
   letter-spacing: 1.5px;
   color: #d44a70;
   margin: 0 0 26px;
 }
 
-/* Barra de Ações Discreta ao Final */
+/* Barra de Ações ao Final */
 .df-final-actions {
   display: flex;
   flex-wrap: wrap;
@@ -3099,16 +3113,29 @@ html {
   outline: none;
 }
 
-.df-action-pill.pill-book {
+.df-action-pill.pill-replay {
   background: linear-gradient(135deg, #ff758c 0%, #ff5277 100%);
-  border: 1.5px solid rgba(255, 255, 255, 0.85);
+  border: 1.5px solid rgba(255, 255, 255, 0.9);
   color: #ffffff;
-  box-shadow: 0 4px 15px rgba(255, 107, 139, 0.35);
+  box-shadow: 0 4px 16px rgba(255, 107, 139, 0.35);
+}
+
+.df-action-pill.pill-replay:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(255, 107, 139, 0.5);
+}
+
+.df-action-pill.pill-book {
+  background: #ffffff;
+  border: 1.5px solid #ff758c;
+  color: #d81b60;
+  box-shadow: 0 4px 15px rgba(255, 107, 139, 0.15);
 }
 
 .df-action-pill.pill-book:hover {
+  background: #fff5f8;
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(255, 107, 139, 0.5);
+  box-shadow: 0 6px 20px rgba(255, 107, 139, 0.25);
 }
 
 .df-action-pill.pill-letter {
@@ -3141,28 +3168,31 @@ html {
     min-height: 86vh;
     border-radius: 20px;
   }
-  .df-book-stage {
-    width: 250px;
-    height: 330px;
+  .df-character-issamara {
+    width: 210px;
+    height: 250px;
+    bottom: 140px;
   }
-  .df-book-wrap {
-    width: 220px;
-    height: 300px;
+  .df-cake-wrapper {
+    bottom: 75px;
   }
-  .df-hbd-name {
-    font-size: 34px;
-    letter-spacing: 5px;
+  .df-banner-name {
+    font-size: 38px;
+    letter-spacing: 6px;
   }
-  .df-hbd-tagline {
-    font-size: 16px;
-    letter-spacing: 3px;
+  .df-banner-title {
+    font-size: 17px;
+    letter-spacing: 4px;
+  }
+  .df-quote-p {
+    font-size: 18.5px;
   }
   .df-credits-line-1 {
     font-size: 20px;
   }
   .df-action-pill {
     font-size: 12.5px;
-    padding: 7px 16px;
+    padding: 8px 16px;
   }
 }
 
@@ -3415,200 +3445,61 @@ html {
   100% { opacity: 1; transform: scale(1.02); }
 }
 
-/* Fase 2: O Pato e Axolote Cantores */
-.singing-scene-container {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  position: relative;
-  transition: opacity 0.5s ease;
-}
-
-.singing-scene-container.scene-hidden {
-  opacity: 0;
-  pointer-events: none;
-  display: none;
-}
-
-.singing-camera-wrap {
-  position: relative;
-  width: 280px;
-  height: 320px;
-  margin: 0 auto;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: transform 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-
-.singing-camera-wrap.camera-zoomed {
-  transform: scale(1.35) translateY(-6px);
-}
-
-.singing-camera-wrap.camera-shaking {
-  animation: singingVibrate 0.12s linear infinite;
-}
-
-@keyframes singingVibrate {
-  0% { transform: scale(1.35) translate(-3px, -8px); }
-  25% { transform: scale(1.37) translate(3px, -4px); }
-  50% { transform: scale(1.35) translate(-2px, -6px); }
-  75% { transform: scale(1.36) translate(3px, -7px); }
-  100% { transform: scale(1.35) translate(-1px, -5px); }
-}
-
-/* Balão de Letras Cômicas Animadas */
-.singing-lyric-box {
-  min-height: 52px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 8px;
-  z-index: 10;
-}
-
-.singing-lyric-text {
-  font-family: 'Fredoka', 'Quicksand', 'Arial Black', sans-serif;
-  font-size: 32px;
-  font-weight: 900;
-  color: #ffffff;
-  -webkit-text-stroke: 3px #181c20;
-  text-stroke: 3px #181c20;
-  text-shadow: 2px 2px 0 #181c20, -2px -2px 0 #181c20, 2px -2px 0 #181c20, -2px 2px 0 #181c20, 0 4px 10px rgba(0, 0, 0, 0.25);
-  letter-spacing: 0.5px;
-  animation: lyricBounce 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  text-transform: lowercase;
-}
-
-.singing-lyric-text.lyric-finale {
-  font-size: 30px;
-  color: #fff176;
-  -webkit-text-stroke: 3px #b71c1c;
-  text-stroke: 3px #b71c1c;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-
-@keyframes lyricBounce {
-  0% { transform: scale(0.6) rotate(-4deg); opacity: 0; }
-  70% { transform: scale(1.18) rotate(3deg); opacity: 1; }
-  100% { transform: scale(1) rotate(0deg); opacity: 1; }
-}
-
-/* Personagens SVG */
-.characters-svg {
-  width: 100%;
-  height: 100%;
-  overflow: visible;
-  filter: drop-shadow(0 12px 20px rgba(40, 90, 130, 0.16));
-}
-
-/* Movimento de abraço/aperto do pato */
-.duck-group {
-  transform-origin: 140px 240px;
-  transition: transform 0.18s ease;
-}
-
-.duck-group.duck-squeezing {
-  animation: duckSqueeze 0.32s ease-in-out;
-}
-
-@keyframes duckSqueeze {
-  0% { transform: scale(1, 1); }
-  45% { transform: scale(1.05, 0.94); }
-  100% { transform: scale(1, 1); }
-}
-
-/* Axolote */
-.axolotl-group {
-  transform-origin: 140px 185px;
-  transition: transform 0.18s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-
-.axolotl-group.axolotl-singing-up {
-  transform: translateY(-8px) scale(1.06);
-}
-
-.axolotl-group.axolotl-shaking {
-  animation: axolotlWobble 0.15s ease-in-out infinite alternate;
-}
-
-@keyframes axolotlWobble {
-  0% { transform: translateY(-10px) rotate(-3deg) scale(1.08); }
-  100% { transform: translateY(-10px) rotate(3deg) scale(1.08); }
-}
-
-/* Guelras do axolote balançando */
-.gill-left, .gill-right {
-  transition: transform 0.2s ease;
-}
-
-.axolotl-singing-up .gill-left {
-  transform: rotate(-6deg) scale(1.08);
-}
-
-.axolotl-singing-up .gill-right {
-  transform: rotate(6deg) scale(1.08);
-}
-
-/* Boca do Axolote Dinâmica */
-.axolotl-mouth-path {
-  transition: d 0.12s ease-in-out, fill 0.12s ease;
-}
-
-/* Barra de Celebração e Ações Finais */
-.singing-action-bar {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
+/* Celebração Serena e Limpa do Bolo: Pedido Feito */
+.cake-wish-granted {
   margin-top: 14px;
-  opacity: 0;
-  pointer-events: none;
-  transform: translateY(10px);
-  transition: all 0.4s ease;
+  text-align: center;
+  padding: 18px 14px;
+  animation: fadeIn 0.8s ease;
 }
 
-.singing-action-bar.bar-visible {
-  opacity: 1;
-  pointer-events: auto;
-  transform: translateY(0);
+.wish-icon {
+  font-size: 34px;
+  animation: pulse 1.6s infinite ease-in-out;
 }
 
-.btn-singing-replay {
+.wish-title {
+  font-size: 26px;
+  color: #c2185b;
+  font-family: 'Fredoka', 'Quicksand', sans-serif;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.wish-text {
+  font-size: 16px;
+  color: #444444;
+  line-height: 1.6;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.btn-wish-replay {
   background: #ffffff;
-  color: #2b455b;
-  border: 2px solid #bce1f7;
+  color: #5c1642;
+  border: 1.5px solid #ffb6c1;
   padding: 8px 18px;
   border-radius: 50px;
-  font-family: 'Fredoka', 'Quicksand', sans-serif;
+  font-family: 'Quicksand', sans-serif;
   font-size: 14px;
   font-weight: 700;
   cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
   transition: all 0.2s ease;
 }
 
-.btn-singing-replay:hover {
-  background: #f0f8ff;
-  border-color: #ff4081;
-  color: #ff4081;
-  transform: translateY(-2px);
+.btn-wish-replay:hover {
+  background: #fff0f4;
+  border-color: #e91e63;
+  color: #e91e63;
 }
 
-.btn-singing-continue {
+.btn-wish-continue {
   background: linear-gradient(135deg, #e91e63 0%, #c2185b 100%);
   color: #ffffff;
   border: none;
-  padding: 9px 22px;
+  padding: 10px 24px;
   border-radius: 50px;
-  font-family: 'Fredoka', 'Quicksand', sans-serif;
+  font-family: 'Quicksand', sans-serif;
   font-size: 15px;
   font-weight: 700;
   box-shadow: 0 6px 16px rgba(233, 30, 99, 0.28);
@@ -3619,8 +3510,8 @@ html {
   transition: all 0.25s ease;
 }
 
-.btn-singing-continue:hover {
-  transform: translateY(-2px) scale(1.03);
+.btn-wish-continue:hover {
+  transform: translateY(-2px);
   box-shadow: 0 8px 22px rgba(233, 30, 99, 0.38);
 }
 
@@ -3709,22 +3600,1074 @@ html {
     width: 220px;
     height: 220px;
   }
-  .singing-camera-wrap {
-    width: 240px;
-    height: 280px;
-  }
-  .singing-lyric-text {
-    font-size: 26px;
-    -webkit-text-stroke: 2.5px #181c20;
-    text-stroke: 2.5px #181c20;
-  }
-  .btn-singing-continue,
-  .btn-singing-photo,
-  .btn-singing-replay {
-    font-size: 12.5px;
-    padding: 7px 14px;
+  .btn-wish-continue,
+  .btn-wish-replay {
+    font-size: 13px;
+    padding: 8px 16px;
   }
   .happy-day-img {
     max-width: 270px;
+  }
+}
+
+/* ========================================================================== */
+/* 🌸 CAPÍTULO FINAL — “E AGORA?” (Design Definitivo de 31 Etapas)            */
+/* Cores suaves, tons claros (rosa, branco, azul suave), sem tela preta       */
+/* ========================================================================== */
+
+.eagora-stage {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  min-height: 100vh;
+  max-width: 100vw;
+  margin: 0;
+  padding: 0;
+  border-radius: 0;
+  border: none;
+  box-shadow: none;
+  z-index: 10000;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at 50% 45%, #ffffff 0%, #fff4f8 42%, #fedce7 82%, #fcd0de 100%);
+  font-family: 'Quicksand', sans-serif;
+  user-select: none;
+  perspective: 1200px;
+}
+
+/* ========================================================================== */
+/* BLOQUEIO DEFINITIVO E GLOBAL DE BOTÕES/BARRAS DE NAVEGAÇÃO DOS CAPÍTULOS  */
+/* ========================================================================== */
+.top-nav-bar, #top-nav-bar,
+.bottom-tap-bar, #bottom-tap-bar,
+#cinematic-header-controls,
+.cinematic-header-controls,
+.eagora-exit-btn,
+#btn-menu, #btn-prev, #btn-next, #btn-pause, #btn-sound, #chapter-badge {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  height: 0 !important;
+  width: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  position: absolute !important;
+  left: -9999px !important;
+}
+
+/* 1. Transição Suave da Tela Anterior */
+.eagora-transition-curtain {
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 245, 248, 0.95);
+  z-index: 40;
+  pointer-events: none;
+  opacity: 1;
+  transition: opacity 1.8s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.eagora-transition-curtain.curtain-fade {
+  opacity: 0;
+}
+
+.eagora-living-line {
+  position: absolute;
+  width: 0;
+  height: 2.5px;
+  background: linear-gradient(90deg, transparent, #ff4071, #ff758c, #ffd166, transparent);
+  box-shadow: 0 0 12px rgba(255, 64, 113, 0.7);
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  opacity: 0;
+  transition: width 1.6s ease-in-out, opacity 0.4s ease;
+}
+
+.eagora-living-line.line-moving {
+  opacity: 1;
+  width: 100%;
+}
+
+/* Canvas de Partículas Estelares Claras */
+.eagora-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 5;
+  pointer-events: none;
+}
+
+/* 2. Container da Linha do Tempo */
+.eagora-timeline-wrap {
+  position: relative;
+  z-index: 15;
+  width: 90%;
+  max-width: 580px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  opacity: 0;
+  transform: translateY(15px);
+  transition: opacity 1.4s ease, transform 1.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.eagora-timeline-wrap.timeline-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.eagora-timeline-wrap.timeline-dissolving {
+  opacity: 0;
+  transform: translateY(-20px) scale(0.96);
+  filter: blur(8px);
+  transition: all 1.8s ease;
+}
+
+.eagora-track-container {
+  width: 100%;
+  position: relative;
+  margin-bottom: 24px;
+}
+
+.eagora-track-path {
+  position: relative;
+  width: 100%;
+  height: 4px;
+  background: rgba(255, 182, 193, 0.4);
+  border-radius: 4px;
+  overflow: visible;
+}
+
+.eagora-track-fill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #ff758c, #ff4071, #ffb6c1);
+  border-radius: 4px;
+  box-shadow: 0 0 10px rgba(255, 64, 113, 0.5);
+  transition: width 2.2s cubic-bezier(0.2, 0.8, 0.25, 1);
+}
+
+.eagora-track-fill.fill-animating {
+  width: 100%;
+}
+
+.eagora-head-dot {
+  position: absolute;
+  top: 50%;
+  left: 0%;
+  width: 14px;
+  height: 14px;
+  background: #ffffff;
+  border: 3px solid #ff4071;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 0 12px rgba(255, 64, 113, 0.8);
+  transition: left 2.2s cubic-bezier(0.2, 0.8, 0.25, 1);
+}
+
+.eagora-head-dot.dot-animating {
+  left: 100%;
+}
+
+.eagora-years-row {
+  position: relative;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 10px;
+}
+
+.eagora-year-marker {
+  font-size: 15px;
+  font-weight: 700;
+  color: #a35d72;
+  opacity: 0;
+  transition: opacity 0.8s ease, transform 0.8s ease;
+}
+
+.eagora-year-marker.marker-visible {
+  opacity: 1;
+}
+
+.eagora-year-marker.year-2026 {
+  font-size: 18px;
+  color: #d81b60;
+}
+
+.eagora-year-marker.marker-glowing {
+  text-shadow: 0 0 14px rgba(255, 64, 113, 0.7);
+  transform: scale(1.15);
+}
+
+.eagora-year-dot {
+  position: absolute;
+  top: 50%;
+  width: 5px;
+  height: 5px;
+  background: rgba(255, 140, 165, 0.5);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* 3. Chegada em 24 de Setembro */
+.eagora-milestone-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  margin-top: 14px;
+}
+
+.eagora-date-capsule {
+  display: inline-block;
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: 4px;
+  color: #c2185b;
+  background: rgba(255, 255, 255, 0.85);
+  padding: 6px 20px;
+  border-radius: 20px;
+  border: 1.5px solid #ffccd7;
+  box-shadow: 0 4px 14px rgba(255, 107, 139, 0.15);
+  opacity: 0;
+  transform: translateY(10px);
+  transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.eagora-date-capsule.capsule-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.eagora-date-expanded {
+  font-size: 20px;
+  font-weight: 700;
+  color: #ad1457;
+  margin-top: 10px;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.eagora-date-expanded.expanded-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.eagora-age-celebrated {
+  font-size: 32px;
+  font-weight: 800;
+  color: #d81b60;
+  margin-top: 8px;
+  letter-spacing: 2px;
+  opacity: 0;
+  transform: scale(0.9);
+  transition: all 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.eagora-age-celebrated.age-visible {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* 4. A Linha Para */
+.eagora-unwritten-hint {
+  font-family: 'Handlee', 'Quicksand', cursive;
+  font-size: 17px;
+  color: #7b4055;
+  margin-top: 12px;
+  font-style: italic;
+  opacity: 0;
+  transition: opacity 1.2s ease;
+}
+
+.eagora-unwritten-hint.hint-visible {
+  opacity: 1;
+}
+
+/* 10. O Desenho da Flor pelas Estrelas (SVG) */
+.eagora-flower-wrap {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.92);
+  z-index: 18;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 340px;
+  max-width: 90vw;
+  height: 420px;
+  max-height: 58vh;
+  margin: 0;
+  opacity: 0;
+  transition: opacity 1.5s ease, transform 1.5s cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.eagora-flower-wrap.flower-wrap-visible {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+.eagora-flower-svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  filter: drop-shadow(0 8px 24px rgba(233, 30, 99, 0.18));
+  transition: transform 0.4s ease, filter 0.4s ease;
+}
+
+.eagora-flower-wrap:hover .eagora-flower-svg {
+  transform: scale(1.03);
+  filter: drop-shadow(0 10px 30px rgba(233, 30, 99, 0.32));
+}
+
+.eagora-flower-wrap.flower-click-pulse {
+  animation: eagoraFlowerTap 0.75s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards !important;
+}
+
+@keyframes eagoraFlowerTap {
+  0% { transform: translate(-50%, -50%) scale(1); }
+  45% { transform: translate(-50%, -50%) scale(1.1) translateY(-6px); }
+  100% { transform: translate(-50%, -50%) scale(1); }
+}
+
+/* Traçado progressivo e preenchimento botânico de cada parte da flor */
+.flower-draw-line {
+  stroke-dasharray: 102;
+  stroke-dashoffset: 102;
+  transition: stroke-dashoffset 1.4s cubic-bezier(0.3, 0.7, 0.2, 1);
+}
+
+.flower-draw-line.stem-line {
+  stroke-dasharray: 102;
+  stroke-dashoffset: 102;
+  transition: stroke-dashoffset 1.6s cubic-bezier(0.3, 0.7, 0.2, 1);
+}
+
+.flower-draw-line.leaf-line {
+  stroke-dasharray: 102;
+  stroke-dashoffset: 102;
+  transition: stroke-dashoffset 1.2s cubic-bezier(0.3, 0.7, 0.2, 1), fill 1.3s ease 0.4s;
+}
+
+.flower-draw-line.leaf-line.line-drawn {
+  stroke-dashoffset: 0;
+  fill: url(#eagoraLeafGrad);
+}
+
+.flower-draw-line.outer-petal-line {
+  stroke-dasharray: 102;
+  stroke-dashoffset: 102;
+  transition: stroke-dashoffset 1.3s cubic-bezier(0.3, 0.7, 0.2, 1), fill 1.4s ease 0.5s;
+}
+
+.flower-draw-line.outer-petal-line.line-drawn {
+  stroke-dashoffset: 0;
+  fill: url(#eagoraPetalOuterGrad);
+}
+
+.flower-draw-line.mid-petal-line {
+  stroke-dasharray: 102;
+  stroke-dashoffset: 102;
+  transition: stroke-dashoffset 1.2s cubic-bezier(0.3, 0.7, 0.2, 1), fill 1.3s ease 0.5s;
+}
+
+.flower-draw-line.mid-petal-line.line-drawn {
+  stroke-dashoffset: 0;
+  fill: url(#eagoraPetalMidGrad);
+}
+
+.flower-draw-line.petal-line,
+.flower-draw-line.inner-petal-line {
+  stroke-dasharray: 102;
+  stroke-dashoffset: 102;
+  transition: stroke-dashoffset 1.1s cubic-bezier(0.3, 0.7, 0.2, 1), fill 1.3s ease 0.4s;
+}
+
+.flower-draw-line.petal-line.line-drawn,
+.flower-draw-line.inner-petal-line.line-drawn {
+  stroke-dashoffset: 0;
+  fill: url(#eagoraPetalInnerGrad);
+}
+
+.flower-draw-line.vein-line {
+  stroke-dasharray: 102;
+  stroke-dashoffset: 102;
+  transition: stroke-dashoffset 1.0s ease-out;
+  opacity: 0.85;
+}
+
+.flower-draw-line.sepal-line {
+  stroke-dasharray: 102;
+  stroke-dashoffset: 102;
+  transition: stroke-dashoffset 0.9s ease-out, fill 1s ease 0.4s;
+}
+
+.flower-draw-line.sepal-line.line-drawn {
+  stroke-dashoffset: 0;
+  fill: #558b2f;
+}
+
+.flower-draw-line.line-drawn {
+  stroke-dashoffset: 0;
+}
+
+.flower-stamen {
+  opacity: 0;
+  transform-origin: 200px 205px;
+  transform: scale(0);
+  transition: opacity 0.8s ease, transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.flower-stamen.stamen-drawn {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* 11. A Flor Ganha Vida */
+#flower-halo {
+  opacity: 0;
+  transform-origin: 200px 205px;
+  transform: scale(0.4);
+  transition: opacity 2s ease, transform 2.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+#flower-core {
+  opacity: 0;
+  transform-origin: 200px 205px;
+  transform: scale(0);
+  transition: opacity 1s ease, transform 1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+#flower-core-glow {
+  opacity: 0;
+  transform-origin: 200px 205px;
+  transform: scale(0.6);
+  transition: opacity 1.2s ease, transform 1.2s ease;
+}
+
+#flower-center-pistils {
+  opacity: 0;
+  transform-origin: 200px 205px;
+  transform: scale(0);
+  transition: opacity 1s ease, transform 1.1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.eagora-flower-wrap.flower-alive-glowing #flower-halo {
+  opacity: 0.85;
+  transform: scale(1.08);
+  animation: haloPulse 3.5s infinite alternate ease-in-out;
+}
+
+.eagora-flower-wrap.flower-alive-glowing #flower-core {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.eagora-flower-wrap.flower-alive-glowing #flower-core-glow {
+  opacity: 0.85;
+  transform: scale(1.18);
+  animation: coreGlowPulse 2.5s infinite alternate ease-in-out;
+}
+
+.eagora-flower-wrap.flower-alive-glowing #flower-center-pistils {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.eagora-flower-wrap.flower-alive-glowing {
+  animation: flowerGentleBreathe 4.5s infinite alternate ease-in-out;
+}
+
+.eagora-flower-wrap.flower-bursting {
+  animation: flowerBurstPulse 1.8s infinite alternate ease-in-out;
+  filter: drop-shadow(0 0 28px rgba(255, 105, 180, 0.85));
+}
+
+@keyframes flowerBurstPulse {
+  0% { transform: translate(-50%, -50%) scale(1); filter: drop-shadow(0 0 16px rgba(255, 105, 180, 0.6)); }
+  50% { transform: translate(-50%, -50%) scale(1.06) translateY(-6px); filter: drop-shadow(0 0 36px rgba(255, 215, 0, 0.9)); }
+  100% { transform: translate(-50%, -50%) scale(1.02); filter: drop-shadow(0 0 22px rgba(255, 105, 180, 0.7)); }
+}
+
+@keyframes coreGlowPulse {
+  0% { transform: scale(1); opacity: 0.5; }
+  100% { transform: scale(1.28); opacity: 0.95; }
+}
+
+@keyframes flowerGentleBreathe {
+  0% { transform: translate(-50%, -50%) scale(1) translateY(0); }
+  100% { transform: translate(-50%, -50%) scale(1.025) translateY(-4px); }
+}
+
+/* 12 & 13. Frases Contemplativas */
+.eagora-contemplation-wrap {
+  position: absolute;
+  z-index: 22;
+  top: 10%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90%;
+  max-width: 520px;
+  text-align: center;
+  pointer-events: none;
+  margin: 0;
+}
+
+.eagora-phrase {
+  font-family: 'Handlee', 'Quicksand', cursive;
+  font-size: 23px;
+  color: #3b0f2a;
+  line-height: 1.5;
+  margin: 0;
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 1.2s ease, transform 1.2s ease;
+}
+
+.eagora-phrase.phrase-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.eagora-phrase.phrase-exit {
+  opacity: 0;
+  transform: translateY(-12px);
+  transition: opacity 0.9s ease, transform 0.9s ease;
+}
+
+.eagora-phrase.phrase-two {
+  font-size: 28px;
+  font-weight: 700;
+  color: #d81b60;
+}
+
+.eagora-phrase.phrase-glowing {
+  text-shadow: 0 2px 14px rgba(255, 64, 113, 0.4);
+}
+
+/* 16. Celebração Visual Principal: FELIZ ANIVERSÁRIO ISSAMARA */
+.eagora-celebration-title-wrap {
+  position: absolute;
+  z-index: 25;
+  top: 8%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 92%;
+  max-width: 560px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 1.2s ease;
+  margin: 0;
+}
+
+.eagora-celebration-title-wrap.wrap-visible {
+  opacity: 1;
+}
+
+.eagora-celebration-title-wrap.wrap-fade-out {
+  opacity: 0;
+  transition: opacity 1.6s ease;
+}
+
+.eagora-word-feliz {
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: 8px;
+  color: #ad1457;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.eagora-word-feliz.word-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.eagora-word-bday {
+  font-size: 32px;
+  font-weight: 800;
+  letter-spacing: 7px;
+  color: #c2185b;
+  margin: 4px 0 6px;
+  opacity: 0;
+  transform: scale(0.9);
+  transition: all 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.eagora-word-bday.word-visible {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.eagora-word-name {
+  position: relative;
+  font-size: 52px;
+  font-weight: 900;
+  letter-spacing: 9px;
+  background: linear-gradient(135deg, #ff4071 0%, #d81b60 50%, #ad1457 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 6px 24px rgba(255, 64, 113, 0.45));
+  opacity: 0;
+  transform: scale(0.85);
+  transition: all 1.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.eagora-word-name.name-grand-entrance {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.name-halo-glow {
+  position: absolute;
+  inset: -20px;
+  background: radial-gradient(circle, rgba(255, 182, 193, 0.6) 0%, transparent 70%);
+  z-index: -1;
+  opacity: 0.8;
+  animation: haloPulse 2s infinite alternate ease-in-out;
+}
+
+@keyframes haloPulse {
+  0% { transform: scale(0.95); opacity: 0.5; }
+  100% { transform: scale(1.15); opacity: 0.9; }
+}
+
+/* 21. Desaceleração & A Flor Serena */
+.eagora-flower-wrap.flower-serene {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(0.95) translateY(18px);
+  transition: all 2.5s ease;
+}
+
+/* 22. Mensagem Final & Assinatura */
+.eagora-farewell-wrap {
+  position: absolute;
+  z-index: 26;
+  bottom: 6%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 92%;
+  max-width: 520px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 1.4s ease;
+  margin: 0;
+}
+
+.eagora-farewell-wrap.farewell-visible {
+  opacity: 1;
+}
+
+.eagora-farewell-wrap.farewell-fade-out {
+  opacity: 0;
+  transition: opacity 1.8s ease;
+}
+
+.eagora-farewell-p1 {
+  font-family: 'Handlee', 'Quicksand', cursive;
+  font-size: 20px;
+  color: #3b0f2a;
+  line-height: 1.55;
+  margin: 0 0 10px;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: all 1s ease;
+}
+
+.eagora-farewell-p2 {
+  font-size: 23px;
+  font-weight: 700;
+  color: #d81b60;
+  margin: 0 0 16px;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: all 1s ease;
+}
+
+.eagora-farewell-p1.p-visible,
+.eagora-farewell-p2.p-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.eagora-signature-box {
+  display: inline-flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 6px;
+  font-size: 17px;
+  color: #7b4055;
+  opacity: 0;
+  transition: opacity 1s ease;
+}
+
+.eagora-signature-box.sig-visible {
+  opacity: 1;
+}
+
+.eagora-sig-name {
+  font-family: 'Handlee', 'Quicksand', cursive;
+  font-size: 22px;
+  font-weight: 700;
+  color: #c2185b;
+  display: inline-block;
+  min-width: 65px;
+  transition: opacity 0.24s ease, transform 0.24s ease;
+}
+
+.eagora-sig-name.sig-transitioning {
+  opacity: 0;
+  transform: translateY(-4px);
+}
+
+/* 25. Encerramento Visual: Flor Diminui & Estrela Solitária */
+.eagora-flower-wrap.flower-fade-dim {
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.85);
+  transition: all 2.6s ease;
+}
+
+.eagora-lone-star {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.6);
+  z-index: 28;
+  font-size: 28px;
+  color: #ff85a2;
+  opacity: 0;
+  pointer-events: none;
+  transition: all 1.8s ease;
+}
+
+.eagora-lone-star.star-visible {
+  opacity: 0.9;
+  transform: translate(-50%, -50%) scale(1.1);
+}
+
+.eagora-lone-star.star-fade {
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.4);
+}
+
+/* 26. “Fim.” */
+.eagora-simple-end {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 29;
+  font-family: 'Handlee', 'Quicksand', cursive;
+  font-size: 34px;
+  color: #ad1457;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 1.8s ease;
+  text-align: center;
+}
+
+.eagora-simple-end.end-visible {
+  opacity: 1;
+}
+
+.eagora-simple-end.end-fade {
+  opacity: 0;
+}
+
+/* 27. Créditos Elegantes & Integrados */
+.eagora-credits-screen {
+  position: absolute;
+  inset: 0;
+  z-index: 35;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 16px;
+  background: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.98) 0%, rgba(255, 242, 246, 0.96) 60%, rgba(254, 215, 226, 0.95) 100%);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 2.2s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.eagora-credits-screen.credits-visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.eagora-credits-card {
+  max-width: 520px;
+  width: 92%;
+  margin: auto;
+  padding: 30px 24px;
+  background: rgba(255, 255, 255, 0.96);
+  border: 1.5px solid rgba(255, 182, 193, 0.85);
+  border-radius: 24px;
+  box-shadow: 0 16px 45px rgba(255, 107, 139, 0.18);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.eagora-credits-icon {
+  font-size: 32px;
+  margin-bottom: 10px;
+}
+
+.eagora-credits-lead {
+  font-size: 15.5px;
+  line-height: 1.6;
+  color: #3b0f2a;
+  margin: 0 0 14px;
+}
+
+.eagora-credits-author {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 14px;
+  color: #7b4055;
+  margin-bottom: 14px;
+}
+
+.eagora-credits-author strong {
+  color: #c2185b;
+  font-size: 15.5px;
+}
+
+.eagora-credits-dedication {
+  font-family: 'Handlee', 'Quicksand', cursive;
+  font-size: 16.5px;
+  color: #ad1457;
+  line-height: 1.55;
+  margin: 0 0 14px;
+  padding: 0 10px;
+}
+
+.eagora-credits-final-wish {
+  font-size: 14px;
+  font-weight: 600;
+  color: #880e4f;
+  margin: 0 0 20px;
+  font-style: italic;
+}
+
+.eagora-actions-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  width: 100%;
+}
+
+.eagora-btn {
+  border: none;
+  outline: none;
+  font-family: 'Quicksand', sans-serif;
+  font-size: 13.5px;
+  font-weight: 700;
+  border-radius: 22px;
+  padding: 9px 18px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.25s ease;
+}
+
+.eagora-btn.btn-pdf {
+  background: #5c6bc0;
+  color: #ffffff;
+}
+
+.eagora-btn.btn-pdf:hover {
+  background: #4a57a8;
+  transform: translateY(-1px);
+}
+
+.eagora-btn.btn-save {
+  background: #ff758c;
+  color: #ffffff;
+}
+
+.eagora-btn.btn-save:hover {
+  background: #ff5277;
+  transform: translateY(-1px);
+}
+
+.eagora-btn.btn-close-exp {
+  background: #ffffff;
+  color: #ad1457;
+  border: 1.5px solid #ffccd7;
+}
+
+.eagora-btn.btn-close-exp:hover {
+  background: #fff0f4;
+  transform: translateY(-1px);
+}
+
+.eagora-btn.btn-restart {
+  background: #f5f5f5;
+  color: #616161;
+  border: 1.5px solid #e0e0e0;
+}
+
+.eagora-btn.btn-restart:hover {
+  background: #ebebeb;
+  color: #333333;
+}
+
+/* Modais de Guardar e de Conclusão */
+.eagora-save-modal {
+  position: absolute;
+  inset: 0;
+  z-index: 50;
+  background: rgba(0, 0, 0, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.eagora-save-card {
+  max-width: 440px;
+  background: #ffffff;
+  padding: 26px 22px;
+  border-radius: 20px;
+  text-align: center;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.15);
+}
+
+.eagora-save-card h4 {
+  margin: 0 0 10px;
+  color: #c2185b;
+  font-size: 18px;
+}
+
+.eagora-save-card p {
+  font-size: 14.5px;
+  color: #555;
+  line-height: 1.6;
+  margin: 0 0 18px;
+}
+
+/* 31. Tela de Conclusão Prévia */
+.eagora-concluded-screen {
+  position: absolute;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: radial-gradient(circle at 50% 50%, #ffffff 0%, #fff4f7 60%, #fed7e2 100%);
+}
+
+.eagora-concluded-card {
+  max-width: 460px;
+  width: 90%;
+  padding: 32px 24px;
+  background: rgba(255, 255, 255, 0.95);
+  border: 1.5px solid #ffccd7;
+  border-radius: 24px;
+  text-align: center;
+  box-shadow: 0 16px 45px rgba(255, 107, 139, 0.15);
+}
+
+.eagora-concluded-icon {
+  font-size: 36px;
+  margin-bottom: 12px;
+}
+
+.eagora-concluded-card h3 {
+  font-size: 20px;
+  color: #ad1457;
+  margin: 0 0 10px;
+}
+
+.eagora-concluded-card p {
+  font-size: 14.5px;
+  color: #555;
+  line-height: 1.6;
+  margin: 0 0 20px;
+}
+
+.eagora-concluded-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 576px) {
+  .eagora-stage {
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh;
+    min-height: 100vh;
+    border-radius: 0;
+  }
+  .eagora-word-name {
+    font-size: 38px;
+    letter-spacing: 5px;
+  }
+  .eagora-word-bday {
+    font-size: 24px;
+    letter-spacing: 4px;
+  }
+  .eagora-phrase.phrase-one {
+    font-size: 20px;
+  }
+  .eagora-phrase.phrase-two {
+    font-size: 24px;
+  }
+  .eagora-flower-wrap {
+    width: 320px;
+    height: 380px;
+  }
+  .eagora-credits-card {
+    padding: 22px 16px;
+  }
+  .eagora-btn {
+    font-size: 12.5px;
+    padding: 8px 14px;
   }
 }

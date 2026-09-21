@@ -33,6 +33,16 @@
       text-align: center;
       -webkit-font-smoothing: antialiased;
     }
+    .global-viewport-petals-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 1500;
+      overflow: hidden;
+    }
     .cinematic-entry {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
@@ -52,43 +62,6 @@
       opacity: 0;
       visibility: hidden;
       pointer-events: none;
-    }
-    .cinematic-header-controls {
-      position: absolute;
-      top: 18px;
-      right: 20px;
-      z-index: 100;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      pointer-events: auto;
-    }
-    .cinematic-audio-btn, .cinematic-skip-btn {
-      font-family: 'Quicksand', sans-serif;
-      font-size: 13px;
-      font-weight: 600;
-      letter-spacing: 0.5px;
-      padding: 8px 16px;
-      border-radius: 999px;
-      background: rgba(255, 255, 255, 0.88);
-      border: 1px solid rgba(225, 175, 200, 0.55);
-      color: #8e3a6d;
-      box-shadow: 0 4px 16px rgba(180, 100, 140, 0.12);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      cursor: pointer;
-      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      outline: none;
-      text-decoration: none;
-    }
-    .cinematic-audio-btn:hover, .cinematic-skip-btn:hover {
-      background: rgba(255, 255, 255, 0.98);
-      border-color: rgba(210, 140, 180, 0.8);
-      color: #5c1642;
-      transform: translateY(-1px);
     }
     .cinematic-scene {
       position: relative;
@@ -127,6 +100,9 @@
     }
     .cinematic-plant-stage {
       position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
       width: 100%;
       max-width: 440px;
       height: 82vh;
@@ -134,6 +110,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      margin: 0;
       pointer-events: auto;
       cursor: pointer;
       z-index: 3;
@@ -141,8 +118,41 @@
     .botanical-svg {
       width: 100%;
       height: 100%;
+      display: block;
+      margin: 0 auto;
       overflow: visible;
       filter: drop-shadow(0 10px 28px rgba(180, 80, 130, 0.12));
+    }
+    #botanical-svg {
+      cursor: pointer;
+      transform-origin: 50% 88%;
+      transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.5s ease;
+      will-change: transform, filter;
+      -webkit-tap-highlight-color: transparent;
+    }
+    #botanical-svg:hover {
+      filter: drop-shadow(0 12px 32px rgba(255, 105, 180, 0.28)) brightness(1.03);
+    }
+    @keyframes plantGrowTemporary {
+      0% {
+        transform: scale(1);
+        filter: drop-shadow(0 10px 28px rgba(180, 80, 130, 0.12));
+      }
+      30% {
+        transform: scale(1.2) translateY(-10px);
+        filter: drop-shadow(0 20px 45px rgba(255, 105, 180, 0.5)) drop-shadow(0 0 24px rgba(255, 230, 150, 0.65)) brightness(1.12);
+      }
+      65% {
+        transform: scale(1.1) translateY(-4px);
+        filter: drop-shadow(0 15px 34px rgba(255, 105, 180, 0.38)) drop-shadow(0 0 14px rgba(255, 230, 150, 0.45)) brightness(1.06);
+      }
+      100% {
+        transform: scale(1);
+        filter: drop-shadow(0 10px 28px rgba(180, 80, 130, 0.12));
+      }
+    }
+    #botanical-svg.plant-grow-active {
+      animation: plantGrowTemporary 1.15s cubic-bezier(0.22, 1, 0.36, 1) forwards;
     }
     .plant-seed-group {
       transform-origin: 200px 530px;
@@ -374,21 +384,13 @@
   <!-- Background Music original do projeto (Instância Global Única) -->
   <audio id="background-music" src="./music/monokrom.mp3" preload="auto" loop></audio>
 
+  <!-- Sistema de Partículas Global: Queda Constante de Pétalas de Rosa Suaves sobre o Viewport -->
+  <canvas id="global-viewport-petals-canvas" class="global-viewport-petals-canvas" aria-hidden="true"></canvas>
+
   <!-- ======================================================== -->
   <!-- ABERTURA CINEMATOGRÁFICA: NASCIMENTO 2008 -> 18 ANOS EM 2026 -->
   <!-- ======================================================== -->
   <div id="cinematic-entry" class="cinematic-entry" aria-label="Abertura cinematográfica da experiência">
-    <!-- Controles Discretos do Topo (Música & Pular) -->
-    <div class="cinematic-header-controls" id="cinematic-header-controls">
-      <button id="btn-cinematic-audio" class="cinematic-audio-btn" title="Controle de música" aria-label="Controle de música">
-        <i class="fas fa-volume-up" id="cinematic-audio-icon"></i>
-        <span id="cinematic-audio-label">Música</span>
-      </button>
-      <button id="btn-cinematic-skip" class="cinematic-skip-btn" title="Pular introdução" aria-label="Pular introdução">
-        <span>Pular</span> <i class="fas fa-forward ml-1"></i>
-      </button>
-    </div>
-
     <div class="cinematic-scene">
       <div class="cinematic-camera" id="cinematic-camera">
         <!-- 1. Fundo Suave: Tela Quase Branca com Rosa Muito Suave e Luz de Amanhecer -->
@@ -436,9 +438,9 @@
         </div>
 
         <!-- 4. Palco Botânico: A Semente, o Caule, as Folhas e o Desabrochar da Flor -->
-        <div class="cinematic-plant-stage" id="cinematic-plant-stage" aria-hidden="true">
-          <!-- SVG da Flor Viva -->
-          <svg id="botanical-svg" class="botanical-svg" viewBox="0 0 400 620" preserveAspectRatio="xMidYMid meet">
+        <div class="cinematic-plant-stage" id="cinematic-plant-stage">
+          <!-- SVG da Flor Viva Interativo -->
+          <svg id="botanical-svg" class="botanical-svg" viewBox="0 0 400 620" preserveAspectRatio="xMidYMid meet" role="button" tabindex="0" aria-label="Planta viva de aniversário — toque para interagir">
             <defs>
               <!-- Gradiente do Caule -->
               <linearGradient id="stemGrad" x1="0" y1="1" x2="0" y2="0">
@@ -712,44 +714,10 @@
 
   <div class="bg" id="content">
 
-    <!-- Top Navigation Bar -->
-    <header class="top-nav-bar" id="top-nav-bar">
-      <div class="nav-left">
-        <button id="btn-menu" class="nav-btn" title="Capítulos" aria-label="Abrir lista de capítulos">
-          <i class="fas fa-list-ul"></i>
-        </button>
-        <span id="chapter-badge" class="chapter-badge" title="Clique para ver todos os capítulos">
-          Cap. 1/20
-        </span>
-      </div>
-
-      <div class="nav-right">
-        <button id="btn-prev" class="nav-btn" title="Voltar capítulo" disabled aria-label="Capítulo anterior">
-          <i class="fas fa-step-backward"></i> <span class="d-none d-sm-inline">Voltar</span>
-        </button>
-        <button id="btn-pause" class="nav-btn" title="Pausar / Continuar" aria-label="Pausar ou continuar">
-          <i class="fas fa-pause" id="icon-pause"></i>
-        </button>
-        <button id="btn-next" class="nav-btn" title="Próximo capítulo" aria-label="Próximo capítulo">
-          <span class="d-none d-sm-inline">Avançar</span> <i class="fas fa-step-forward"></i>
-        </button>
-        <button id="btn-sound" class="nav-btn" title="Música e Volume" aria-label="Controle de áudio">
-          <i class="fas fa-volume-up" id="icon-sound"></i>
-        </button>
-      </div>
-    </header>
-
     <!-- Main Viewport -->
     <main class="app-viewport">
       <div class="stage-wrapper" id="stage-wrapper">
         <!-- Chapters are dynamically rendered here with pristine animations -->
-      </div>
-
-      <!-- Bottom Tap Prompt from ZIP -->
-      <div class="bottom-tap-bar" id="bottom-tap-bar">
-        <div id="tap" class="animate__animated animate__pulse animate__infinite text-muted">
-          <span>Toque para continuar</span> <i class="fas fa-chevron-right ml-1"></i>
-        </div>
       </div>
     </main>
 
@@ -765,31 +733,6 @@
         </div>
         <div class="custom-modal-footer">
           <button type="button" class="btn btn-sm btn-outline-secondary" id="btn-close-modal-footer">Fechar</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Audio Control Modal / Popover -->
-    <div id="modal-audio" class="custom-modal-backdrop d-none">
-      <div class="custom-modal" style="max-width: 380px;">
-        <div class="custom-modal-header">
-          <h5><i class="fas fa-music text-info mr-2"></i> Controle de Música</h5>
-          <button type="button" class="close" id="btn-close-audio-modal">&times;</button>
-        </div>
-        <div class="custom-modal-body text-center">
-          <p class="text-muted mb-3"><i class="fas fa-compact-disc fa-spin mr-1"></i> Monokrom (Trilha de fundo)</p>
-          <div class="form-group">
-            <label for="audio-volume-slider" class="font-weight-bold">Volume: <span id="volume-label">70%</span></label>
-            <input type="range" class="custom-range" id="audio-volume-slider" min="0" max="100" value="70">
-          </div>
-          <div class="mt-3">
-            <button id="btn-toggle-mute" class="btn btn-outline-danger btn-sm px-4">
-              <i class="fas fa-volume-mute mr-1"></i> Mutar Som
-            </button>
-          </div>
-        </div>
-        <div class="custom-modal-footer">
-          <button type="button" class="btn btn-sm btn-primary" id="btn-confirm-audio-modal">OK</button>
         </div>
       </div>
     </div>
@@ -822,37 +765,115 @@
         <div class="custom-modal-body">
           <div id="pdf-template">
             <div class="pdf-header">
-              <div class="pdf-title">Feliz Aniversário de 18 Anos! 🎉</div>
-              <div class="pdf-subtitle">24 de setembro de 2026 • Para: <strong>Issamara</strong></div>
+              <div class="pdf-title">Feliz Aniversário de 18 Anos — Issamara 🎂</div>
+              <div class="pdf-subtitle">24 de setembro de 2026 • Registro Completo da Experiência</div>
             </div>
-            <div class="pdf-body" id="pdf-letter-content">
-Bom, Issamara...
-
-Eu não queria deixar seu aniversário passar como se fosse um dia qualquer.
-
-Então resolvi fazer isso aqui.
-
-Quero te desejar um feliz aniversário e, principalmente, que esse novo ciclo seja muito bom para você.
-
-Que não falte saúde, paz, felicidade e vontade de correr atrás das coisas que você quer.
-
-Espero que você consiga realizar seus planos, que apareçam muitas oportunidades boas e que você tenha vários motivos para sorrir durante esse novo ano.
-
-A gente acabou ficando um pouco distante com o tempo, e eu sinto falta de quando a gente conversava mais.
-
-Mas, mesmo assim, o carinho e o respeito que tenho por você continuam aqui.
-
-Você é uma pessoa que eu considero muito, e eu realmente espero que sua vida siga por caminhos bons.
-
-Aproveita muito seus 18 anos, comemora bastante e curte seu dia.
-
-Feliz aniversário, Issamara. 🎂🎉
-
-Que Deus abençoe muito sua vida e que esse novo ciclo venha cheio de coisas boas.
+            
+            <div style="margin-bottom: 18px; border-bottom: 1px solid #ffccd7; padding-bottom: 12px;">
+              <h4 style="color: #c2185b; font-size: 15px; margin: 0 0 4px;">1. Título & Abertura</h4>
+              <p style="font-size: 13.5px; color: #555; line-height: 1.5; margin: 0;">
+                Uma jornada de celebração e memórias passando de 2008 até a chegada dos tão esperados 18 anos em 24 de setembro de 2026.
+              </p>
             </div>
-            <div class="pdf-signature">
-              Com carinho,<br>
-              <strong>Luis.</strong>
+
+            <div style="margin-bottom: 18px; border-bottom: 1px solid #ffccd7; padding-bottom: 12px;">
+              <h4 style="color: #c2185b; font-size: 15px; margin: 0 0 4px;">2. Capítulos da Jornada</h4>
+              <ul style="font-size: 13px; color: #555; line-height: 1.5; margin: 0; padding-left: 20px;">
+                <li>Prólogo: A Linha do Tempo e o Caminho até 2026</li>
+                <li>Capítulos Interativos: As pequenas lembranças, os detalhes e as cores</li>
+                <li>O Livro Digital de Memórias (6 Seções)</li>
+                <li>Capítulo Final: “E Agora?” — O Grande Encerramento</li>
+              </ul>
+            </div>
+
+            <div style="margin-bottom: 18px; padding: 12px; background: rgba(255, 240, 245, 0.7); border-left: 3.5px solid #ff4071; border-radius: 6px;">
+              <h4 style="color: #c2185b; font-size: 14px; margin: 0 0 4px;">3. Frases Contemplativas</h4>
+              <p style="font-style: italic; font-size: 14px; margin: 0 0 4px; color: #3b0f2a;">“Algumas coisas a gente não consegue prever.”</p>
+              <p style="font-style: italic; font-size: 14.5px; font-weight: 700; color: #d81b60; margin: 0;">“Só consegue viver.”</p>
+            </div>
+
+            <div style="margin-bottom: 18px;">
+              <h4 style="color: #c2185b; font-size: 15px; margin: 0 0 8px;">4. Carta de Aniversário para Issamara</h4>
+              <div class="pdf-body" id="pdf-letter-content" style="font-size: 13.5px; line-height: 1.7; color: #333; background: #fff; padding: 14px; border: 1px solid #ffccd7; border-radius: 10px;">
+Feliz aniversário, Issamara. 🎂
+
+18 anos.
+
+É estranho pensar nisso. A gente passa tanto tempo esperando certas idades chegarem que, quando elas finalmente chegam, parece só mais um dia. Mas não é. É mais um ano que passou, mais um monte de coisas que aconteceram e, principalmente, mais um ano que você está aqui.
+
+E isso me faz pensar numa coisa meio estranha: pessoas passam pela nossa vida o tempo todo. Algumas ficam, outras vão embora, algumas a gente lembra por muito tempo e outras simplesmente desaparecem da nossa cabeça. A verdade é que ninguém sabe exatamente o que vai acontecer amanhã. A vida é meio imprevisível assim.
+
+E talvez seja justamente por isso que algumas pessoas acabam sendo importantes.
+
+Eu nunca fui uma pessoa que se interessa muito pelas outras. Acho as pessoas interessantes, observo, converso, conheço... mas dificilmente alguém realmente consegue chamar a minha atenção a ponto de eu querer manter aquela pessoa por perto.
+
+Você conseguiu.
+
+E você conseguiu meu interesse/atenção.
+
+Não sei explicar exatamente em que momento aconteceu. Talvez tenha sido pelas nossas conversas, pelo seu jeito tranquilo, pela forma como você sempre pareceu ser uma pessoa diferente das outras. Talvez tenha sido simplesmente porque, em algum momento, eu percebi que gostava da sua companhia e que conversar com você fazia bem.
+
+E acho que isso diz bastante.
+
+Porque, mesmo com o tempo passando e a gente ficando mais distante, você continuou sendo uma pessoa que eu considero muito.
+
+Hoje eu não quero ficar falando sobre tudo que mudou, nem transformar seu aniversário numa retrospectiva dramática da nossa amizade. Hoje é seu aniversário. Seu dia.
+
+Então eu só quero te desejar coisas boas.
+
+Que você tenha saúde, paz, felicidade e pessoas que realmente façam bem para você. Que consiga realizar aquilo que deseja, que encontre oportunidades que façam sentido para a sua vida e que tenha coragem para seguir os caminhos que escolher.
+
+Você está começando uma fase completamente nova agora.
+
+18 anos.
+
+E eu espero que você aproveite muito essa fase. Que erre, aprenda, descubra coisas novas, ria bastante, conheça lugares, pessoas e tenha histórias que realmente valham a pena lembrar.
+
+E, sinceramente, espero que a vida seja gentil com você.
+
+Porque você merece encontrar coisas boas pelo caminho.
+
+Talvez a gente ainda volte a conversar como antes algum dia. Talvez a vida leve cada um para um lado completamente diferente. A gente nunca sabe.
+
+Mas, independente disso, eu fico feliz por ter te conhecido.
+
+Você foi uma daquelas pessoas que conseguiram passar da minha curiosidade e realmente ganhar um espaço na minha consideração. E isso não acontece com qualquer pessoa.
+
+Então, no meio de toda essa conversa estranha sobre tempo, vida e pessoas...
+
+feliz aniversário.
+
+Espero que seus 18 anos sejam muito bons.
+
+Que Deus abençoe muito a sua vida, seus planos, suas escolhas e tudo aquilo que ainda está por vir.
+
+E que, quando você olhar para esse aniversário daqui a alguns anos, consiga pensar:
+
+“Foi um dia bom.”
+
+Feliz 18 anos, Issamara. 🎉🎂
+              </div>
+            </div>
+
+            <div style="margin-bottom: 18px; padding: 12px; background: rgba(255, 235, 240, 0.7); border-radius: 8px; text-align: center;">
+              <h4 style="color: #c2185b; font-size: 14px; margin: 0 0 4px;">5. Mensagem Final</h4>
+              <p style="font-size: 14px; font-style: italic; color: #3b0f2a; margin: 0 0 6px;">“Que os próximos anos sejam tão bonitos quanto os que ainda estão por vir.”</p>
+              <div style="font-size: 16px; font-weight: 700; color: #d81b60;">Feliz 18 anos. ❤️</div>
+            </div>
+
+            <div class="pdf-signature" style="text-align: center; border-top: 1.5px solid #ffccd7; padding-top: 14px; font-size: 13px; color: #666;">
+              <p style="margin: 0 0 4px;"><strong>6. Créditos & Dedicatória</strong></p>
+              <p style="margin: 0 0 4px;">Uma pequena experiência feita com grande carinho, especialmente para Issamara.</p>
+              <p style="margin: 0 0 6px;">Criado por Luis Fernando Santos • 8 de setembro</p>
+              <p style="font-style: italic; color: #d81b60; margin: 0 0 6px;">“Dando meu melhor pra uma pessoa que merece tudo de bom que esse mundo tem.”</p>
+              <p style="font-weight: 600; color: #880e4f; margin: 0;">“Espero poder te ver novamente.”</p>
+              <div style="margin-top: 10px; font-size: 14px; color: #d81b60; font-weight: 700;">
+                Com carinho,<br>Luis Fernando Santos
+              </div>
+              <!-- Mensagem oculta no PDF -->
+              <div style="margin-top: 26px; text-align: right; padding-top: 8px; font-size: 10px; color: #b87b92; letter-spacing: 0.6px; font-family: monospace; opacity: 0.55;">
+                <span>(removido do sistema. Te amo ❤️🔥)</span>
+              </div>
             </div>
           </div>
         </div>

@@ -125,10 +125,218 @@
   }
 
   // ==========================================
-  // 2. AUDIO MANAGER
+  // 1.5. VIEWPORT ROSE PETALS SYSTEM
+  // ==========================================
+  class ViewportPetalsSystem {
+    constructor() {
+      this.canvas = document.getElementById('global-viewport-petals-canvas');
+      if (!this.canvas) {
+        this.canvas = document.createElement('canvas');
+        this.canvas.id = 'global-viewport-petals-canvas';
+        this.canvas.className = 'global-viewport-petals-canvas';
+        this.canvas.setAttribute('aria-hidden', 'true');
+        document.body.prepend(this.canvas);
+      }
+      this.ctx = this.canvas.getContext('2d');
+      this.petals = [];
+      this.width = window.innerWidth;
+      this.height = window.innerHeight;
+      this.isRunning = false;
+      this.rafId = null;
+      this.lastTime = performance.now();
+      this.wind = 0;
+      this.targetWind = 0;
+      this.windChangeTimer = 0;
+
+      // Paletas cromáticas de pétalas aveludadas de rosa (tons suaves e festivos)
+      this.colorPalettes = [
+        { light: '#ffffff', mid: '#ffb3c6', edge: '#ff758f' },
+        { light: '#fff0f3', mid: '#ffccd5', edge: '#ff4d6d' },
+        { light: '#fff5f7', mid: '#fecdd3', edge: '#fb7185' },
+        { light: '#ffffff', mid: '#fed7e2', edge: '#f472b6' },
+        { light: '#fff1f2', mid: '#ffe4e6', edge: '#f43f5e' }
+      ];
+
+      this.init();
+    }
+
+    init() {
+      this.resize();
+      window.addEventListener('resize', () => this.resize(), { passive: true });
+
+      // Quantidade calibrada: leveza visual e performance 60fps
+      const count = window.innerWidth <= 768 ? 24 : 40;
+      this.petals = [];
+
+      // Distribuição inicial por toda a altura do viewport para efeito acolhedor instantâneo
+      for (let i = 0; i < count; i++) {
+        this.petals.push(this.createPetal(true));
+      }
+
+      // Parada imediata de processamento quando a aba fica oculta (economiza bateria/CPU)
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+          this.pause();
+        } else {
+          this.resume();
+        }
+      });
+
+      this.start();
+    }
+
+    createPetal(isInitial = false) {
+      const palette = this.colorPalettes[Math.floor(Math.random() * this.colorPalettes.length)];
+      const sizeScale = Math.random() * 0.65 + 0.65;
+      const baseW = (Math.random() * 6 + 10) * sizeScale;
+      const baseH = (Math.random() * 8 + 14) * sizeScale;
+
+      return {
+        x: Math.random() * (this.width + 120) - 60,
+        y: isInitial ? Math.random() * (this.height + 60) - 30 : -25 - Math.random() * 45,
+        width: baseW,
+        height: baseH,
+        vy: Math.random() * 0.7 + 0.55,
+        vx: (Math.random() - 0.5) * 0.35,
+        sway: Math.random() * Math.PI * 2,
+        swaySpeed: Math.random() * 0.02 + 0.012,
+        swayDistance: Math.random() * 1.5 + 0.8,
+        rotation: Math.random() * Math.PI * 2,
+        rotationSpeed: (Math.random() - 0.5) * 0.014,
+        tilt: Math.random() * Math.PI * 2,
+        tiltSpeed: Math.random() * 0.025 + 0.015,
+        alpha: Math.random() * 0.35 + 0.55,
+        palette: palette,
+        curl: Math.random() * 0.3 - 0.15
+      };
+    }
+
+    resize() {
+      if (!this.canvas) return;
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      this.width = window.innerWidth;
+      this.height = window.innerHeight;
+      this.canvas.width = Math.floor(this.width * dpr);
+      this.canvas.height = Math.floor(this.height * dpr);
+      this.ctx.setTransform(1, 0, 0, 1, 0, 0);
+      this.ctx.scale(dpr, dpr);
+    }
+
+    start() {
+      if (this.isRunning) return;
+      this.isRunning = true;
+      this.lastTime = performance.now();
+      this.loop(this.lastTime);
+    }
+
+    pause() {
+      this.isRunning = false;
+      if (this.rafId) {
+        cancelAnimationFrame(this.rafId);
+        this.rafId = null;
+      }
+    }
+
+    resume() {
+      if (!this.isRunning && !document.hidden) {
+        this.start();
+      }
+    }
+
+    loop(currentTime) {
+      if (!this.isRunning) return;
+
+      const dt = Math.min((currentTime - this.lastTime) / 16.67, 2.5);
+      this.lastTime = currentTime;
+
+      // Variação suave de brisa ambiente
+      if (Math.random() < 0.012) {
+        this.targetWind = (Math.random() - 0.45) * 0.75;
+      }
+      this.wind += (this.targetWind - this.wind) * 0.02;
+
+      this.ctx.clearRect(0, 0, this.width, this.height);
+
+      for (let i = 0; i < this.petals.length; i++) {
+        const p = this.petals[i];
+
+        p.sway += p.swaySpeed * dt;
+        p.rotation += p.rotationSpeed * dt;
+        p.tilt += p.tiltSpeed * dt;
+
+        p.y += p.vy * dt;
+        p.x += (Math.sin(p.sway) * p.swayDistance + this.wind + p.vx) * dt;
+
+        // Ao sair por baixo do viewport, ressurge no topo
+        if (p.y > this.height + 35) {
+          p.y = -25 - Math.random() * 40;
+          p.x = Math.random() * (this.width + 120) - 60;
+          p.sway = Math.random() * Math.PI * 2;
+          p.rotation = Math.random() * Math.PI * 2;
+        }
+        if (p.x < -60) p.x = this.width + 40;
+        if (p.x > this.width + 60) p.x = -40;
+
+        this.drawPetal(p);
+      }
+
+      this.rafId = requestAnimationFrame((t) => this.loop(t));
+    }
+
+    drawPetal(p) {
+      const ctx = this.ctx;
+      const tiltScale = Math.cos(p.tilt);
+      if (Math.abs(tiltScale) < 0.06) return;
+
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.rotation);
+      ctx.scale(tiltScale, 1);
+      ctx.globalAlpha = p.alpha;
+
+      const w = p.width;
+      const h = p.height;
+      const hw = w * 0.5;
+      const hh = h * 0.5;
+
+      // Desenho orgânico e curvo de pétala de rosa
+      ctx.beginPath();
+      ctx.moveTo(0, -hh);
+      ctx.bezierCurveTo(hw * 1.1, -hh * 0.7, hw * 1.05, hh * 0.6, 0, hh);
+      ctx.bezierCurveTo(-hw * 1.05, hh * 0.6, -hw * 1.1, -hh * 0.7, 0, -hh);
+      ctx.closePath();
+
+      const grad = ctx.createRadialGradient(-hw * 0.15, -hh * 0.25, 1, 0, 0, hh * 1.1);
+      grad.addColorStop(0, p.palette.light);
+      grad.addColorStop(0.5, p.palette.mid);
+      grad.addColorStop(1, p.palette.edge);
+
+      ctx.fillStyle = grad;
+      ctx.fill();
+
+      // Nervura suave interna
+      ctx.beginPath();
+      ctx.moveTo(0, -hh * 0.75);
+      ctx.quadraticCurveTo(p.curl * hw, 0, 0, hh * 0.7);
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+      ctx.lineWidth = 0.7;
+      ctx.stroke();
+
+      ctx.restore();
+    }
+  }
+
+  // ==========================================
+  // 2. AUDIO MANAGER (Instância Global Única com Ciclo de Vida Estrito)
   // ==========================================
   class AudioManager {
     constructor() {
+      // Regra de Ouro: Uma única instância global de áudio durante toda a experiência
+      if (AudioManager.instance) {
+        return AudioManager.instance;
+      }
+      AudioManager.instance = this;
+
       this.audio = document.getElementById('background-music');
       if (!this.audio) {
         this.audio = document.querySelector('audio');
@@ -147,6 +355,8 @@
       this.isPlaying = false;
       this.fadeInterval = null;
       this.hasFallbackListener = false;
+      this.pausedByBackground = false;
+      this.wasPlayingBeforeBackground = false;
 
       const savedVol = localStorage.getItem('issamara_bday_audio_vol');
       if (savedVol !== null) {
@@ -164,6 +374,7 @@
 
       this.audioCtx = null;
       this.setupUserUnlock();
+      this.setupLifecycleManagement();
     }
 
     /**
@@ -171,6 +382,8 @@
      * e garante desbloqueio de contexto de áudio sem nunca recriar nem reiniciar.
      */
     startExperienceAudio() {
+      if (document.hidden) return; // Nunca reproduzir com documento em segundo plano
+
       const ctx = this.getAudioContext();
       if (ctx && ctx.state === 'suspended') {
         ctx.resume().catch(() => {});
@@ -184,6 +397,7 @@
       // Assegura desmutado para que a música toque ao iniciar
       this.isMuted = false;
       this.audio.muted = false;
+      this.pausedByBackground = false;
       if (this.baseVolume <= 0.05) this.baseVolume = 0.7;
       this.audio.volume = 0.08;
 
@@ -515,123 +729,116 @@
       }
     }
 
-    /**
-     * Sintetizador melódico alegre e divertido do Axolote e Pato cantando 'Happy Birthday to you'
-     * fielmente sincronizado com o vídeo comemorativo.
-     */
-    playAxolotlHappyBirthdayTune(onEventCallback) {
-      if (this.isMuted) return;
-      const ctx = this.getAudioContext();
-      if (!ctx) return;
-
-      try {
-        const t0 = ctx.currentTime + 0.05;
-        const masterVol = Math.max(0.01, Math.min(1.0, this.currentVolume));
-        const masterGain = ctx.createGain();
-        masterGain.gain.setValueAtTime(0.24 * masterVol, t0);
-        masterGain.connect(ctx.destination);
-
-        // Notas da melodia: Sol, Sol, Lá, Sol, Dó, Si ...
-        const notes = [
-          // 1. "hap-py"
-          { freq: 392.00, start: 0.00, dur: 0.22, text: 'happy', mouth: 'happy', duck: true },
-          { freq: 392.00, start: 0.26, dur: 0.22, text: 'happy', mouth: 'happy', duck: false },
-          // "birth-day"
-          { freq: 440.00, start: 0.58, dur: 0.38, text: 'birthday', mouth: 'birthday', duck: true },
-          { freq: 392.00, start: 1.02, dur: 0.38, text: 'birthday', mouth: 'birthday', duck: false },
-          // "to youuuuu"
-          { freq: 523.25, start: 1.48, dur: 0.40, text: 'to youuuuu', mouth: 'toyou', duck: true, vibrato: true },
-          { freq: 493.88, start: 1.92, dur: 0.85, text: 'to youuuuu', mouth: 'toyou', duck: false, vibrato: true, bendTo: 512 },
-
-          // 2. "hap-py"
-          { freq: 392.00, start: 2.88, dur: 0.22, text: 'happy', mouth: 'happy', duck: true },
-          { freq: 392.00, start: 3.14, dur: 0.22, text: 'happy', mouth: 'happy', duck: false },
-          // "birth-day"
-          { freq: 440.00, start: 3.46, dur: 0.38, text: 'birthday', mouth: 'birthday', duck: true },
-          { freq: 392.00, start: 3.90, dur: 0.38, text: 'birthday', mouth: 'birthday', duck: false },
-          // "to youuuuu"
-          { freq: 587.33, start: 4.36, dur: 0.40, text: 'to youuuuu', mouth: 'toyou', duck: true, vibrato: true },
-          { freq: 523.25, start: 4.80, dur: 0.85, text: 'to youuuuu', mouth: 'toyou', duck: false, vibrato: true, bendTo: 540 },
-
-          // 3. "hap-py"
-          { freq: 392.00, start: 5.78, dur: 0.22, text: 'happy', mouth: 'happy', duck: true },
-          { freq: 392.00, start: 6.04, dur: 0.22, text: 'happy', mouth: 'happy', duck: false },
-          // "birth-day"
-          { freq: 783.99, start: 6.36, dur: 0.45, text: 'birthday', mouth: 'birthday', duck: true },
-          { freq: 659.25, start: 6.86, dur: 0.45, text: 'birthday', mouth: 'birthday', duck: false },
-          // "to youuuu" / "Issamara"
-          { freq: 523.25, start: 7.36, dur: 0.32, text: 'to youuuuu', mouth: 'toyou', duck: true },
-          { freq: 493.88, start: 7.72, dur: 0.32, text: 'to youuuuu', mouth: 'toyou', duck: false },
-          { freq: 440.00, start: 8.08, dur: 0.45, text: 'to youuuuu', mouth: 'toyou', duck: true },
-
-          // 4. Clímax com Zoom: "BIRTHDAYYYYYYYYYYY!"
-          { freq: 698.46, start: 8.66, dur: 0.30, text: 'BIRTHDAYYYYYYYYYYY', mouth: 'scream', duck: true, zoom: true, shake: true },
-          { freq: 698.46, start: 9.00, dur: 0.30, text: 'BIRTHDAYYYYYYYYYYY', mouth: 'scream', duck: true, zoom: true, shake: true },
-          { freq: 659.25, start: 9.34, dur: 0.35, text: 'BIRTHDAYYYYYYYYYYY', mouth: 'scream', duck: true, zoom: true, shake: true },
-          { freq: 523.25, start: 9.72, dur: 0.40, text: 'BIRTHDAYYYYYYYYYYY', mouth: 'scream', duck: true, zoom: true, shake: true },
-          { freq: 587.33, start: 10.16, dur: 0.40, text: 'BIRTHDAYYYYYYYYYYY', mouth: 'scream', duck: true, zoom: true, shake: true },
-          { freq: 523.25, start: 10.60, dur: 1.50, text: 'ISSAMARA! 🎉🎂', mouth: 'scream', duck: true, zoom: true, shake: true, vibrato: true, finale: true }
-        ];
-
-        notes.forEach(n => {
-          const startTime = t0 + n.start;
-          const osc = ctx.createOscillator();
-          const osc2 = ctx.createOscillator();
-          const noteGain = ctx.createGain();
-
-          osc.type = 'triangle';
-          osc2.type = 'sine';
-
-          osc.frequency.setValueAtTime(n.freq, startTime);
-          osc2.frequency.setValueAtTime(n.freq * 2, startTime);
-
-          if (n.bendTo) {
-            osc.frequency.exponentialRampToValueAtTime(n.bendTo, startTime + n.dur);
-          }
-
-          if (n.vibrato) {
-            const lfo = ctx.createOscillator();
-            const lfoGain = ctx.createGain();
-            lfo.frequency.setValueAtTime(6.2, startTime);
-            lfoGain.gain.setValueAtTime(n.freq * 0.035, startTime);
-            lfo.connect(lfoGain);
-            lfoGain.connect(osc.frequency);
-            lfo.start(startTime + 0.08);
-            lfo.stop(startTime + n.dur);
-          }
-
-          noteGain.gain.setValueAtTime(0.001, startTime);
-          noteGain.gain.linearRampToValueAtTime(0.72, startTime + 0.02);
-          noteGain.gain.exponentialRampToValueAtTime(0.001, startTime + n.dur);
-
-          osc.connect(noteGain);
-          osc2.connect(noteGain);
-          noteGain.connect(masterGain);
-
-          osc.start(startTime);
-          osc2.start(startTime);
-          osc.stop(startTime + n.dur + 0.05);
-          osc2.stop(startTime + n.dur + 0.05);
-
-          if (onEventCallback) {
-            setTimeout(() => {
-              onEventCallback(n);
-            }, n.start * 1000);
-          }
-        });
-
-        if (onEventCallback) {
-          setTimeout(() => {
-            onEventCallback({ type: 'completed' });
-          }, 12400);
+    setupLifecycleManagement() {
+      // 1. Mudança de Visibilidade: aba em segundo plano, tela bloqueada, minimização ou troca de aplicativo
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden || document.visibilityState === 'hidden') {
+          this.handleBackgroundEntry('visibilitychange:hidden');
+        } else if (document.visibilityState === 'visible') {
+          this.handleForegroundReturn('visibilitychange:visible');
         }
-      } catch (e) {
-        console.warn('Erro ao reproduzir canção do axolote:', e);
+      });
+
+      // 2. pagehide: capturado com prioridade imediata ao sair da página ou fechar o navegador
+      window.addEventListener('pagehide', (e) => {
+        const isPersisted = !!(e && e.persisted);
+        this.handlePageExit(isPersisted);
+      }, { capture: true });
+
+      // 3. beforeunload e unload: garantia de interrupção e limpeza imediata
+      window.addEventListener('beforeunload', () => {
+        this.handlePageExit(false);
+      }, { capture: true });
+
+      window.addEventListener('unload', () => {
+        this.handlePageExit(false);
+      }, { capture: true });
+
+      // 4. freeze: Page Lifecycle API do Chrome para suspensão de abas
+      document.addEventListener('freeze', () => {
+        this.handleBackgroundEntry('freeze');
+      });
+
+      // 5. blur: apoio secundário na perda de foco da janela
+      window.addEventListener('blur', () => {
+        if (document.hidden) {
+          this.handleBackgroundEntry('blur:hidden');
+        }
+      });
+    }
+
+    handleBackgroundEntry(source = '') {
+      // Ao sair ou entrar em segundo plano, interrompe a reprodução imediatamente
+      if (this.fadeInterval) {
+        clearInterval(this.fadeInterval);
+        this.fadeInterval = null;
+      }
+
+      if (this.isPlaying) {
+        this.wasPlayingBeforeBackground = true;
+      }
+      this.pausedByBackground = true;
+
+      if (this.audio) {
+        try {
+          this.audio.pause();
+        } catch (e) {}
+      }
+      this.isPlaying = false;
+
+      // Suspende AudioContext caso esteja ativo
+      if (this.audioCtx && this.audioCtx.state === 'running') {
+        try {
+          this.audioCtx.suspend();
+        } catch (e) {}
+      }
+
+      this.updateUI();
+    }
+
+    handleForegroundReturn(source = '') {
+      // Não reproduzir sozinho ao retornar se não houver interação na página
+      if (this.audio && !this.audio.paused) {
+        try {
+          this.audio.pause();
+        } catch (e) {}
+      }
+      this.isPlaying = false;
+      this.updateUI();
+    }
+
+    handlePageExit(persisted = false) {
+      if (this.fadeInterval) {
+        clearInterval(this.fadeInterval);
+        this.fadeInterval = null;
+      }
+
+      if (this.audio) {
+        try {
+          this.audio.pause();
+          if (!persisted) {
+            this.audio.currentTime = 0;
+          }
+        } catch (e) {}
+      }
+      this.isPlaying = false;
+
+      if (this.audioCtx && this.audioCtx.state !== 'closed') {
+        try {
+          this.audioCtx.suspend();
+        } catch (e) {}
       }
     }
 
+    stopAndClean() {
+      this.handlePageExit(false);
+      this.updateUI();
+    }
+
     play() {
+      if (document.hidden) return; // Nunca reproduzir com aba oculta ou em segundo plano
       if (!this.audio) return;
+      this.pausedByBackground = false;
       this.audio.muted = this.isMuted;
       this.audio.volume = this.isMuted ? 0 : this.currentVolume;
       const p = this.audio.play();
@@ -645,6 +852,10 @@
 
     pause() {
       if (!this.audio) return;
+      if (this.fadeInterval) {
+        clearInterval(this.fadeInterval);
+        this.fadeInterval = null;
+      }
       this.audio.pause();
       this.isPlaying = false;
       this.updateUI();
@@ -679,6 +890,13 @@
         if (!this.isMuted) {
           this.audio.volume = this.currentVolume;
         }
+        if (clamped === 0 && next === 0) {
+          try {
+            this.audio.pause();
+            this.isPlaying = false;
+            this.updateUI();
+          } catch (e) {}
+        }
       }, stepTime);
     }
 
@@ -693,33 +911,7 @@
     }
 
     updateUI() {
-      const soundBtnIcon = document.getElementById('icon-sound');
-      const soundBtn = document.getElementById('btn-sound');
-      const volSlider = document.getElementById('audio-volume-slider');
-      const volLabel = document.getElementById('volume-label');
-      const toggleMuteBtn = document.getElementById('btn-toggle-mute');
-
-      if (soundBtnIcon) {
-        if (this.isMuted || this.currentVolume === 0) {
-          soundBtnIcon.className = 'fas fa-volume-mute text-danger';
-        } else if (this.currentVolume < 0.4) {
-          soundBtnIcon.className = 'fas fa-volume-down text-info';
-        } else {
-          soundBtnIcon.className = 'fas fa-volume-up text-primary';
-        }
-      }
-
-      if (volSlider) {
-        volSlider.value = Math.round(this.baseVolume * 100);
-      }
-      if (volLabel) {
-        volLabel.innerText = Math.round(this.baseVolume * 100) + '%';
-      }
-      if (toggleMuteBtn) {
-        toggleMuteBtn.innerHTML = this.isMuted
-          ? '<i class="fas fa-volume-up mr-1"></i> Ativar Som'
-          : '<i class="fas fa-volume-mute mr-1"></i> Mutar Som';
-      }
+      // Interface limpa e cinematográfica sem controles de áudio na tela
     }
   }
 
@@ -841,6 +1033,303 @@
         // Safe silent fallback
       }
     }
+
+    /**
+     * Synthesizes a delicate, whisper-soft breath sound for blowing out candles
+     */
+    playBreathOut() {
+      try {
+        this.initContext();
+        if (!this.ctx) return;
+        const ctx = this.ctx;
+        const duration = 0.55;
+        const bufferSize = Math.floor(ctx.sampleRate * duration);
+        const noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+        const output = noiseBuffer.getChannelData(0);
+
+        for (let i = 0; i < bufferSize; i++) {
+          output[i] = (Math.random() * 2 - 1) * 0.12;
+        }
+
+        const noiseSource = ctx.createBufferSource();
+        noiseSource.buffer = noiseBuffer;
+
+        const filter = ctx.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(600, ctx.currentTime);
+        filter.frequency.exponentialRampToValueAtTime(350, ctx.currentTime + duration);
+        filter.Q.setValueAtTime(1.0, ctx.currentTime);
+
+        const gainNode = ctx.createGain();
+        gainNode.gain.setValueAtTime(0.001, ctx.currentTime);
+        gainNode.gain.linearRampToValueAtTime(0.05, ctx.currentTime + 0.08);
+        gainNode.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + duration);
+
+        noiseSource.connect(filter);
+        filter.connect(gainNode);
+        gainNode.connect(ctx.destination);
+
+        noiseSource.start();
+        noiseSource.stop(ctx.currentTime + duration + 0.02);
+      } catch (e) {
+        // Safe fallback
+      }
+    }
+
+    /**
+     * Synthesizes a soft, warm celestial chime chord for constellation ignition
+     */
+    playChimeChord() {
+      try {
+        this.initContext();
+        if (!this.ctx) return;
+        const ctx = this.ctx;
+        const freqs = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+        freqs.forEach((freq, idx) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, ctx.currentTime);
+
+          const startTime = ctx.currentTime + idx * 0.06;
+          const duration = 1.2;
+
+          gain.gain.setValueAtTime(0.0001, startTime);
+          gain.gain.linearRampToValueAtTime(0.025 / (idx + 1), startTime + 0.04);
+          gain.gain.exponentialRampToValueAtTime(0.0001, startTime + duration);
+
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+
+          osc.start(startTime);
+          osc.stop(startTime + duration + 0.05);
+        });
+      } catch (e) {
+        // Safe fallback
+      }
+    }
+
+    /**
+     * Synthesizes mechanical camera shutter click and capacitor flash burst
+     */
+    playCameraClick() {
+      try {
+        this.initContext();
+        if (!this.ctx) return;
+        const ctx = this.ctx;
+        const t = ctx.currentTime;
+
+        // 1. Shutter noise burst
+        const bufferSize = Math.floor(ctx.sampleRate * 0.09);
+        const noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+        const data = noiseBuffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) {
+          data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (ctx.sampleRate * 0.015));
+        }
+        const noise = ctx.createBufferSource();
+        noise.buffer = noiseBuffer;
+        const filter = ctx.createBiquadFilter();
+        filter.type = 'highpass';
+        filter.frequency.setValueAtTime(2600, t);
+
+        const gain = ctx.createGain();
+        gain.gain.setValueAtTime(0.35, t);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.08);
+
+        noise.connect(filter);
+        filter.connect(gain);
+        gain.connect(ctx.destination);
+        noise.start(t);
+
+        // 2. Mechanical click curtain release
+        const osc = ctx.createOscillator();
+        const oscGain = ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(1900, t + 0.035);
+        osc.frequency.exponentialRampToValueAtTime(280, t + 0.08);
+        oscGain.gain.setValueAtTime(0.001, t);
+        oscGain.gain.setValueAtTime(0.25, t + 0.035);
+        oscGain.gain.exponentialRampToValueAtTime(0.001, t + 0.09);
+        osc.connect(oscGain);
+        oscGain.connect(ctx.destination);
+        osc.start(t + 0.035);
+        osc.stop(t + 0.1);
+      } catch (e) {}
+    }
+
+    /**
+     * Synthesizes realistic mechanical stepper motor of a Polaroid printing ejection
+     */
+    playPolaroidMotor() {
+      try {
+        this.initContext();
+        if (!this.ctx) return;
+        const ctx = this.ctx;
+        const t = ctx.currentTime;
+        const duration = 1.35;
+
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(170, t);
+        osc.frequency.linearRampToValueAtTime(235, t + 0.25);
+        osc.frequency.linearRampToValueAtTime(205, t + duration - 0.2);
+        osc.frequency.exponentialRampToValueAtTime(90, t + duration);
+
+        const filter = ctx.createBiquadFilter();
+        filter.type = 'bandpass';
+        filter.frequency.setValueAtTime(680, t);
+        filter.Q.setValueAtTime(3.2, t);
+
+        gain.gain.setValueAtTime(0.001, t);
+        gain.gain.linearRampToValueAtTime(0.14, t + 0.08);
+        gain.gain.setValueAtTime(0.14, t + duration - 0.12);
+        gain.gain.exponentialRampToValueAtTime(0.0001, t + duration);
+
+        osc.connect(filter);
+        filter.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(t);
+        osc.stop(t + duration + 0.05);
+      } catch (e) {}
+    }
+
+    /**
+     * Synthesizes a comedic breath intake / gasp before the scream
+     */
+    playCatInhale() {
+      try {
+        this.initContext();
+        if (!this.ctx) return;
+        const ctx = this.ctx;
+        const t = ctx.currentTime;
+        const duration = 0.55;
+
+        const bufferSize = Math.floor(ctx.sampleRate * duration);
+        const noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+        const data = noiseBuffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) {
+          data[i] = (Math.random() * 2 - 1) * 0.18;
+        }
+        const noise = ctx.createBufferSource();
+        noise.buffer = noiseBuffer;
+
+        const filter = ctx.createBiquadFilter();
+        filter.type = 'bandpass';
+        filter.frequency.setValueAtTime(450, t);
+        filter.frequency.exponentialRampToValueAtTime(1550, t + duration);
+        filter.Q.setValueAtTime(2.4, t);
+
+        const gain = ctx.createGain();
+        gain.gain.setValueAtTime(0.001, t);
+        gain.gain.linearRampToValueAtTime(0.12, t + duration - 0.06);
+        gain.gain.exponentialRampToValueAtTime(0.0001, t + duration);
+
+        noise.connect(filter);
+        filter.connect(gain);
+        gain.connect(ctx.destination);
+        noise.start(t);
+        noise.stop(t + duration + 0.02);
+      } catch (e) {}
+    }
+
+    /**
+     * Synthesizes the hilarious, dramatic, exaggerated cat scream ("AAAAAAAHHHHHHH!")
+     * Rich vocal formants, pitch glides, dramatic vibrato tremor and comical resonance
+     */
+    playCatScream() {
+      try {
+        this.initContext();
+        if (!this.ctx) return;
+        const ctx = this.ctx;
+        const t = ctx.currentTime;
+        const duration = 2.8;
+
+        const osc1 = ctx.createOscillator();
+        const osc2 = ctx.createOscillator();
+        const osc3 = ctx.createOscillator();
+
+        osc1.type = 'sawtooth';
+        osc2.type = 'sawtooth';
+        osc3.type = 'triangle';
+
+        // Comical upward glissando into screaming register with wobble
+        osc1.frequency.setValueAtTime(540, t);
+        osc1.frequency.exponentialRampToValueAtTime(840, t + 0.28);
+        osc1.frequency.linearRampToValueAtTime(920, t + 1.2);
+        osc1.frequency.exponentialRampToValueAtTime(480, t + duration);
+
+        osc2.frequency.setValueAtTime(546, t);
+        osc2.frequency.exponentialRampToValueAtTime(849, t + 0.28);
+        osc2.frequency.linearRampToValueAtTime(928, t + 1.2);
+        osc2.frequency.exponentialRampToValueAtTime(484, t + duration);
+
+        osc3.frequency.setValueAtTime(270, t);
+        osc3.frequency.exponentialRampToValueAtTime(420, t + 0.28);
+        osc3.frequency.exponentialRampToValueAtTime(240, t + duration);
+
+        // Tremor LFO
+        const lfo = ctx.createOscillator();
+        const lfoGain = ctx.createGain();
+        lfo.frequency.setValueAtTime(9.0, t);
+        lfoGain.gain.setValueAtTime(32, t);
+        lfoGain.gain.linearRampToValueAtTime(50, t + 0.4);
+        lfo.connect(lfoGain);
+        lfoGain.connect(osc1.frequency);
+        lfoGain.connect(osc2.frequency);
+        lfo.start(t);
+        lfo.stop(t + duration);
+
+        // Vocal Formants
+        const f1 = ctx.createBiquadFilter();
+        f1.type = 'bandpass';
+        f1.frequency.setValueAtTime(840, t);
+        f1.Q.setValueAtTime(4.2, t);
+
+        const f2 = ctx.createBiquadFilter();
+        f2.type = 'bandpass';
+        f2.frequency.setValueAtTime(1450, t);
+        f2.Q.setValueAtTime(3.8, t);
+
+        const noiseGen = ctx.createBufferSource();
+        const noiseBuffer = ctx.createBuffer(1, Math.floor(ctx.sampleRate * duration), ctx.sampleRate);
+        const nd = noiseBuffer.getChannelData(0);
+        for (let i = 0; i < nd.length; i++) {
+          nd[i] = (Math.random() * 2 - 1) * 0.28;
+        }
+        noiseGen.buffer = noiseBuffer;
+        const noiseFilter = ctx.createBiquadFilter();
+        noiseFilter.type = 'bandpass';
+        noiseFilter.frequency.setValueAtTime(2900, t);
+        noiseFilter.Q.setValueAtTime(2.2, t);
+
+        const screamGain = ctx.createGain();
+        screamGain.gain.setValueAtTime(0.001, t);
+        screamGain.gain.linearRampToValueAtTime(0.48, t + 0.15);
+        screamGain.gain.setValueAtTime(0.45, t + 1.6);
+        screamGain.gain.exponentialRampToValueAtTime(0.001, t + duration);
+
+        osc1.connect(f1);
+        osc2.connect(f2);
+        osc3.connect(f1);
+        noiseGen.connect(noiseFilter);
+
+        f1.connect(screamGain);
+        f2.connect(screamGain);
+        noiseFilter.connect(screamGain);
+        screamGain.connect(ctx.destination);
+
+        osc1.start(t);
+        osc2.start(t);
+        osc3.start(t);
+        noiseGen.start(t);
+
+        osc1.stop(t + duration);
+        osc2.stop(t + duration);
+        osc3.stop(t + duration);
+        noiseGen.stop(t + duration);
+      } catch (e) {}
+    }
   }
 
   // ==========================================
@@ -851,102 +1340,79 @@
     {
       id: 1,
       number: 1,
-      title: "Era uma vez...",
+      title: "18 Anos",
       paragraphs: [
-        "Era uma vez uma pessoa que estava prestes a completar 18 anos.",
-        "E, como qualquer aniversário importante, aquele dia merecia alguma coisa diferente.",
-        "Não precisava ser um presente enorme.",
-        "Nem precisava ser alguma coisa complicada.",
-        "Só precisava ser algo feito de coração e pensado especialmente para aquela pessoa.",
-        "Essa pessoa era você, Issamara. 🎂"
-      ],
-      closing: "E foi aí que começou essa pequena história."
+        "Feliz aniversário, Issamara. 🎂",
+        "18 anos.",
+        "É estranho pensar nisso. A gente passa tanto tempo esperando certas idades chegarem que, quando elas finalmente chegam, parece só mais um dia.",
+        "Mas não é.",
+        "É mais um ano que passou, mais um monte de coisas que aconteceram e, principalmente, mais um ano que você está aqui."
+      ]
     },
     {
       id: 2,
       number: 2,
-      title: "Um novo capítulo",
+      title: "Pessoas & O Tempo",
       paragraphs: [
-        "Dezoito anos.",
-        "Parece só um número quando a gente olha rapidamente.",
-        "Mas, quando para para pensar, é o começo de uma fase completamente nova.",
-        "Novas escolhas, novos caminhos, novos planos e muitas coisas que ainda nem aconteceram.",
-        "Talvez você ainda não saiba exatamente onde tudo isso vai levar.",
-        "E tudo bem.",
-        "Nem toda história precisa ter o final escrito antes de começar.",
-        "O importante é continuar escrevendo."
-      ],
-      closing: "E esse é só o começo do seu próximo capítulo. ✨"
+        "E isso me faz pensar numa coisa meio estranha: pessoas passam pela nossa vida o tempo todo.",
+        "Algumas ficam, outras vão embora, algumas a gente lembra por muito tempo e outras simplesmente desaparecem da nossa cabeça.",
+        "A verdade é que ninguém sabe exatamente o que vai acontecer amanhã. A vida é meio imprevisível assim.",
+        "E talvez seja justamente por isso que algumas pessoas acabam sendo importantes."
+      ]
     },
     {
       id: 3,
       number: 3,
-      title: "Algumas lembranças ficam",
+      title: "Você Conseguiu",
       paragraphs: [
-        "No meio de tantos dias que passam rapidamente, algumas pequenas lembranças acabam ficando.",
-        "Conversas.",
-        "Risadas.",
-        "Momentos simples.",
-        "Até aquelas vezes em que um caminho para a escola acabava acompanhado de mini pastéis. 😂",
-        "São coisas pequenas.",
-        "Mas talvez sejam justamente essas coisas pequenas que fazem algumas pessoas ocuparem um lugar especial na nossa memória."
-      ],
-      closing: "Algumas lembranças não precisam ser enormes para serem importantes."
+        "Eu nunca fui uma pessoa que se interessa muito pelas outras. Acho as pessoas interessantes, observo, converso, conheço... mas dificilmente alguém realmente consegue chamar a minha atenção a ponto de eu querer manter aquela pessoa por perto.",
+        "Você conseguiu.",
+        "E você conseguiu meu interesse/atenção.",
+        "Não sei explicar exatamente em que momento aconteceu. Talvez tenha sido pelas nossas conversas, pelo seu jeito tranquilo, pela forma como você sempre pareceu ser uma pessoa diferente das outras.",
+        "Talvez tenha sido simplesmente porque, em algum momento, eu percebi que gostava da sua companhia e que conversar com você fazia bem."
+      ]
     },
     {
       id: 4,
       number: 4,
-      title: "O tempo muda as coisas",
+      title: "O Que Importa Hoje",
       paragraphs: [
-        "Com o tempo, a vida vai mudando.",
-        "As pessoas crescem.",
-        "Os caminhos mudam.",
-        "Algumas conversas ficam mais raras.",
-        "E, às vezes, pessoas que antes estavam sempre por perto acabam ficando um pouco mais distantes.",
-        "Mas isso não apaga aquilo que foi importante.",
-        "E também não impede que coisas boas ainda possam acontecer no futuro.",
-        "Talvez algumas histórias simplesmente precisem de uma pausa antes de continuar."
-      ],
-      closing: "E eu ainda espero que essa história tenha outros encontros pelo caminho."
+        "E acho que isso diz bastante.",
+        "Porque, mesmo com o tempo passando e a gente ficando mais distante, você continuou sendo uma pessoa que eu considero muito.",
+        "Hoje eu não quero ficar falando sobre tudo que mudou, nem transformar seu aniversário numa retrospectiva dramática da nossa amizade. Hoje é seu aniversário. Seu dia.",
+        "Então eu só quero te desejar coisas boas.",
+        "Que você tenha saúde, paz, felicidade e pessoas que realmente façam bem para você. Que consiga realizar aquilo que deseja, que encontre oportunidades que façam sentido para a sua vida e que tenha coragem para seguir os caminhos que escolher."
+      ]
     },
     {
       id: 5,
       number: 5,
-      title: "O que importa agora",
+      title: "Uma Nova Fase",
       paragraphs: [
-        "Mas hoje não é dia de ficar olhando para trás.",
-        "Hoje é dia de olhar para você.",
-        "Para os seus 18 anos.",
-        "Para tudo aquilo que ainda pode acontecer.",
-        "Para os sonhos que você ainda vai realizar.",
-        "Para as pessoas que ainda vai conhecer.",
-        "Para os lugares que ainda vai visitar.",
-        "Para todas as histórias que ainda vai viver.",
-        "Então, por enquanto, esquece o resto.",
-        "Aproveita o seu dia.",
-        "Ri bastante.",
-        "Comemora.",
-        "E aproveita muito essa nova fase."
-      ],
-      closing: "Porque hoje a protagonista dessa história é você. 🎉"
+        "Você está começando uma fase completamente nova agora.",
+        "18 anos.",
+        "E eu espero que você aproveite muito essa fase. Que erre, aprenda, descubra coisas novas, ria bastante, conheça lugares, pessoas e tenha histórias que realmente valham a pena lembrar.",
+        "E, sinceramente, espero que a vida seja gentil com você.",
+        "Porque você merece encontrar coisas boas pelo caminho."
+      ]
     },
     {
       id: 6,
       number: 6,
-      title: "E então...",
+      title: "Feliz Aniversário",
       paragraphs: [
-        "A história poderia terminar aqui.",
-        "Mas, na verdade, ela não termina.",
-        "Porque 18 anos não são um final.",
-        "São o começo de um capítulo completamente novo.",
-        "Então eu espero que esse novo capítulo seja cheio de momentos bons, pessoas incríveis, conquistas, paz e muitos motivos para sorrir.",
-        "Espero que você continue sendo essa pessoa inteligente, tranquila e especial do seu jeito.",
-        "E, mesmo que a vida continue levando cada um para um caminho diferente, espero que ainda existam oportunidades para a gente se encontrar novamente.",
-        "Afinal...",
-        "algumas histórias não precisam ser perfeitas.",
-        "Só precisam continuar existindo de alguma forma."
+        "Talvez a gente ainda volte a conversar como antes algum dia. Talvez a vida leve cada um para um lado completamente diferente. A gente nunca sabe.",
+        "Mas, independente disso, eu fico feliz por ter te conhecido.",
+        "Você foi uma daquelas pessoas que conseguiram passar da minha curiosidade e realmente ganhar um espaço na minha consideração. E isso não acontece com qualquer pessoa.",
+        "Então, no meio de toda essa conversa estranha sobre tempo, vida e pessoas...",
+        "feliz aniversário.",
+        "Espero que seus 18 anos sejam muito bons.",
+        "Que Deus abençoe muito a sua vida, seus planos, suas escolhas e tudo aquilo que ainda está por vir.",
+        "E que, quando você olhar para esse aniversário daqui a alguns anos, consiga pensar:",
+        "“Foi um dia bom.”",
+        "Feliz 18 anos, Issamara. 🎉🎂"
       ],
-      closing: "Feliz aniversário, Issamara. 🎂❤️\nQue seus 18 anos sejam apenas o começo de muitas coisas boas."
+      closing: "Com carinho,\nLuis Fernando Santos"
     }
   ];
 
@@ -2455,27 +2921,22 @@
     // Cap 20 - O Grande Encerramento (Cena Final Definitiva - 30 Segundos Contínuos)
     {
       id: 20,
-      title: "Cena Final Definitiva",
+      title: "🌸 E Agora? — O Grande Encerramento",
       audioLevel: 0.70,
       render: (stage, sys) => {
-        if (sys.audioManager) {
-          sys.audioManager.fadeTo(0.70, 1500);
-        }
         sys.hideTapPrompt();
-
-        // Inicializa a Cena Final Definitiva
-        sys.activeFinaleController = new DefinitiveFinaleController(stage, sys);
+        sys.activeFinaleController = new EAgoraFinaleController(stage, sys);
       }
     }
   ];
 
   // ==========================================================================
   // 4.3. BIRTHDAY VIDEO ANIMATION CONTROLLER (VELA & AXOLOTE CANTOR)
-  // Animação comemorativa completa inspirada no vídeo dos personagens
+  // ==========================================================================
+  // CAPÍTULO 18: BOLO DE ANIVERSÁRIO & PEDIDO DOS 18 ANOS (Visual Limpo e Serena Celebração)
   // 1. Contagem regressiva e bolo interativo (blow the candle in 4, 3, 2, 1)
-  // 2. Sopro de ar, vela apagada e blecaute com efeito de suspense
-  // 3. Pato & Axolote cantando alegremente 'Happy Birthday to you' sincronizado
-  // 4. Clímax com zoom de câmera, letras cômicas animadas e chuva de confetes
+  // 2. Sopro de ar, vela apagada e chuva de confetes festivos
+  // 3. Revelação serena do desejo realizado e transição para o Livro de Memórias
   // ==========================================================================
   class BirthdayVideoAnimController {
     constructor(container, sys) {
@@ -2485,7 +2946,6 @@
       this.countdownTimer = null;
       this.currentCount = 4;
       this.isBlown = false;
-      this.isSinging = false;
       this.timeouts = [];
     }
 
@@ -2530,35 +2990,19 @@
             </p>
           </div>
 
-          <!-- 2. CORTINA DE BLECAUTE / SUSPENSE -->
-          <div class="blackout-curtain" id="blackout-curtain">
-            <div class="blackout-text">
-              ✨ Pedido feito... ✨<br>
-              <span style="font-size: 16px; color: #ffffff; font-family: 'Quicksand', sans-serif; display: inline-block; margin-top: 8px;">
-                Guarde no coração! Prepare-se para a surpresa...
-              </span>
-            </div>
-          </div>
-
-          <!-- 3. CENA DOS PERSONAGENS CANTORES (PATO E AXOLOTE) -->
-          <div class="singing-scene-container scene-hidden" id="singing-scene-container">
-            <div class="singing-lyric-box">
-              <span class="singing-lyric-text" id="singing-lyric-text">...</span>
-            </div>
-
-            <div class="singing-camera-wrap" id="singing-camera-wrap">
-              ${this.getCharactersSvg()}
-            </div>
-
-            <div class="singing-action-bar" id="singing-action-bar">
-              <button class="btn-singing-replay" id="btn-singing-replay">
-                <i class="fas fa-redo"></i> Assoprar novamente
+          <!-- 2. REVELAÇÃO DO PEDIDO REALIZADO & CELEBRAÇÃO LIMPA -->
+          <div class="cake-wish-granted d-none" id="cake-wish-granted">
+            <div class="wish-icon mb-2">✨🎂✨</div>
+            <h3 class="wish-title">Pedido Feito!</h3>
+            <p class="wish-text">
+              Que cada sonho e desejo guardado no seu coração se torne realidade neste novo ciclo de 18 anos.
+            </p>
+            <div class="mt-4 d-flex justify-content-center align-items-center flex-wrap" style="gap: 12px;">
+              <button class="btn-wish-replay" id="btn-cake-replay">
+                <i class="fas fa-redo mr-1"></i> Assoprar novamente
               </button>
-              <button class="btn-singing-photo" id="btn-singing-photo">
-                <i class="fas fa-image"></i> Ver Foto de Happy Day
-              </button>
-              <button class="btn-singing-continue" id="btn-singing-continue">
-                Continuar a Celebração <i class="fas fa-arrow-right ml-1"></i>
+              <button class="btn-wish-continue" id="btn-cake-continue">
+                Continuar para o Livro de Memórias <i class="fas fa-arrow-right ml-1"></i>
               </button>
             </div>
           </div>
@@ -2572,9 +3016,8 @@
     bindEvents() {
       const btnBlow = this.container.querySelector('#btn-blow-candle');
       const cakeWrapper = this.container.querySelector('#cake-svg-wrapper');
-      const btnReplay = this.container.querySelector('#btn-singing-replay');
-      const btnPhoto = this.container.querySelector('#btn-singing-photo');
-      const btnContinue = this.container.querySelector('#btn-singing-continue');
+      const btnReplay = this.container.querySelector('#btn-cake-replay');
+      const btnContinue = this.container.querySelector('#btn-cake-continue');
 
       if (btnBlow) {
         btnBlow.addEventListener('click', () => this.blowCandle());
@@ -2584,13 +3027,6 @@
       }
       if (btnReplay) {
         btnReplay.addEventListener('click', () => this.replayAll());
-      }
-      if (btnPhoto) {
-        btnPhoto.addEventListener('click', () => {
-          if (this.sys && typeof this.sys.goToChapter === 'function') {
-            this.sys.goToChapter(17);
-          }
-        });
       }
       if (btnContinue) {
         btnContinue.addEventListener('click', () => {
@@ -2642,160 +3078,46 @@
       const windEl = this.container.querySelector('#cake-wind-effect');
       const flameEl = this.container.querySelector('#cake-flame-group');
       const smokeEl = this.container.querySelector('#cake-smoke-group');
-      const blackoutEl = this.container.querySelector('#blackout-curtain');
-      const cakeScene = this.container.querySelector('#cake-scene-container');
-      const singingScene = this.container.querySelector('#singing-scene-container');
+      const wishGranted = this.container.querySelector('#cake-wish-granted');
       const btnBlow = this.container.querySelector('#btn-blow-candle');
 
       if (btnBlow) btnBlow.disabled = true;
 
-      // 1. Som de sopro de ar
+      // 1. Som suave de sopro de ar
       if (this.sys && this.sys.audioManager) {
         this.sys.audioManager.playCandleBlowSound(1.0);
       }
 
-      // 2. Animação de vento e extinção da chama
+      // 2. Animação de vento e extinção da chama com fumaça
       if (windEl) windEl.classList.add('wind-active');
       if (flameEl) flameEl.classList.add('flame-blown');
       if (smokeEl) smokeEl.classList.add('smoke-active');
 
-      // Pequeno puff de confete suave ao apagar
+      // Chuva festiva comemorativa de confetes
       if (window.confetti) {
         window.confetti({
-          particleCount: 16,
-          spread: 45,
+          particleCount: 60,
+          spread: 80,
           origin: { y: 0.55 },
-          colors: ['#ffe082', '#ffb74d', '#ffffff']
+          colors: ['#ff4081', '#ffd54f', '#ffffff', '#e040fb', '#80d8ff']
         });
       }
 
-      // 3. Blecaute / Suspense (0.7s após o sopro)
+      // 3. Revelação da celebração limpa sem elementos cômicos
       this.addTimeout(() => {
-        if (blackoutEl) blackoutEl.classList.add('blackout-active');
-      }, 700);
-
-      // 4. Revelação dos Personagens Cantores (após 1.8s)
-      this.addTimeout(() => {
-        if (cakeScene) cakeScene.classList.add('scene-hidden');
-        if (singingScene) singingScene.classList.remove('scene-hidden');
-        if (blackoutEl) blackoutEl.classList.remove('blackout-active');
-
-        this.startSingingPerformance();
-      }, 1800);
-    }
-
-    startSingingPerformance() {
-      if (this.isDestroyed) return;
-      this.isSinging = true;
-
-      // Suaviza a música de fundo para destacar o canto alegre do Axolote
-      if (this.sys && this.sys.audioManager) {
-        this.sys.audioManager.fadeTo(0.12, 600);
-        this.sys.audioManager.playAxolotlHappyBirthdayTune((evt) => {
-          if (!this.isDestroyed) this.handleSongEvent(evt);
-        });
-      }
-    }
-
-    handleSongEvent(evt) {
-      if (!evt || this.isDestroyed) return;
-
-      const lyricText = this.container.querySelector('#singing-lyric-text');
-      const mouthPath = this.container.querySelector('#axolotl-mouth-path');
-      const duckGroup = this.container.querySelector('#duck-group');
-      const axolotlGroup = this.container.querySelector('#axolotl-group');
-      const cameraWrap = this.container.querySelector('#singing-camera-wrap');
-      const actionBar = this.container.querySelector('#singing-action-bar');
-
-      if (evt.type === 'completed') {
-        this.isSinging = false;
-        // Restaura a música de fundo
-        if (this.sys && this.sys.audioManager) {
-          this.sys.audioManager.fadeTo(0.85, 1200);
-        }
-        if (cameraWrap) {
-          cameraWrap.classList.remove('camera-zoomed', 'camera-shaking');
-        }
-        if (axolotlGroup) {
-          axolotlGroup.classList.remove('axolotl-singing-up', 'axolotl-shaking');
-        }
-        if (mouthPath) {
-          mouthPath.setAttribute('d', 'M 132 162 Q 140 168 148 162');
-          mouthPath.setAttribute('fill', 'none');
-        }
-        if (actionBar) {
-          actionBar.classList.add('bar-visible');
-        }
-        if (this.sys && typeof this.sys.showTapPrompt === 'function') {
-          this.sys.showTapPrompt();
-        }
-        return;
-      }
-
-      // Atualiza texto da letra
-      if (evt.text && lyricText) {
-        lyricText.textContent = evt.text;
-        lyricText.className = 'singing-lyric-text' + (evt.finale ? ' lyric-finale' : '');
-        lyricText.style.animation = 'none';
-        lyricText.offsetHeight;
-        lyricText.style.animation = '';
-      }
-
-      // Atualiza boca e postura do Axolote
-      if (mouthPath && evt.mouth) {
-        if (evt.mouth === 'happy') {
-          mouthPath.setAttribute('d', 'M 130 158 Q 140 156 150 158 Q 154 172 140 174 Q 126 172 130 158 Z');
-          mouthPath.setAttribute('fill', '#7a0c2e');
-          if (axolotlGroup) axolotlGroup.classList.remove('axolotl-singing-up', 'axolotl-shaking');
-        } else if (evt.mouth === 'birthday') {
-          mouthPath.setAttribute('d', 'M 126 156 Q 140 153 154 156 Q 158 178 140 180 Q 122 178 126 156 Z');
-          mouthPath.setAttribute('fill', '#7a0c2e');
-          if (axolotlGroup) axolotlGroup.classList.remove('axolotl-singing-up', 'axolotl-shaking');
-        } else if (evt.mouth === 'toyou') {
-          mouthPath.setAttribute('d', 'M 122 152 Q 140 148 158 152 Q 166 195 140 198 Q 114 195 122 152 Z');
-          mouthPath.setAttribute('fill', '#7a0c2e');
-          if (axolotlGroup) {
-            axolotlGroup.classList.add('axolotl-singing-up');
-            axolotlGroup.classList.remove('axolotl-shaking');
-          }
-        } else if (evt.mouth === 'scream') {
-          mouthPath.setAttribute('d', 'M 118 150 Q 140 144 162 150 Q 170 202 140 205 Q 110 202 118 150 Z');
-          mouthPath.setAttribute('fill', '#880e4f');
-          if (axolotlGroup) {
-            axolotlGroup.classList.add('axolotl-singing-up', 'axolotl-shaking');
-          }
-        }
-      }
-
-      // Aperto ritmado do Pato
-      if (evt.duck && duckGroup) {
-        duckGroup.classList.remove('duck-squeezing');
-        duckGroup.offsetHeight;
-        duckGroup.classList.add('duck-squeezing');
-      }
-
-      // Efeito de Câmera (Zoom e Vibração)
-      if (cameraWrap) {
-        if (evt.zoom) cameraWrap.classList.add('camera-zoomed');
-        if (evt.shake) cameraWrap.classList.add('camera-shaking');
-      }
-
-      // Clímax final com confetes
-      if (evt.finale && window.confetti) {
-        window.confetti({
-          particleCount: 80,
-          spread: 85,
-          origin: { y: 0.6 },
-          colors: ['#ff4081', '#ffd54f', '#00e676', '#00b0ff', '#e040fb']
-        });
-      }
+        if (btnBlow) btnBlow.style.display = 'none';
+        const leadEl = this.container.querySelector('.cake-header-lead');
+        if (leadEl) leadEl.textContent = 'Vela assoprada! ✨';
+        const countBox = this.container.querySelector('.cake-countdown-box');
+        if (countBox) countBox.style.display = 'none';
+        if (wishGranted) wishGranted.classList.remove('d-none');
+      }, 1100);
     }
 
     replayAll() {
       this.destroy();
       this.isDestroyed = false;
       this.isBlown = false;
-      this.isSinging = false;
       this.currentCount = 4;
       this.timeouts = [];
       this.render();
@@ -2879,128 +3201,60 @@
         </svg>
       `;
     }
-
-    getCharactersSvg() {
-      return `
-        <svg viewBox="0 0 280 320" class="characters-svg" id="characters-svg">
-          <defs>
-            <linearGradient id="duckBodyGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stop-color="#6ec8d4"/>
-              <stop offset="100%" stop-color="#4ea2ae"/>
-            </linearGradient>
-            <linearGradient id="duckBellyGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stop-color="#a2e4ed"/>
-              <stop offset="100%" stop-color="#7dd1dc"/>
-            </linearGradient>
-            <linearGradient id="axolotlGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stop-color="#ffb8cc"/>
-              <stop offset="100%" stop-color="#ff9ab5"/>
-            </linearGradient>
-            <linearGradient id="axolotlGillGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stop-color="#ff4081"/>
-              <stop offset="100%" stop-color="#d81b60"/>
-            </linearGradient>
-          </defs>
-
-          <!-- 1. GRUPO DO PATO (Azul/Ciano) -->
-          <g id="duck-group" class="duck-group">
-            <!-- Pés do Pato -->
-            <ellipse cx="98" cy="292" rx="20" ry="10" fill="#30526e" stroke="#1c3345" stroke-width="3"/>
-            <ellipse cx="182" cy="292" rx="20" ry="10" fill="#30526e" stroke="#1c3345" stroke-width="3"/>
-
-            <!-- Corpo do Pato -->
-            <ellipse cx="140" cy="180" rx="90" ry="105" fill="url(#duckBodyGrad)" stroke="#224057" stroke-width="4"/>
-            <!-- Barriguinha mais clara -->
-            <ellipse cx="140" cy="205" rx="68" ry="75" fill="url(#duckBellyGrad)" opacity="0.6"/>
-
-            <!-- Bico / Boné Escuro do Pato (topo da cabeça) -->
-            <path d="M 108 85 Q 140 65 172 85 Q 155 112 140 114 Q 125 112 108 85 Z" fill="#2d4f6c" stroke="#1c3345" stroke-width="3.5"/>
-
-            <!-- Olhinhos serenos e fechados do pato -->
-            <path d="M 85 125 Q 98 135 110 125" fill="none" stroke="#1e3649" stroke-width="3.5" stroke-linecap="round"/>
-            <path d="M 170 125 Q 182 135 195 125" fill="none" stroke="#1e3649" stroke-width="3.5" stroke-linecap="round"/>
-
-            <!-- Bochechas rosadas do pato -->
-            <circle cx="80" cy="138" r="10" fill="#ff70a0" opacity="0.35"/>
-            <circle cx="200" cy="138" r="10" fill="#ff70a0" opacity="0.35"/>
-
-            <!-- Asinhas / Mãos do Pato segurando carinhosamente o Axolote -->
-            <path d="M 72 175 Q 70 215 105 218 Q 115 218 116 200 Q 88 190 72 175 Z" fill="#4697a3" stroke="#224057" stroke-width="3.5"/>
-            <path d="M 208 175 Q 210 215 175 218 Q 165 218 164 200 Q 192 190 208 175 Z" fill="#4697a3" stroke="#224057" stroke-width="3.5"/>
-          </g>
-
-          <!-- 2. GRUPO DO AXOLOTE (Rosa Cantor) -->
-          <g id="axolotl-group" class="axolotl-group">
-            <!-- Guelras esquerdas (3 pétalas rosadas vibrantes) -->
-            <g class="gill-left" id="gill-left">
-              <path d="M 102 142 Q 62 130 68 148 Q 78 155 100 152 Z" fill="url(#axolotlGillGrad)" stroke="#a01548" stroke-width="2.5"/>
-              <path d="M 100 154 Q 55 152 64 170 Q 76 174 98 165 Z" fill="url(#axolotlGillGrad)" stroke="#a01548" stroke-width="2.5"/>
-              <path d="M 102 166 Q 66 178 76 192 Q 88 192 104 176 Z" fill="url(#axolotlGillGrad)" stroke="#a01548" stroke-width="2.5"/>
-            </g>
-
-            <!-- Guelras direitas (3 pétalas rosadas vibrantes) -->
-            <g class="gill-right" id="gill-right">
-              <path d="M 178 142 Q 218 130 212 148 Q 202 155 180 152 Z" fill="url(#axolotlGillGrad)" stroke="#a01548" stroke-width="2.5"/>
-              <path d="M 180 154 Q 225 152 216 170 Q 204 174 182 165 Z" fill="url(#axolotlGillGrad)" stroke="#a01548" stroke-width="2.5"/>
-              <path d="M 178 166 Q 214 178 204 192 Q 192 192 176 176 Z" fill="url(#axolotlGillGrad)" stroke="#a01548" stroke-width="2.5"/>
-            </g>
-
-            <!-- Corpinho fofo do axolote -->
-            <ellipse cx="140" cy="198" rx="34" ry="38" fill="url(#axolotlGrad)" stroke="#2b455b" stroke-width="3"/>
-            <!-- Coraçãozinho na barriga -->
-            <path d="M 140 198 Q 134 190 128 196 Q 124 204 140 215 Q 156 204 152 196 Q 146 190 140 198 Z" fill="#ffe3ed" opacity="0.85"/>
-
-            <!-- Patinhas do Axolote -->
-            <ellipse cx="120" cy="224" rx="8" ry="6" fill="#ffaec6" stroke="#2b455b" stroke-width="2.5"/>
-            <ellipse cx="160" cy="224" rx="8" ry="6" fill="#ffaec6" stroke="#2b455b" stroke-width="2.5"/>
-
-            <!-- Cabeça arredondada do axolote -->
-            <ellipse cx="140" cy="154" rx="46" ry="34" fill="url(#axolotlGrad)" stroke="#2b455b" stroke-width="3.5"/>
-
-            <!-- Bochechas rosadas do axolote -->
-            <circle cx="112" cy="162" r="7" fill="#ff4081" opacity="0.4"/>
-            <circle cx="168" cy="162" r="7" fill="#ff4081" opacity="0.4"/>
-
-            <!-- Olhinhos felizes (arcos fofos) -->
-            <path d="M 118 146 Q 124 140 130 146" fill="none" stroke="#2b455b" stroke-width="3" stroke-linecap="round"/>
-            <path d="M 150 146 Q 156 140 162 146" fill="none" stroke="#2b455b" stroke-width="3" stroke-linecap="round"/>
-
-            <!-- BOCA DINÂMICA DO AXOLOTE -->
-            <path id="axolotl-mouth-path" class="axolotl-mouth-path" d="M 132 162 Q 140 168 148 162" fill="none" stroke="#2b455b" stroke-width="3" stroke-linecap="round"/>
-          </g>
-        </svg>
-      `;
-    }
   }
 
   // ==========================================================================
-  // 4.4. DEFINITIVE FINALE CONTROLLER (30 SEGUNDOS CONTÍNUOS DE ESPETÁCULO)
-  // Linha do Tempo:
-  // 0s-4s: Fechamento do Livro 3D
-  // 4s-7s: A Primeira Luz e Pulsos
-  // 7s-11s: O Jardim de Luz (Flores Botânicas em SVG)
-  // 11s-15s: Flores em Expansão & Órbitas
-  // 15s-18s: Convergência Central e Halos
-  // 18s-21s: Tensão e Respiração
-  // 21s-24s: O Grande Clímax (Onda, Anel, Flares H/V, Flash)
-  // 24s-26s: FELIZ ANIVERSÁRIO ISSAMARA 18 ANOS
-  // 26s-28s: Calma e Serenidade
-  // 28s-30s: Último Momento
-  // 30s+: Créditos Finais e Encerramento com Fade-Out de Áudio
   // ==========================================================================
-  class DefinitiveFinaleController {
+  // 4.4. 🌸 CAPÍTULO FINAL — “E AGORA?” (O Grande Encerramento Visual)
+  // Fluxo completo executado com rigor poético e estético:
+  // 1. Transição da tela anterior (luz diminui, linha luminosa permanece e cruza)
+  // 2. Retorno da linha do tempo: 2008 ... 2026 com destaque
+  // 3. 24 • 09 • 2026 -> 24 de setembro -> 18 anos
+  // 4. A linha tenta avançar e para (sem 2027/2028: "Chegamos até aqui. O resto ainda não foi escrito.")
+  // 5. Pausa contemplativa
+  // 6. Linha se desfaz em partículas de luz
+  // 7. Partículas sobem organicamente formando um céu suave
+  // 8. Transformação em estrelas cintilantes (fundo claro, rosa, branco, azul suave)
+  // 9. Estrelas começam a se conectar por uma linha fina
+  // 10. A própria linha desenha a flor (caule, folhas, pétalas)
+  // 11. A flor ganha vida (luz percorre o caule, centro brilha com movimento suave)
+  // 12. Frase 1: "Algumas coisas a gente não consegue prever."
+  // 13. Frase 2: "Só consegue viver."
+  // 14. Mudança de atmosfera e música crescente
+  // 15. Explosão visual nascendo do centro da flor
+  // 16. Surgimento: FELIZ -> ANIVERSÁRIO -> ISSAMARA
+  // 17. Grande celebração com camadas de profundidade e harmonia
+  // 18. Movimento suave de câmera (paralaxe)
+  // 19. Som orquestrado em cada fase
+  // 20. Desaceleração suave da celebração
+  // 21. A flor permanece serena no centro
+  // 22. Mensagem final: "Que os próximos anos sejam tão bonitos quanto os que ainda estão por vir." -> "Feliz 18 anos. ❤️"
+  // 23. Assinatura animada: Luis -> Criatura -> Luis -> Criatura -> Luis
+  // 24. Última pausa contemplativa
+  // 25. Encerramento visual: flor e estrelas diminuem até restar uma estrela que se apaga
+  // 26. "Fim."
+  // 27. Créditos elegantes e integrados
+  // 28. "Espero poder te ver novamente."
+  // 29. Encerramento do sistema & guardar experiência
+  // 30. Baixar os textos em PDF (organizado conforme os 6 tópicos)
+  // 31. Estado final para reconexões futuras
+  // ==========================================================================
+  class EAgoraFinaleController {
     constructor(container, experienceSystem) {
       this.container = container;
       this.sys = experienceSystem;
       this.isDestroyed = false;
-      this.startTime = null;
-      this.animFrameId = null;
       this.timeouts = [];
-      this.flowers = [];
-      this.canvasParticles = [];
-      this.canvasCtx = null;
-      this.canvasWidth = 0;
-      this.canvasHeight = 0;
+      this.animFrame = null;
+      this.particles = [];
+      this.constellations = [];
+      this.shockwaves = [];
+      this.fallingPetals = [];
+      this.pollenGrains = [];
+      this.showConstellations = false;
+      this.fallingPetalsActive = false;
+      this.pollenActive = false;
+      this.resizeHandler = null;
 
       this.init();
     }
@@ -3009,440 +3263,691 @@
       if (!this.container) return;
       this.container.innerHTML = '';
 
-      this.viewport = document.createElement('div');
-      this.viewport.className = 'df-finale-viewport';
-      this.viewport.innerHTML = `
-        <div class="df-ambient-wash" id="df-ambient-wash"></div>
-        <canvas class="df-particles-canvas" id="df-particles-canvas"></canvas>
+      document.body.classList.add('eagora-fullscreen-active');
 
-        <!-- 0s - 4s: O Livro Termina (Fechamento 3D Suave) -->
-        <div class="df-book-stage" id="df-book-stage">
-          <div class="df-book-wrap" id="df-book-wrap">
-            <div class="df-book-base">
-              <div class="df-book-base-text">
-                "Que cada novo passo seja guiado por luz, coragem e infinita felicidade."
-              </div>
+      // Cria a estrutura visual completa do capítulo final
+      this.stage = document.createElement('div');
+      this.stage.className = 'eagora-stage';
+      this.stage.id = 'eagora-stage';
+      this.stage.innerHTML = `
+        <!-- Camada de Transição Suave da Tela Anterior -->
+        <div class="eagora-transition-curtain" id="eagora-curtain">
+          <div class="eagora-living-line" id="eagora-living-line"></div>
+        </div>
+
+        <!-- Canvas de Partículas Estelares e Poeira Cósmica Clara -->
+        <canvas class="eagora-canvas" id="eagora-canvas"></canvas>
+
+        <!-- Container da Linha do Tempo Reencontrada -->
+        <div class="eagora-timeline-wrap" id="eagora-timeline-wrap">
+          <div class="eagora-track-container">
+            <div class="eagora-track-path" id="eagora-track-path">
+              <div class="eagora-track-fill" id="eagora-track-fill"></div>
+              <div class="eagora-head-dot" id="eagora-head-dot"></div>
             </div>
-            <div class="df-book-cover" id="df-book-cover">
-              <div class="df-cover-emblem">
-                <span class="df-cover-year">18</span>
+            
+            <div class="eagora-years-row" id="eagora-years-row">
+              <span class="eagora-year-marker year-2008" id="marker-2008">2008</span>
+              <span class="eagora-year-dot dot-mid" style="left: 20%;"></span>
+              <span class="eagora-year-dot dot-mid" style="left: 40%;"></span>
+              <span class="eagora-year-dot dot-mid" style="left: 60%;"></span>
+              <span class="eagora-year-dot dot-mid" style="left: 80%;"></span>
+              <span class="eagora-year-marker year-2026" id="marker-2026">2026</span>
+            </div>
+          </div>
+
+          <!-- Revelação Sequencial da Chegada em 24 de Setembro -->
+          <div class="eagora-milestone-box" id="eagora-milestone-box">
+            <div class="eagora-date-capsule" id="eagora-date-capsule">24 • 09 • 2026</div>
+            <div class="eagora-date-expanded" id="eagora-date-expanded">24 de setembro</div>
+            <div class="eagora-age-celebrated" id="eagora-age-celebrated">18 anos</div>
+            <div class="eagora-unwritten-hint" id="eagora-unwritten-hint">Chegamos até aqui. O resto ainda não foi escrito.</div>
+          </div>
+        </div>
+
+        <!-- O Desenho da Flor pelas Estrelas (SVG Botânico Ricamente Detalhado e Completo em 360°) -->
+        <div class="eagora-flower-wrap" id="eagora-flower-wrap" role="button" tabindex="0" aria-label="Flor viva de encerramento — toque para interagir">
+          <svg class="eagora-flower-svg" id="eagora-flower-svg" viewBox="0 0 400 480" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <filter id="flowerGlow" x="-40%" y="-40%" width="180%" height="180%">
+                <feGaussianBlur stdDeviation="5" result="blur" />
+                <feMerge>
+                  <feMergeNode in="blur" />
+                  <feMergeNode in="SourceGraphic" />
+                </feMerge>
+              </filter>
+
+              <!-- Gradiente do Caule -->
+              <linearGradient id="eagoraStemGrad" x1="0%" y1="100%" x2="0%" y2="0%">
+                <stop offset="0%" stop-color="#33691e" />
+                <stop offset="45%" stop-color="#558b2f" />
+                <stop offset="85%" stop-color="#689f38" />
+                <stop offset="100%" stop-color="#8bc34a" />
+              </linearGradient>
+
+              <!-- Gradiente das Folhas Botânicas -->
+              <linearGradient id="eagoraLeafGrad" x1="0%" y1="100%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#2e7d32" />
+                <stop offset="50%" stop-color="#4caf50" />
+                <stop offset="100%" stop-color="#81c784" />
+              </linearGradient>
+
+              <!-- Gradiente Pétalas de Fundo (Camada Externa 360°) -->
+              <linearGradient id="eagoraPetalOuterGrad" x1="0%" y1="100%" x2="0%" y2="0%">
+                <stop offset="0%" stop-color="#ad1457" />
+                <stop offset="35%" stop-color="#c2185b" />
+                <stop offset="75%" stop-color="#e91e63" />
+                <stop offset="100%" stop-color="#f8bbd0" />
+              </linearGradient>
+
+              <!-- Gradiente Pétalas Intermediárias (Volume e Vivacidade) -->
+              <linearGradient id="eagoraPetalMidGrad" x1="0%" y1="100%" x2="0%" y2="0%">
+                <stop offset="0%" stop-color="#c2185b" />
+                <stop offset="40%" stop-color="#d81b60" />
+                <stop offset="80%" stop-color="#ec407a" />
+                <stop offset="100%" stop-color="#fce4ec" />
+              </linearGradient>
+
+              <!-- Gradiente Pétalas Frontais / Internas -->
+              <linearGradient id="eagoraPetalInnerGrad" x1="0%" y1="100%" x2="0%" y2="0%">
+                <stop offset="0%" stop-color="#d81b60" />
+                <stop offset="45%" stop-color="#f06292" />
+                <stop offset="85%" stop-color="#ff80ab" />
+                <stop offset="100%" stop-color="#ffffff" />
+              </linearGradient>
+
+              <!-- Gradiente do Centro & Pólen Radiante -->
+              <radialGradient id="eagoraCenterGrad" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stop-color="#ffffff" />
+                <stop offset="25%" stop-color="#fff59d" />
+                <stop offset="65%" stop-color="#ffca28" />
+                <stop offset="100%" stop-color="#f57c00" />
+              </radialGradient>
+
+              <!-- Aura Radiante ao redor da Flor -->
+              <radialGradient id="eagoraFlowerAura" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stop-color="rgba(255, 220, 235, 0.9)" />
+                <stop offset="45%" stop-color="rgba(255, 182, 205, 0.45)" />
+                <stop offset="75%" stop-color="rgba(255, 230, 180, 0.2)" />
+                <stop offset="100%" stop-color="rgba(255, 255, 255, 0)" />
+              </radialGradient>
+            </defs>
+
+            <!-- Halo Radiante de Fundo que Pulsa com Vida -->
+            <circle id="flower-halo" cx="200" cy="205" r="105" fill="url(#eagoraFlowerAura)" class="flower-radiance"/>
+
+            <!-- 1. Caule Orgânico em Curva Natural -->
+            <path id="flower-path-stem" class="flower-draw-line stem-line" pathLength="100"
+                  d="M 200 455 C 196 385 204 310 200 208" 
+                  fill="none" stroke="url(#eagoraStemGrad)" stroke-width="4.8" stroke-linecap="round"/>
+
+            <!-- 2. Folha Esquerda & Nervuras -->
+            <g id="flower-leaf1-group" class="flower-leaf-item">
+              <path id="flower-path-leaf1" class="flower-draw-line leaf-line" pathLength="100"
+                    d="M 198 355 C 150 360 120 325 128 290 C 160 295 188 325 198 355 Z" 
+                    fill="none" stroke="#388e3c" stroke-width="2.5" stroke-linejoin="round"/>
+              <path id="flower-leaf1-vein" class="flower-draw-line vein-line" pathLength="100"
+                    d="M 198 355 C 165 330 142 305 128 290" 
+                    fill="none" stroke="#a5d6a7" stroke-width="1.6" stroke-linecap="round"/>
+              <path class="flower-draw-line vein-line" pathLength="100" d="M 180 342 Q 170 334 162 334" fill="none" stroke="#c8e6c9" stroke-width="1.2"/>
+              <path class="flower-draw-line vein-line" pathLength="100" d="M 160 326 Q 152 318 144 319" fill="none" stroke="#c8e6c9" stroke-width="1.2"/>
+            </g>
+
+            <!-- 3. Folha Direita & Nervuras -->
+            <g id="flower-leaf2-group" class="flower-leaf-item">
+              <path id="flower-path-leaf2" class="flower-draw-line leaf-line" pathLength="100"
+                    d="M 201 305 C 248 310 278 275 270 242 C 240 248 212 278 201 305 Z" 
+                    fill="none" stroke="#388e3c" stroke-width="2.5" stroke-linejoin="round"/>
+              <path id="flower-leaf2-vein" class="flower-draw-line vein-line" pathLength="100"
+                    d="M 201 305 C 234 282 255 258 270 242" 
+                    fill="none" stroke="#a5d6a7" stroke-width="1.6" stroke-linecap="round"/>
+              <path class="flower-draw-line vein-line" pathLength="100" d="M 220 292 Q 228 284 236 284" fill="none" stroke="#c8e6c9" stroke-width="1.2"/>
+              <path class="flower-draw-line vein-line" pathLength="100" d="M 240 276 Q 248 268 256 269" fill="none" stroke="#c8e6c9" stroke-width="1.2"/>
+            </g>
+
+            <!-- 4. Sépalas do Cálice Floral na Base -->
+            <g id="flower-sepals-group">
+              <path class="flower-draw-line sepal-line flower-sepal-item" id="flower-sepal-base" pathLength="100"
+                    d="M 191 210 C 193 218 207 218 209 210 Z" fill="none" stroke="#33691e" stroke-width="2.5"/>
+              <path id="flower-sepal-1" class="flower-draw-line sepal-line flower-sepal-item" pathLength="100" 
+                    d="M 194 210 C 182 216 172 228 174 234 C 182 228 192 218 196 210 Z" 
+                    fill="none" stroke="#558b2f" stroke-width="2.2"/>
+              <path id="flower-sepal-2" class="flower-draw-line sepal-line flower-sepal-item" pathLength="100" 
+                    d="M 206 210 C 218 216 228 228 226 234 C 218 228 208 218 204 210 Z" 
+                    fill="none" stroke="#558b2f" stroke-width="2.2"/>
+              <path id="flower-sepal-3" class="flower-draw-line sepal-line flower-sepal-item" pathLength="100" 
+                    d="M 198 212 C 192 222 188 236 190 240 C 195 234 198 224 200 212 Z" 
+                    fill="none" stroke="#558b2f" stroke-width="2"/>
+              <path id="flower-sepal-4" class="flower-draw-line sepal-line flower-sepal-item" pathLength="100" 
+                    d="M 202 212 C 208 222 212 236 210 240 C 205 234 202 224 200 212 Z" 
+                    fill="none" stroke="#558b2f" stroke-width="2"/>
+            </g>
+
+            <!-- 5. Camada 1: Pétalas de Fundo (6 Pétalas Radiais Completas - 360° de Profundidade) -->
+            <g id="flower-outer-petals-group">
+              <path id="flower-outer-petal-1" class="flower-draw-line outer-petal-line flower-outer-petal" pathLength="100"
+                    d="M 200 205 C 160 155 155 98 200 82 C 245 98 240 155 200 205 Z"
+                    transform="rotate(0 200 205)" fill="none" stroke="#ad1457" stroke-width="2.8"/>
+              <path id="flower-outer-petal-2" class="flower-draw-line outer-petal-line flower-outer-petal" pathLength="100"
+                    d="M 200 205 C 160 155 155 98 200 82 C 245 98 240 155 200 205 Z"
+                    transform="rotate(60 200 205)" fill="none" stroke="#ad1457" stroke-width="2.8"/>
+              <path id="flower-outer-petal-3" class="flower-draw-line outer-petal-line flower-outer-petal" pathLength="100"
+                    d="M 200 205 C 160 155 155 98 200 82 C 245 98 240 155 200 205 Z"
+                    transform="rotate(120 200 205)" fill="none" stroke="#ad1457" stroke-width="2.8"/>
+              <path id="flower-outer-petal-4" class="flower-draw-line outer-petal-line flower-outer-petal" pathLength="100"
+                    d="M 200 205 C 160 155 155 98 200 82 C 245 98 240 155 200 205 Z"
+                    transform="rotate(180 200 205)" fill="none" stroke="#ad1457" stroke-width="2.8"/>
+              <path id="flower-outer-petal-5" class="flower-draw-line outer-petal-line flower-outer-petal" pathLength="100"
+                    d="M 200 205 C 160 155 155 98 200 82 C 245 98 240 155 200 205 Z"
+                    transform="rotate(240 200 205)" fill="none" stroke="#ad1457" stroke-width="2.8"/>
+              <path id="flower-outer-petal-6" class="flower-draw-line outer-petal-line flower-outer-petal" pathLength="100"
+                    d="M 200 205 C 160 155 155 98 200 82 C 245 98 240 155 200 205 Z"
+                    transform="rotate(300 200 205)" fill="none" stroke="#ad1457" stroke-width="2.8"/>
+            </g>
+
+            <!-- 6. Camada 2: Pétalas Intermediárias Intercaladas (6 Pétalas de Volume e Vivacidade) -->
+            <g id="flower-mid-petals-group">
+              <path id="flower-mid-petal-1" class="flower-draw-line mid-petal-line flower-mid-petal" pathLength="100"
+                    d="M 200 205 C 166 160 162 115 200 100 C 238 115 234 160 200 205 Z"
+                    transform="rotate(30 200 205)" fill="none" stroke="#c2185b" stroke-width="2.6"/>
+              <path id="flower-mid-petal-2" class="flower-draw-line mid-petal-line flower-mid-petal" pathLength="100"
+                    d="M 200 205 C 166 160 162 115 200 100 C 238 115 234 160 200 205 Z"
+                    transform="rotate(90 200 205)" fill="none" stroke="#c2185b" stroke-width="2.6"/>
+              <path id="flower-mid-petal-3" class="flower-draw-line mid-petal-line flower-mid-petal" pathLength="100"
+                    d="M 200 205 C 166 160 162 115 200 100 C 238 115 234 160 200 205 Z"
+                    transform="rotate(150 200 205)" fill="none" stroke="#c2185b" stroke-width="2.6"/>
+              <path id="flower-mid-petal-4" class="flower-draw-line mid-petal-line flower-mid-petal" pathLength="100"
+                    d="M 200 205 C 166 160 162 115 200 100 C 238 115 234 160 200 205 Z"
+                    transform="rotate(210 200 205)" fill="none" stroke="#c2185b" stroke-width="2.6"/>
+              <path id="flower-mid-petal-5" class="flower-draw-line mid-petal-line flower-mid-petal" pathLength="100"
+                    d="M 200 205 C 166 160 162 115 200 100 C 238 115 234 160 200 205 Z"
+                    transform="rotate(270 200 205)" fill="none" stroke="#c2185b" stroke-width="2.6"/>
+              <path id="flower-mid-petal-6" class="flower-draw-line mid-petal-line flower-mid-petal" pathLength="100"
+                    d="M 200 205 C 166 160 162 115 200 100 C 238 115 234 160 200 205 Z"
+                    transform="rotate(330 200 205)" fill="none" stroke="#c2185b" stroke-width="2.6"/>
+            </g>
+
+            <!-- 7. Camada 3: Pétalas Frontais / Coração Floral (6 Pétalas Delicadas & Aveludadas) -->
+            <g id="flower-petals-group" class="flower-petals-group">
+              <path id="flower-petal-1" class="flower-draw-line petal-line inner-petal-line flower-inner-petal" pathLength="100"
+                    d="M 200 205 C 172 170 170 134 200 122 C 230 134 228 170 200 205 Z"
+                    transform="rotate(15 200 205)" fill="none" stroke="#d81b60" stroke-width="2.8"/>
+              <path id="flower-petal-2" class="flower-draw-line petal-line inner-petal-line flower-inner-petal" pathLength="100"
+                    d="M 200 205 C 172 170 170 134 200 122 C 230 134 228 170 200 205 Z"
+                    transform="rotate(75 200 205)" fill="none" stroke="#d81b60" stroke-width="2.8"/>
+              <path id="flower-petal-3" class="flower-draw-line petal-line inner-petal-line flower-inner-petal" pathLength="100"
+                    d="M 200 205 C 172 170 170 134 200 122 C 230 134 228 170 200 205 Z"
+                    transform="rotate(135 200 205)" fill="none" stroke="#d81b60" stroke-width="2.8"/>
+              <path id="flower-petal-4" class="flower-draw-line petal-line inner-petal-line flower-inner-petal" pathLength="100"
+                    d="M 200 205 C 172 170 170 134 200 122 C 230 134 228 170 200 205 Z"
+                    transform="rotate(195 200 205)" fill="none" stroke="#d81b60" stroke-width="2.8"/>
+              <path id="flower-petal-5" class="flower-draw-line petal-line inner-petal-line flower-inner-petal" pathLength="100"
+                    d="M 200 205 C 172 170 170 134 200 122 C 230 134 228 170 200 205 Z"
+                    transform="rotate(255 200 205)" fill="none" stroke="#d81b60" stroke-width="2.8"/>
+              <path id="flower-petal-6" class="flower-draw-line petal-line inner-petal-line flower-inner-petal" pathLength="100"
+                    d="M 200 205 C 172 170 170 134 200 122 C 230 134 228 170 200 205 Z"
+                    transform="rotate(315 200 205)" fill="none" stroke="#d81b60" stroke-width="2.8"/>
+            </g>
+
+            <!-- 8. Nervuras Florais Delicadas de Luz Interna -->
+            <g id="flower-veins-group">
+              <path id="flower-vein-1" class="flower-draw-line vein-line flower-vein-item" pathLength="100"
+                    d="M 200 205 L 200 125" transform="rotate(15 200 205)" fill="none" stroke="#ffffff" stroke-width="1.5"/>
+              <path id="flower-vein-2" class="flower-draw-line vein-line flower-vein-item" pathLength="100"
+                    d="M 200 205 L 200 125" transform="rotate(75 200 205)" fill="none" stroke="#ffffff" stroke-width="1.5"/>
+              <path id="flower-vein-3" class="flower-draw-line vein-line flower-vein-item" pathLength="100"
+                    d="M 200 205 L 200 125" transform="rotate(135 200 205)" fill="none" stroke="#ffffff" stroke-width="1.5"/>
+              <path id="flower-vein-4" class="flower-draw-line vein-line flower-vein-item" pathLength="100"
+                    d="M 200 205 L 200 125" transform="rotate(195 200 205)" fill="none" stroke="#ffffff" stroke-width="1.5"/>
+              <path id="flower-vein-5" class="flower-draw-line vein-line flower-vein-item" pathLength="100"
+                    d="M 200 205 L 200 125" transform="rotate(255 200 205)" fill="none" stroke="#ffffff" stroke-width="1.5"/>
+              <path id="flower-vein-6" class="flower-draw-line vein-line flower-vein-item" pathLength="100"
+                    d="M 200 205 L 200 125" transform="rotate(315 200 205)" fill="none" stroke="#ffffff" stroke-width="1.5"/>
+            </g>
+
+            <!-- 9. Coroa de 12 Estames Dourados Radiantes com Pérolas de Luz -->
+            <g id="flower-stamens-group">
+              <g class="flower-stamen"><line x1="200" y1="205" x2="200" y2="175" stroke="#ffd54f" stroke-width="2"/><circle cx="200" cy="173" r="3.2" fill="#fff59d" filter="url(#flowerGlow)"/></g>
+              <g class="flower-stamen"><line x1="200" y1="205" x2="215" y2="179" stroke="#ffd54f" stroke-width="2"/><circle cx="216" cy="177" r="3.2" fill="#fff59d" filter="url(#flowerGlow)"/></g>
+              <g class="flower-stamen"><line x1="200" y1="205" x2="226" y2="190" stroke="#ffd54f" stroke-width="2"/><circle cx="228" cy="189" r="3.2" fill="#fff59d" filter="url(#flowerGlow)"/></g>
+              <g class="flower-stamen"><line x1="200" y1="205" x2="230" y2="205" stroke="#ffd54f" stroke-width="2"/><circle cx="232" cy="205" r="3.2" fill="#fff59d" filter="url(#flowerGlow)"/></g>
+              <g class="flower-stamen"><line x1="200" y1="205" x2="226" y2="220" stroke="#ffd54f" stroke-width="2"/><circle cx="228" cy="221" r="3.2" fill="#fff59d" filter="url(#flowerGlow)"/></g>
+              <g class="flower-stamen"><line x1="200" y1="205" x2="215" y2="231" stroke="#ffd54f" stroke-width="2"/><circle cx="216" cy="233" r="3.2" fill="#fff59d" filter="url(#flowerGlow)"/></g>
+              <g class="flower-stamen"><line x1="200" y1="205" x2="200" y2="235" stroke="#ffd54f" stroke-width="2"/><circle cx="200" cy="237" r="3.2" fill="#fff59d" filter="url(#flowerGlow)"/></g>
+              <g class="flower-stamen"><line x1="200" y1="205" x2="185" y2="231" stroke="#ffd54f" stroke-width="2"/><circle cx="184" cy="233" r="3.2" fill="#fff59d" filter="url(#flowerGlow)"/></g>
+              <g class="flower-stamen"><line x1="200" y1="205" x2="174" y2="220" stroke="#ffd54f" stroke-width="2"/><circle cx="172" cy="221" r="3.2" fill="#fff59d" filter="url(#flowerGlow)"/></g>
+              <g class="flower-stamen"><line x1="200" y1="205" x2="170" y2="205" stroke="#ffd54f" stroke-width="2"/><circle cx="168" cy="205" r="3.2" fill="#fff59d" filter="url(#flowerGlow)"/></g>
+              <g class="flower-stamen"><line x1="200" y1="205" x2="174" y2="190" stroke="#ffd54f" stroke-width="2"/><circle cx="172" cy="189" r="3.2" fill="#fff59d" filter="url(#flowerGlow)"/></g>
+              <g class="flower-stamen"><line x1="200" y1="205" x2="185" y2="179" stroke="#ffd54f" stroke-width="2"/><circle cx="184" cy="177" r="3.2" fill="#fff59d" filter="url(#flowerGlow)"/></g>
+            </g>
+
+            <!-- 10. Centro Luminoso com Pulso de Vida e Coração Radiante -->
+            <circle id="flower-core-glow" cx="200" cy="205" r="34" fill="none" 
+                    stroke="#ffeb3b" stroke-width="2.5" opacity="0.7"/>
+            <circle id="flower-core" cx="200" cy="205" r="21" fill="url(#eagoraCenterGrad)" 
+                    stroke="#ffffff" stroke-width="2.8" filter="url(#flowerGlow)"/>
+
+            <!-- Pistilos Centrais em Micro-Pérolas Douradas -->
+            <g id="flower-center-pistils" class="flower-center-pistils">
+              <circle cx="200" cy="199" r="2" fill="#ffe082"/>
+              <circle cx="206" cy="202" r="2" fill="#ffe082"/>
+              <circle cx="205" cy="209" r="2" fill="#ffe082"/>
+              <circle cx="195" cy="209" r="2" fill="#ffe082"/>
+              <circle cx="194" cy="202" r="2" fill="#ffe082"/>
+              <circle cx="200" cy="205" r="2.5" fill="#ffffff"/>
+            </g>
+          </svg>
+        </div>
+
+        <!-- As Frases Contemplativas Elegantes -->
+        <div class="eagora-contemplation-wrap" id="eagora-contemplation-wrap">
+          <p class="eagora-phrase phrase-one" id="eagora-phrase-one">
+            “Algumas coisas a gente não consegue prever.”
+          </p>
+          <p class="eagora-phrase phrase-two" id="eagora-phrase-two">
+            “Só consegue viver.”
+          </p>
+        </div>
+
+        <!-- Grande Celebração Visual: FELIZ ANIVERSÁRIO ISSAMARA -->
+        <div class="eagora-celebration-title-wrap" id="eagora-celebration-title-wrap">
+          <div class="eagora-word-feliz" id="eagora-word-feliz">FELIZ</div>
+          <div class="eagora-word-bday" id="eagora-word-bday">ANIVERSÁRIO</div>
+          <div class="eagora-word-name" id="eagora-word-name">
+            <span class="name-halo-glow"></span>
+            ISSAMARA
+          </div>
+        </div>
+
+        <!-- Mensagem Final & Assinatura Interativa (Brincadeira Visual) -->
+        <div class="eagora-farewell-wrap" id="eagora-farewell-wrap">
+          <p class="eagora-farewell-p1" id="eagora-farewell-p1">
+            “Que os próximos anos sejam tão bonitos quanto os que ainda estão por vir.”
+          </p>
+          <p class="eagora-farewell-p2" id="eagora-farewell-p2">
+            Feliz 18 anos. ❤️
+          </p>
+          <div class="eagora-signature-box" id="eagora-signature-box">
+            <span class="eagora-sig-label">Com carinho,</span>
+            <span class="eagora-sig-name" id="eagora-sig-name">Luis</span>
+          </div>
+        </div>
+
+        <!-- A Pequena Estrela Solitária do Fechamento -->
+        <div class="eagora-lone-star" id="eagora-lone-star">✦</div>
+
+        <!-- O Discreto "Fim." -->
+        <div class="eagora-simple-end" id="eagora-simple-end">Fim.</div>
+
+        <!-- Painel Integrado de Créditos Elegantes & Ações Finais -->
+        <div class="eagora-credits-screen" id="eagora-credits-screen">
+          <div class="eagora-credits-card">
+            <div class="eagora-credits-icon">🌸</div>
+            <p class="eagora-credits-lead">
+              Uma pequena experiência feita com grande carinho, especialmente para Issamara.
+            </p>
+            <div class="eagora-credits-author">
+              <strong>Criado por Luis Fernando Santos</strong>
+              <span>8 de setembro</span>
+            </div>
+            <blockquote class="eagora-credits-dedication">
+              “Dando meu melhor pra uma pessoa que merece tudo de bom que esse mundo tem.”
+            </blockquote>
+            <p class="eagora-credits-final-wish" id="eagora-credits-final-wish">
+              “Espero poder te ver novamente.”
+            </p>
+
+            <!-- Ações Conclusivas com Opção Clara de Baixar -->
+            <div class="eagora-actions-row" style="margin-top: 24px; display: flex; flex-direction: column; align-items: center; gap: 12px; width: 100%;">
+              <button class="eagora-btn btn-pdf" id="btn-eagora-pdf" style="width: 100%; max-width: 320px; font-weight: 700; font-size: 15px; padding: 13px 24px; background: linear-gradient(135deg, #e91e63, #c2185b); color: #fff; border: none; border-radius: 50px; box-shadow: 0 6px 20px rgba(233, 30, 99, 0.35); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: transform 0.2s ease, box-shadow 0.2s ease;">
+                <i class="fas fa-file-pdf"></i> Baixar a Carta em PDF
+              </button>
+              <div style="display: flex; gap: 10px; justify-content: center; width: 100%; flex-wrap: wrap;">
+                <button class="eagora-btn btn-save" id="btn-eagora-save" style="border: 1px solid rgba(255, 107, 139, 0.4); background: rgba(255, 255, 255, 0.95); color: #c2185b; border-radius: 50px; padding: 8px 18px; font-size: 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+                  <i class="fas fa-bookmark"></i> Guardar Lembrança
+                </button>
+                <button class="eagora-btn btn-restart" id="btn-eagora-restart" style="border: 1px solid rgba(150, 150, 150, 0.3); background: rgba(255, 255, 255, 0.95); color: #666; border-radius: 50px; padding: 8px 18px; font-size: 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+                  <i class="fas fa-redo"></i> Recomeçar
+                </button>
               </div>
-              <div class="df-cover-name">ISSAMARA</div>
             </div>
           </div>
         </div>
 
-        <!-- 4s - 7s: A Primeira Luz (Ponto Central & 3 Pulsos) -->
-        <div class="df-light-core-wrap" id="df-light-core-wrap">
-          <div class="df-first-light-dot" id="df-first-light-dot"></div>
-          <div class="df-light-ripple" id="df-light-ripple"></div>
-        </div>
-
-        <!-- 7s - 15s: O Jardim de Luz (Flores Botânicas SVG Nativas) -->
-        <div class="df-flowers-container" id="df-flowers-container"></div>
-
-        <!-- 15s - 18s: Halos de Energia e Anel Giratório -->
-        <div class="df-halos-group" id="df-halos-group">
-          <div class="df-halo-3"></div>
-          <div class="df-halo-2"></div>
-          <div class="df-halo-1"></div>
-          <div class="df-energy-ring"></div>
-        </div>
-
-        <!-- 18s - 21s: Tensão e Respiração Central -->
-        <div class="df-tension-layer" id="df-tension-layer"></div>
-
-        <!-- 21s - 24s: O Grande Clímax (Onda, Anel, Flares H/V, Flash) -->
-        <div class="df-climax-stage" id="df-climax-stage">
-          <div class="df-climax-shockwave" id="df-climax-shockwave"></div>
-          <div class="df-climax-ring" id="df-climax-ring"></div>
-          <div class="df-climax-flare-h" id="df-climax-flare-h"></div>
-          <div class="df-climax-flare-v" id="df-climax-flare-v"></div>
-          <div class="df-climax-flash" id="df-climax-flash"></div>
-        </div>
-
-        <!-- 24s - 26s: Revelação FELIZ ANIVERSÁRIO ISSAMARA 18 ANOS -->
-        <div class="df-hbd-reveal-wrap" id="df-hbd-reveal-wrap">
-          <p class="df-hbd-tagline">Feliz Aniversário</p>
-          <h1 class="df-hbd-name">ISSAMARA</h1>
-          <div class="df-hbd-sub-badge">
-            <span class="df-hbd-sub-text">18 ANOS DE LUZ</span>
-          </div>
-        </div>
-
-        <!-- 28s - 30s+: Créditos Finais & Encerramento Absoluto -->
-        <div class="df-credits-screen" id="df-credits-screen">
-          <div class="df-credits-card">
-            <p class="df-credits-line-1">"Uma pequena experiência feita especialmente para Issamara."</p>
-            <p class="df-credits-author">Por Luis Fernando Santos</p>
-            <p class="df-credits-date">24 de setembro de 2026</p>
-            <div class="df-final-actions">
-              <button class="df-action-pill pill-book" id="df-btn-reopen-book">
-                <i class="fas fa-book-open"></i> Rever Livro
-              </button>
-              <button class="df-action-pill pill-letter" id="df-btn-open-pdf">
-                <i class="fas fa-file-pdf"></i> Baixar Carta em PDF
-              </button>
-              <button class="df-action-pill pill-restart" id="df-btn-restart">
-                <i class="fas fa-redo"></i> Recomeçar
-              </button>
-            </div>
+        <!-- Modal Acolhedor de Como Guardar a Experiência -->
+        <div class="eagora-save-modal d-none" id="eagora-save-modal">
+          <div class="eagora-save-card">
+            <h4><i class="fas fa-heart text-danger"></i> Guardar esta Experiência</h4>
+            <p>
+              Esta lembrança foi feita exclusivamente para você e estará sempre disponível neste link.
+              Você pode adicioná-lo aos favoritos do seu navegador ou compartilhar consigo mesma para rever quando quiser.
+            </p>
+            <button class="eagora-btn btn-save" id="btn-close-save-modal">Entendido ✨</button>
           </div>
         </div>
       `;
 
-      this.container.appendChild(this.viewport);
+      this.container.appendChild(this.stage);
 
-      // Referências internas aos nós
-      this.bookStage = this.viewport.querySelector('#df-book-stage');
-      this.bookCover = this.viewport.querySelector('#df-book-cover');
-      this.lightDot = this.viewport.querySelector('#df-first-light-dot');
-      this.lightRipple = this.viewport.querySelector('#df-light-ripple');
-      this.flowersContainer = this.viewport.querySelector('#df-flowers-container');
-      this.halosGroup = this.viewport.querySelector('#df-halos-group');
-      this.tensionLayer = this.viewport.querySelector('#df-tension-layer');
-      this.climaxShockwave = this.viewport.querySelector('#df-climax-shockwave');
-      this.climaxRing = this.viewport.querySelector('#df-climax-ring');
-      this.climaxFlareH = this.viewport.querySelector('#df-climax-flare-h');
-      this.climaxFlareV = this.viewport.querySelector('#df-climax-flare-v');
-      this.climaxFlash = this.viewport.querySelector('#df-climax-flash');
-      this.hbdWrap = this.viewport.querySelector('#df-hbd-reveal-wrap');
-      this.creditsScreen = this.viewport.querySelector('#df-credits-screen');
+      // Elementos do DOM
+      this.curtain = this.stage.querySelector('#eagora-curtain');
+      this.livingLine = this.stage.querySelector('#eagora-living-line');
+      this.canvas = this.stage.querySelector('#eagora-canvas');
+      this.timelineWrap = this.stage.querySelector('#eagora-timeline-wrap');
+      this.trackFill = this.stage.querySelector('#eagora-track-fill');
+      this.headDot = this.stage.querySelector('#eagora-head-dot');
+      this.marker2008 = this.stage.querySelector('#marker-2008');
+      this.marker2026 = this.stage.querySelector('#marker-2026');
+      this.milestoneBox = this.stage.querySelector('#eagora-milestone-box');
+      this.dateCapsule = this.stage.querySelector('#eagora-date-capsule');
+      this.dateExpanded = this.stage.querySelector('#eagora-date-expanded');
+      this.ageCelebrated = this.stage.querySelector('#eagora-age-celebrated');
+      this.unwrittenHint = this.stage.querySelector('#eagora-unwritten-hint');
+      this.flowerWrap = this.stage.querySelector('#eagora-flower-wrap');
+      this.flowerSvg = this.stage.querySelector('#eagora-flower-svg');
+      this.phraseOne = this.stage.querySelector('#eagora-phrase-one');
+      this.phraseTwo = this.stage.querySelector('#eagora-phrase-two');
+      this.celebrationTitleWrap = this.stage.querySelector('#eagora-celebration-title-wrap');
+      this.wordFeliz = this.stage.querySelector('#eagora-word-feliz');
+      this.wordBday = this.stage.querySelector('#eagora-word-bday');
+      this.wordName = this.stage.querySelector('#eagora-word-name');
+      this.farewellWrap = this.stage.querySelector('#eagora-farewell-wrap');
+      this.farewellP1 = this.stage.querySelector('#eagora-farewell-p1');
+      this.farewellP2 = this.stage.querySelector('#eagora-farewell-p2');
+      this.sigName = this.stage.querySelector('#eagora-sig-name');
+      this.loneStar = this.stage.querySelector('#eagora-lone-star');
+      this.simpleEnd = this.stage.querySelector('#eagora-simple-end');
+      this.creditsScreen = this.stage.querySelector('#eagora-credits-screen');
 
-      // Botões dos Créditos
-      const btnReopen = this.viewport.querySelector('#df-btn-reopen-book');
-      const btnPdf = this.viewport.querySelector('#df-btn-open-pdf');
-      const btnRestart = this.viewport.querySelector('#df-btn-restart');
+      // Interatividade: Toque ou clique na flor viva do encerramento
+      if (this.flowerWrap) {
+        const handleFlowerTap = (e) => {
+          e.stopPropagation();
+          this.flowerWrap.classList.remove('flower-click-pulse');
+          void this.flowerWrap.offsetWidth; // Reflow
+          this.flowerWrap.classList.add('flower-click-pulse');
 
-      if (btnReopen) btnReopen.addEventListener('click', () => this.sys.goToChapter(19));
-      if (btnPdf) btnPdf.addEventListener('click', () => this.sys.openPdfModal());
-      if (btnRestart) btnRestart.addEventListener('click', () => this.sys.openRestartModal());
+          if (this.sys && this.sys.audioManager && typeof this.sys.audioManager.playChime === 'function') {
+            this.sys.audioManager.playChime();
+          }
 
-      // Prepara o sistema de partículas do canvas
+          // Spawna partículas de luz douradas e rosadas ao interagir
+          if (this.particles && this.particles.length < 240) {
+            const centerX = this.width / 2;
+            const centerY = this.height / 2;
+            for (let k = 0; k < 28; k++) {
+              const ang = Math.random() * Math.PI * 2;
+              const spd = 1.2 + Math.random() * 3.8;
+              this.particles.push({
+                x: centerX + (Math.random() - 0.5) * 40,
+                y: centerY + (Math.random() - 0.5) * 40,
+                vx: Math.cos(ang) * spd,
+                vy: Math.sin(ang) * spd - 0.8,
+                size: 2.0 + Math.random() * 3.0,
+                alpha: 0.95,
+                decay: 0.012 + Math.random() * 0.015,
+                hue: Math.random() > 0.4 ? (330 + Math.random() * 30) : (45 + Math.random() * 25),
+                glow: true
+              });
+            }
+          }
+        };
+
+        this.flowerWrap.addEventListener('click', handleFlowerTap);
+        this.flowerWrap.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            handleFlowerTap(e);
+          }
+        });
+      }
+
+      // Inicializa Canvas do Céu Estelar com Constelações e Partículas 3D
       this.initCanvas();
 
-      // Constrói o jardim de flores botânicas em SVG
-      this.buildBotanicalFlowers();
+      // Configura Ações dos Botões Finais
+      this.bindActions();
 
-      // Dispara a linha do tempo contínua de 30 segundos
-      this.startTimeline();
+      // Executa a Linha do Tempo dos 31 Passos
+      this.runSequence();
     }
 
     initCanvas() {
-      const canvas = this.viewport.querySelector('#df-particles-canvas');
-      if (!canvas) return;
-      this.canvas = canvas;
-      this.canvasCtx = canvas.getContext('2d');
-
-      const updateSize = () => {
-        if (!this.viewport || !this.canvas) return;
-        this.canvasWidth = this.viewport.clientWidth || 700;
-        this.canvasHeight = this.viewport.clientHeight || 550;
-        this.canvas.width = this.canvasWidth;
-        this.canvas.height = this.canvasHeight;
+      if (!this.canvas) return;
+      const ctx = this.canvas.getContext('2d');
+      const resize = () => {
+        if (!this.canvas) return;
+        this.canvas.width = window.innerWidth;
+        this.canvas.height = window.innerHeight;
       };
-      updateSize();
+      resize();
+      this.resizeHandler = resize;
+      window.addEventListener('resize', this.resizeHandler);
 
-      // 40 partículas sutis em tons rosados e brancos
-      this.canvasParticles = [];
-      for (let i = 0; i < 40; i++) {
-        this.canvasParticles.push({
-          x: Math.random() * this.canvasWidth,
-          y: Math.random() * this.canvasHeight,
-          radius: Math.random() * 2 + 1,
-          baseRadius: Math.random() * 2 + 1,
-          alpha: Math.random() * 0.7 + 0.2,
-          speedX: (Math.random() - 0.5) * 0.4,
-          speedY: (Math.random() - 0.5) * 0.4,
-          color: Math.random() > 0.3 ? '255, 174, 192' : '255, 255, 255'
+      // Gera 85 estrelas e partículas de poeira cósmica em múltiplos planos
+      const count = 85;
+      this.particles = [];
+      for (let i = 0; i < count; i++) {
+        this.particles.push({
+          x: Math.random() * (this.canvas.width || 800),
+          y: Math.random() * (this.canvas.height || 600),
+          size: Math.random() * 2.4 + 0.8,
+          alpha: Math.random() * 0.5 + 0.2,
+          speedY: -(Math.random() * 0.35 + 0.08),
+          speedX: (Math.random() - 0.5) * 0.25,
+          twinkleSpeed: Math.random() * 0.03 + 0.015,
+          isStar: Math.random() > 0.60,
+          starPoints: Math.random() > 0.5 ? 4 : 6,
+          hue: Math.random() > 0.4 ? 'rose' : 'gold'
         });
       }
-    }
 
-    buildBotanicalFlowers() {
-      if (!this.flowersContainer) return;
-      this.flowersContainer.innerHTML = '';
-      this.flowers = [];
+      // Pontos de constelação estelar conectados
+      this.constellations = [
+        { x: 0.5, y: 0.45 },
+        { x: 0.48, y: 0.32 },
+        { x: 0.55, y: 0.36 },
+        { x: 0.44, y: 0.40 },
+        { x: 0.52, y: 0.52 },
+        { x: 0.50, y: 0.60 }
+      ];
 
-      // 28 flores distribuídas em 3 camadas de profundidade
-      const flowerCount = 28;
-      const depths = ['depth-far', 'depth-mid', 'depth-near'];
+      const loop = () => {
+        if (this.isDestroyed || !ctx) return;
+        ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
-      for (let i = 0; i < flowerCount; i++) {
-        const depth = depths[i % 3];
-        const angleDeg = (i / flowerCount) * 360 + (Math.random() * 25 - 12);
-        const distance = depth === 'depth-near' ? (150 + Math.random() * 140) : (depth === 'depth-mid' ? (110 + Math.random() * 120) : (70 + Math.random() * 90));
-        const size = depth === 'depth-near' ? 76 : (depth === 'depth-mid' ? 56 : 38);
+        const w = this.canvas.width;
+        const h = this.canvas.height;
 
-        const el = document.createElement('div');
-        el.className = `df-flower ${depth}`;
-        el.style.width = `${size}px`;
-        el.style.height = `${size}px`;
-
-        // SVG puro nativo com 8 pétalas orgânicas curvas e centro brilhante
-        const id = `flw-${i}`;
-        el.innerHTML = `
-          <svg viewBox="-50 -50 100 100" width="100%" height="100%">
-            <defs>
-              <radialGradient id="${id}-grad" cx="0%" cy="0%" r="50%">
-                <stop offset="0%" stop-color="#ffffff" stop-opacity="1" />
-                <stop offset="45%" stop-color="#ffaec0" stop-opacity="0.85" />
-                <stop offset="90%" stop-color="#ff6b8b" stop-opacity="0.3" />
-                <stop offset="100%" stop-color="#ff6b8b" stop-opacity="0" />
-              </radialGradient>
-            </defs>
-            <g class="flower-petals-group">
-              <path d="M0 0 C -12 -20, -14 -40, 0 -48 C 14 -40, 12 -20, 0 0" fill="url(#${id}-grad)" transform="rotate(0)" />
-              <path d="M0 0 C -12 -20, -14 -40, 0 -48 C 14 -40, 12 -20, 0 0" fill="url(#${id}-grad)" transform="rotate(45)" />
-              <path d="M0 0 C -12 -20, -14 -40, 0 -48 C 14 -40, 12 -20, 0 0" fill="url(#${id}-grad)" transform="rotate(90)" />
-              <path d="M0 0 C -12 -20, -14 -40, 0 -48 C 14 -40, 12 -20, 0 0" fill="url(#${id}-grad)" transform="rotate(135)" />
-              <path d="M0 0 C -12 -20, -14 -40, 0 -48 C 14 -40, 12 -20, 0 0" fill="url(#${id}-grad)" transform="rotate(180)" />
-              <path d="M0 0 C -12 -20, -14 -40, 0 -48 C 14 -40, 12 -20, 0 0" fill="url(#${id}-grad)" transform="rotate(225)" />
-              <path d="M0 0 C -12 -20, -14 -40, 0 -48 C 14 -40, 12 -20, 0 0" fill="url(#${id}-grad)" transform="rotate(270)" />
-              <path d="M0 0 C -12 -20, -14 -40, 0 -48 C 14 -40, 12 -20, 0 0" fill="url(#${id}-grad)" transform="rotate(315)" />
-            </g>
-            <circle cx="0" cy="0" r="7.5" fill="#ffffff" filter="drop-shadow(0 0 5px #ff6b8b)" />
-          </svg>
-        `;
-
-        this.flowersContainer.appendChild(el);
-
-        this.flowers.push({
-          el,
-          angleDeg,
-          orbitSpeed: (depth === 'depth-near' ? 0.08 : (depth === 'depth-mid' ? -0.06 : 0.04)) * (Math.random() > 0.5 ? 1 : -1),
-          distance,
-          currentDist: 0,
-          scale: 0,
-          targetScale: depth === 'depth-near' ? 1.05 : (depth === 'depth-mid' ? 0.85 : 0.6),
-          rotation: Math.random() * 360,
-          rotSpeed: (Math.random() - 0.5) * 0.18,
-          depth
-        });
-      }
-    }
-
-    startTimeline() {
-      this.startTime = performance.now();
-
-      // Dispara fechamento do livro logo nos primeiros 400ms (0s - 4s)
-      this.addTimeout(() => {
-        if (this.bookCover) {
-          this.bookCover.classList.add('is-closed');
-        }
-      }, 400);
-
-      // 4s: Livro se dissolve suavemente
-      this.addTimeout(() => {
-        if (this.bookStage) {
-          this.bookStage.classList.add('book-dissolve');
-        }
-      }, 4000);
-
-      // 4.2s: Pulso 1 da Primeira Luz (pequeno halo rosado)
-      this.addTimeout(() => {
-        if (this.lightDot) {
-          this.lightDot.classList.add('pulse-1');
-        }
-        if (this.sys && this.sys.audioManager) {
-          this.sys.audioManager.playSparkleSound(0.5);
-        }
-      }, 4200);
-
-      // 5.2s: Pulso 2 (halo maior iluminando a tela)
-      this.addTimeout(() => {
-        if (this.lightDot) {
-          this.lightDot.classList.remove('pulse-1');
-          this.lightDot.classList.add('pulse-2');
-        }
-      }, 5200);
-
-      // 6.2s: Pulso 3 (onda circular que se expande)
-      this.addTimeout(() => {
-        if (this.lightRipple) {
-          this.lightRipple.classList.add('ripple-active');
-        }
-        if (this.sys && this.sys.audioManager) {
-          this.sys.audioManager.playSparkleSound(0.7);
-        }
-      }, 6200);
-
-      // 7s: Flores começam a brotar e expandir radialmente
-      this.addTimeout(() => {
-        this.flowers.forEach((f) => {
-          f.el.classList.add('bloomed');
-        });
-      }, 7000);
-
-      // 15s: O Centro começa a brilhar intensamente (Halos 1, 2, 3 e Anel)
-      this.addTimeout(() => {
-        if (this.halosGroup) {
-          this.halosGroup.classList.add('halos-visible');
-        }
-        if (this.sys && this.sys.audioManager) {
-          this.sys.audioManager.playSparkleSound(0.9);
-        }
-      }, 15000);
-
-      // 18s: Momento de Tensão (desaceleração quase parada e lavagem rosada)
-      this.addTimeout(() => {
-        if (this.tensionLayer) {
-          this.tensionLayer.classList.add('tension-active');
-        }
-      }, 18000);
-
-      // 21s: O GRANDE CLÍMAX
-      this.addTimeout(() => {
-        if (this.climaxShockwave) this.climaxShockwave.classList.add('fire-climax');
-        if (this.climaxRing) this.climaxRing.classList.add('fire-climax');
-        if (this.climaxFlareH) this.climaxFlareH.classList.add('fire-climax');
-        if (this.climaxFlareV) this.climaxFlareV.classList.add('fire-climax');
-        if (this.climaxFlash) this.climaxFlash.classList.add('fire-climax');
-
-        // Confetes delicados na paleta do projeto (rosa, dourado suave, branco)
-        if (window.confetti) {
-          window.confetti({
-            particleCount: 50,
-            spread: 80,
-            origin: { x: 0.5, y: 0.5 },
-            colors: ['#ff6b8b', '#ffaec0', '#ffffff', '#ffe6ee', '#ffd1a4']
+        // 1. Linhas de Constelação Estelar (quando ativadas)
+        if (this.showConstellations) {
+          ctx.save();
+          ctx.strokeStyle = 'rgba(255, 182, 193, 0.45)';
+          ctx.lineWidth = 1.2;
+          ctx.setLineDash([4, 4]);
+          ctx.beginPath();
+          for (let i = 0; i < this.constellations.length - 1; i++) {
+            const p1 = this.constellations[i];
+            const p2 = this.constellations[i + 1];
+            ctx.moveTo(p1.x * w, p1.y * h);
+            ctx.lineTo(p2.x * w, p2.y * h);
+          }
+          ctx.stroke();
+          ctx.setLineDash([]);
+          // Pontos cintilantes da constelação
+          this.constellations.forEach(pt => {
+            ctx.fillStyle = 'rgba(255, 235, 240, 0.9)';
+            ctx.beginPath();
+            ctx.arc(pt.x * w, pt.y * h, 3.5, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = 'rgba(255, 105, 180, 0.6)';
+            ctx.beginPath();
+            ctx.arc(pt.x * w, pt.y * h, 7, 0, Math.PI * 2);
+            ctx.stroke();
           });
+          ctx.restore();
         }
 
-        if (this.sys && this.sys.audioManager) {
-          this.sys.audioManager.playSparkleSound(1.2);
+        // 2. Ondas de Choque Circulares Expansivas (Shockwaves)
+        for (let i = this.shockwaves.length - 1; i >= 0; i--) {
+          const sw = this.shockwaves[i];
+          sw.radius += sw.speed;
+          sw.alpha -= sw.decay;
+          if (sw.alpha <= 0) {
+            this.shockwaves.splice(i, 1);
+            continue;
+          }
+          ctx.save();
+          ctx.beginPath();
+          ctx.arc(sw.x, sw.y, sw.radius, 0, Math.PI * 2);
+          ctx.strokeStyle = `rgba(255, 182, 193, ${sw.alpha})`;
+          ctx.lineWidth = sw.width;
+          ctx.stroke();
+          // Halo interno suave
+          ctx.beginPath();
+          ctx.arc(sw.x, sw.y, Math.max(0, sw.radius - 8), 0, Math.PI * 2);
+          ctx.strokeStyle = `rgba(255, 235, 200, ${sw.alpha * 0.7})`;
+          ctx.lineWidth = 2;
+          ctx.stroke();
+          ctx.restore();
         }
-      }, 21000);
 
-      // 24s: Revelação com tipografia nobre: FELIZ ANIVERSÁRIO ISSAMARA 18 ANOS
-      this.addTimeout(() => {
-        if (this.hbdWrap) {
-          this.hbdWrap.classList.add('reveal-active');
-        }
-      }, 24000);
+        // 3. Chuva Cósmica de Estrelas & Poeira
+        this.particles.forEach(p => {
+          p.y += p.speedY;
+          p.x += p.speedX;
+          if (p.y < -10) { p.y = h + 10; p.x = Math.random() * w; }
+          if (p.x < -10) p.x = w + 10;
+          if (p.x > w + 10) p.x = -10;
 
-      // 26s: A festa se transforma em calma e paz serena
-      this.addTimeout(() => {
-        if (this.hbdWrap) {
-          this.hbdWrap.classList.add('reveal-fade-calm');
-        }
-      }, 26500);
+          p.alpha += Math.sin(Date.now() * p.twinkleSpeed) * 0.012;
+          const clampedAlpha = Math.max(0.12, Math.min(0.90, p.alpha));
 
-      // 27.5s - 29.5s: Transição Serena para os Créditos - flores somem suavemente uma a uma
-      this.addTimeout(() => {
-        if (this.halosGroup) {
-          this.halosGroup.classList.remove('halos-visible');
-        }
-        if (this.tensionLayer) {
-          this.tensionLayer.classList.remove('tension-active');
-        }
-        if (this.flowers && this.flowers.length) {
-          this.flowers.forEach((f, idx) => {
-            this.addTimeout(() => {
-              if (f.el) f.el.classList.add('flower-fade-out');
-            }, idx * 45);
-          });
-        }
-      }, 27500);
+          const colorRgb = p.hue === 'gold' ? '255, 215, 130' : '255, 182, 205';
 
-      // 30s+: Créditos Finais elegantes e encerramento com fade-out suave do áudio
-      this.addTimeout(() => {
-        if (this.creditsScreen) {
-          this.creditsScreen.classList.add('credits-visible');
+          if (p.isStar) {
+            ctx.save();
+            ctx.translate(p.x, p.y);
+            ctx.fillStyle = `rgba(${colorRgb}, ${clampedAlpha})`;
+            ctx.beginPath();
+            ctx.arc(0, 0, p.size, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Brilho em cruz estrelada cintilante
+            ctx.strokeStyle = `rgba(255, 255, 255, ${clampedAlpha * 0.85})`;
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            const arm = p.size * (p.starPoints === 6 ? 3.2 : 2.6);
+            ctx.moveTo(-arm, 0); ctx.lineTo(arm, 0);
+            ctx.moveTo(0, -arm); ctx.lineTo(0, arm);
+            ctx.stroke();
+            ctx.restore();
+          } else {
+            ctx.fillStyle = `rgba(${colorRgb}, ${clampedAlpha * 0.7})`;
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        });
+
+        // 4. Pétalas Flutuantes em 3D (durante clímax e fase serena)
+        if (this.fallingPetalsActive) {
+          if (this.fallingPetals.length < 24 && Math.random() < 0.15) {
+            this.fallingPetals.push({
+              x: Math.random() * w,
+              y: -20,
+              size: Math.random() * 12 + 10,
+              speedY: Math.random() * 1.5 + 0.8,
+              speedX: Math.sin(Date.now()) * 0.6,
+              rotation: Math.random() * 360,
+              rotSpeed: (Math.random() - 0.5) * 2,
+              osc: Math.random() * Math.PI * 2,
+              color: Math.random() > 0.3 ? 'rgba(255, 182, 193, 0.75)' : 'rgba(255, 220, 230, 0.85)'
+            });
+          }
+
+          for (let i = this.fallingPetals.length - 1; i >= 0; i--) {
+            const pet = this.fallingPetals[i];
+            pet.y += pet.speedY;
+            pet.osc += 0.03;
+            pet.x += Math.sin(pet.osc) * 1.2;
+            pet.rotation += pet.rotSpeed;
+
+            if (pet.y > h + 30) {
+              this.fallingPetals.splice(i, 1);
+              continue;
+            }
+
+            ctx.save();
+            ctx.translate(pet.x, pet.y);
+            ctx.rotate((pet.rotation * Math.PI) / 180);
+            ctx.fillStyle = pet.color;
+            ctx.beginPath();
+            // Forma orgânica de pétala de cerejeira/rosa
+            ctx.moveTo(0, 0);
+            ctx.bezierCurveTo(pet.size * 0.5, -pet.size * 0.8, pet.size, -pet.size * 0.3, pet.size * 0.6, pet.size * 0.6);
+            ctx.bezierCurveTo(pet.size * 0.2, pet.size * 0.9, -pet.size * 0.2, pet.size * 0.7, 0, 0);
+            ctx.fill();
+            ctx.restore();
+          }
         }
-        // Encerramento suave do áudio com fade-out gradual e sereno
-        if (this.sys && this.sys.audioManager) {
-          this.sys.audioManager.fadeTo(0.15, 6000);
+
+        // 5. Pólen Dourado Fluido (emanando do núcleo floral)
+        if (this.pollenActive) {
+          if (this.pollenGrains.length < 35 && Math.random() < 0.3) {
+            this.pollenGrains.push({
+              x: w * 0.5 + (Math.random() - 0.5) * 40,
+              y: h * 0.44 + (Math.random() - 0.5) * 30,
+              size: Math.random() * 2.5 + 1.2,
+              speedY: -(Math.random() * 0.8 + 0.2),
+              speedX: (Math.random() - 0.5) * 0.9,
+              alpha: 0.9,
+              decay: 0.008
+            });
+          }
+
+          for (let i = this.pollenGrains.length - 1; i >= 0; i--) {
+            const pol = this.pollenGrains[i];
+            pol.y += pol.speedY;
+            pol.x += pol.speedX;
+            pol.alpha -= pol.decay;
+            if (pol.alpha <= 0) {
+              this.pollenGrains.splice(i, 1);
+              continue;
+            }
+            ctx.save();
+            ctx.fillStyle = `rgba(255, 235, 100, ${pol.alpha})`;
+            ctx.beginPath();
+            ctx.arc(pol.x, pol.y, pol.size, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+          }
         }
-      }, 30000);
 
-      // Inicia loop contínuo a 60 FPS
-      const loop = (now) => {
-        if (this.isDestroyed) return;
-        const elapsed = now - this.startTime;
-
-        this.updateFlowers(elapsed);
-        this.renderCanvas(elapsed);
-
-        this.animFrameId = requestAnimationFrame(loop);
+        this.animFrame = requestAnimationFrame(loop);
       };
-      this.animFrameId = requestAnimationFrame(loop);
+      this.animFrame = requestAnimationFrame(loop);
     }
 
-    updateFlowers(elapsed) {
-      if (!this.flowers || !this.flowers.length) return;
-
-      // 0s-7s: escondidas
-      if (elapsed < 7000) return;
-
-      const centerX = (this.viewport ? this.viewport.clientWidth : 700) / 2;
-      const centerY = (this.viewport ? this.viewport.clientHeight : 550) / 2;
-
-      // Fases da dinâmica
-      let expansionProgress = 1;
-      let speedFactor = 1;
-
-      if (elapsed >= 7000 && elapsed < 11000) {
-        // 7s-11s: expansão radial partindo do centro
-        expansionProgress = Math.min(1, (elapsed - 7000) / 4000);
-      } else if (elapsed >= 18000 && elapsed < 21000) {
-        // 18s-21s: desaceleração profunda de tensão
-        speedFactor = 0.15;
-      } else if (elapsed >= 21000 && elapsed < 23000) {
-        // Clímax: impulso radial temporário
-        speedFactor = 2.4;
-      } else if (elapsed >= 26000) {
-        // Calma serena
-        speedFactor = 0.25;
-      }
-
-      this.flowers.forEach((f) => {
-        f.angleDeg += f.orbitSpeed * speedFactor;
-        f.rotation += f.rotSpeed * speedFactor;
-
-        // Suave alcance da distância radial
-        const targetDist = f.distance * expansionProgress;
-        f.currentDist += (targetDist - f.currentDist) * 0.05;
-
-        // Escala
-        const curScale = f.targetScale * expansionProgress;
-
-        const rad = (f.angleDeg * Math.PI) / 180;
-        const posX = centerX + Math.cos(rad) * f.currentDist - f.el.clientWidth / 2;
-        const posY = centerY + Math.sin(rad) * f.currentDist - f.el.clientHeight / 2;
-
-        f.el.style.transform = `translate3d(${posX.toFixed(1)}px, ${posY.toFixed(1)}px, 0) scale(${curScale.toFixed(2)}) rotate(${f.rotation.toFixed(1)}deg)`;
+    triggerShockwave(x, y) {
+      this.shockwaves.push({
+        x: x || window.innerWidth * 0.5,
+        y: y || window.innerHeight * 0.44,
+        radius: 10,
+        speed: 12,
+        width: 6,
+        alpha: 0.85,
+        decay: 0.016
       });
-    }
-
-    renderCanvas(elapsed) {
-      if (!this.canvasCtx || !this.canvas) return;
-      const ctx = this.canvasCtx;
-      ctx.clearRect(0, 0, this.canvasWidth, this.canvasHeight);
-
-      let speedMod = 1;
-      if (elapsed >= 18000 && elapsed < 21000) speedMod = 0.2; // Tensão
-      else if (elapsed >= 21000 && elapsed < 24000) speedMod = 2.0; // Clímax
-      else if (elapsed >= 26000) speedMod = 0.35; // Calma
-
-      for (let i = 0; i < this.canvasParticles.length; i++) {
-        const p = this.canvasParticles[i];
-        p.x += p.speedX * speedMod;
-        p.y += p.speedY * speedMod;
-
-        // Wrap around
-        if (p.x < -10) p.x = this.canvasWidth + 10;
-        if (p.x > this.canvasWidth + 10) p.x = -10;
-        if (p.y < -10) p.y = this.canvasHeight + 10;
-        if (p.y > this.canvasHeight + 10) p.y = -10;
-
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(${p.color}, ${p.alpha})`;
-        ctx.shadowBlur = 8;
-        ctx.shadowColor = `rgba(${p.color}, 0.8)`;
-        ctx.fill();
-      }
+      this.shockwaves.push({
+        x: x || window.innerWidth * 0.5,
+        y: y || window.innerHeight * 0.44,
+        radius: 5,
+        speed: 8,
+        width: 3,
+        alpha: 0.7,
+        decay: 0.014
+      });
     }
 
     addTimeout(fn, delayMs) {
@@ -3453,21 +3958,722 @@
       return id;
     }
 
+    bindActions() {
+      const btnPdf = this.stage.querySelector('#btn-eagora-pdf');
+      const btnSave = this.stage.querySelector('#btn-eagora-save');
+      const btnClose = this.stage.querySelector('#btn-eagora-close');
+      const btnRestart = this.stage.querySelector('#btn-eagora-restart');
+      const saveModal = this.stage.querySelector('#eagora-save-modal');
+      const btnCloseSave = this.stage.querySelector('#btn-close-save-modal');
+
+      if (btnPdf) {
+        btnPdf.addEventListener('click', () => {
+          this.downloadAllTextsPdf();
+        });
+      }
+
+      if (btnSave && saveModal) {
+        btnSave.addEventListener('click', () => {
+          saveModal.classList.remove('d-none');
+        });
+      }
+
+      if (btnCloseSave && saveModal) {
+        btnCloseSave.addEventListener('click', () => {
+          saveModal.classList.add('d-none');
+        });
+      }
+
+      if (btnClose) {
+        btnClose.addEventListener('click', () => {
+          // Marca no dispositivo como concluída localmente
+          localStorage.setItem('issamara_exp_concluded', 'true');
+          this.showFinalConcludedState();
+        });
+      }
+
+      if (btnRestart) {
+        btnRestart.addEventListener('click', () => {
+          localStorage.removeItem('issamara_exp_concluded');
+          if (this.sys && typeof this.sys.restartExperience === 'function') {
+            this.sys.restartExperience();
+          } else {
+            window.location.reload();
+          }
+        });
+      }
+    }
+
+    showFinalConcludedState() {
+      if (!this.stage) return;
+      this.stage.innerHTML = `
+        <div class="eagora-concluded-screen">
+          <div class="eagora-concluded-card">
+            <div class="eagora-concluded-icon">🌸✨</div>
+            <h3>Essa experiência já foi concluída.</h3>
+            <p>
+              As memórias dos 18 anos de Issamara estão guardadas com carinho.
+            </p>
+            <div class="eagora-concluded-actions">
+              <button class="eagora-btn btn-restart" id="btn-concluded-restart">
+                <i class="fa-solid fa-rotate-left"></i> Recomeçar Experiência
+              </button>
+              <button class="eagora-btn btn-pdf" id="btn-concluded-pdf">
+                <i class="fa-solid fa-file-pdf"></i> Baixar os Textos em PDF
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+
+      const btnRestart = this.stage.querySelector('#btn-concluded-restart');
+      const btnPdf = this.stage.querySelector('#btn-concluded-pdf');
+      if (btnRestart) {
+        btnRestart.addEventListener('click', () => {
+          localStorage.removeItem('issamara_exp_concluded');
+          if (this.sys && typeof this.sys.restartExperience === 'function') {
+            this.sys.restartExperience();
+          } else {
+            window.location.reload();
+          }
+        });
+      }
+      if (btnPdf) {
+        btnPdf.addEventListener('click', () => {
+          this.downloadAllTextsPdf();
+        });
+      }
+    }
+
+    /**
+     * Passo 30: Gera o documento PDF completo, elegante e harmônico
+     * Organização: 1. título; 2. capítulos; 3. frases; 4. carta de aniversário; 5. mensagem final; 6. créditos.
+     */
+    downloadAllTextsPdf() {
+      const pdfContainer = document.createElement('div');
+      pdfContainer.style.cssText = 'padding: 30px; font-family: "Quicksand", sans-serif; color: #2d1822; background: #fffafb; max-width: 780px; margin: 0 auto;';
+
+      pdfContainer.innerHTML = `
+        <div style="text-align: center; border-bottom: 2px solid #ffccd7; padding-bottom: 18px; margin-bottom: 24px;">
+          <h1 style="color: #d81b60; margin: 0 0 6px; font-size: 26px;">Issamara • 18 Anos</h1>
+          <div style="font-size: 14px; color: #7a4052; letter-spacing: 2px;">24 DE SETEMBRO DE 2026 • REGISTRO COMPLETO DA EXPERIÊNCIA</div>
+        </div>
+
+        <!-- 1. TÍTULO E INTRODUÇÃO -->
+        <div style="margin-bottom: 22px;">
+          <h3 style="color: #c2185b; font-size: 17px; margin-bottom: 6px;">1. Título & Abertura</h3>
+          <p style="font-size: 14px; line-height: 1.6; color: #444;">
+            Uma jornada de celebração e memórias passando de 2008 até a chegada dos tão esperados 18 anos em 24 de setembro de 2026.
+          </p>
+        </div>
+
+        <!-- 2. CAPÍTULOS DA EXPERIÊNCIA -->
+        <div style="margin-bottom: 22px;">
+          <h3 style="color: #c2185b; font-size: 17px; margin-bottom: 6px;">2. Capítulos da Jornada</h3>
+          <ul style="font-size: 13.5px; line-height: 1.6; color: #555; padding-left: 20px;">
+            <li>Prólogo: A Linha do Tempo e o Caminho até 2026</li>
+            <li>Capítulos Interativos: As pequenas lembranças, os detalhes e as cores que marcaram a história</li>
+            <li>O Livro Digital de Memórias (6 Seções)</li>
+            <li>Capítulo Final: “E Agora?” — A celebração dos 18 anos</li>
+          </ul>
+        </div>
+
+        <!-- 3. AS FRASES CONTEMPLATIVAS -->
+        <div style="margin-bottom: 24px; padding: 14px 18px; background: rgba(255, 235, 240, 0.6); border-left: 4px solid #ff4071; border-radius: 8px;">
+          <h3 style="color: #c2185b; font-size: 16px; margin: 0 0 8px;">3. Frases Contemplativas</h3>
+          <p style="font-style: italic; margin: 0 0 6px; font-size: 15px;">“Algumas coisas a gente não consegue prever.”</p>
+          <p style="font-style: italic; margin: 0; font-size: 16px; font-weight: 700; color: #d81b60;">“Só consegue viver.”</p>
+        </div>
+
+        <!-- 4. CARTA DE ANIVERSÁRIO (O TEXTO DO LIVRO NA ÍNTEGRA) -->
+        <div style="margin-bottom: 26px;">
+          <h3 style="color: #c2185b; font-size: 17px; margin-bottom: 12px;">4. Carta de Aniversário para Issamara</h3>
+          <div style="font-size: 14px; line-height: 1.7; color: #333; white-space: pre-line; background: #ffffff; padding: 18px; border-radius: 12px; border: 1px solid #ffd6e0;">
+Feliz aniversário, Issamara. 🎂
+
+18 anos.
+
+É estranho pensar nisso. A gente passa tanto tempo esperando certas idades chegarem que, quando elas finalmente chegam, parece só mais um dia. Mas não é. É mais um ano que passou, mais um monte de coisas que aconteceram e, principalmente, mais um ano que você está aqui.
+
+E isso me faz pensar numa coisa meio estranha: pessoas passam pela nossa vida o tempo todo. Algumas ficam, outras vão embora, algumas a gente lembra por muito tempo e outras simplesmente desaparecem da nossa cabeça. A verdade é que ninguém sabe exatamente o que vai acontecer amanhã. A vida é meio imprevisível assim.
+
+E talvez seja justamente por isso que algumas pessoas acabam sendo importantes.
+
+Eu nunca fui uma pessoa que se interessa muito pelas outras. Acho as pessoas interessantes, observo, converso, conheço... mas dificilmente alguém realmente consegue chamar a minha atenção a ponto de eu querer manter aquela pessoa por perto.
+
+Você conseguiu.
+
+E você conseguiu meu interesse/atenção.
+
+Não sei explicar exatamente em que momento aconteceu. Talvez tenha sido pelas nossas conversas, pelo seu jeito tranquilo, pela forma como você sempre pareceu ser uma pessoa diferente das outras. Talvez tenha sido simplesmente porque, em algum momento, eu percebi que gostava da sua companhia e que conversar com você fazia bem.
+
+E acho que isso diz bastante.
+
+Porque, mesmo com o tempo passando e a gente ficando mais distante, você continuou sendo uma pessoa que eu considero muito.
+
+Hoje eu não quero ficar falando sobre tudo que mudou, nem transformar seu aniversário numa retrospectiva dramática da nossa amizade. Hoje é seu aniversário. Seu dia.
+
+Então eu só quero te desejar coisas boas.
+
+Que você tenha saúde, paz, felicidade e pessoas que realmente façam bem para você. Que consiga realizar aquilo que deseja, que encontre oportunidades que façam sentido para a sua vida e que tenha coragem para seguir os caminhos que escolher.
+
+Você está começando uma fase completamente nova agora.
+
+18 anos.
+
+E eu espero que você aproveite muito essa fase. Que erre, aprenda, descubra coisas novas, ria bastante, conheça lugares, pessoas e tenha histórias que realmente valham a pena lembrar.
+
+E, sinceramente, espero que a vida seja gentil com você.
+
+Porque você merece encontrar coisas boas pelo caminho.
+
+Talvez a gente ainda volte a conversar como antes algum dia. Talvez a vida leve cada um para um lado completamente diferente. A gente nunca sabe.
+
+Mas, independente disso, eu fico feliz por ter te conhecido.
+
+Você foi uma daquelas pessoas que conseguiram passar da minha curiosidade e realmente ganhar um espaço na minha consideração. E isso não acontece com qualquer pessoa.
+
+Então, no meio de toda essa conversa estranha sobre tempo, vida e pessoas...
+
+feliz aniversário.
+
+Espero que seus 18 anos sejam muito bons.
+
+Que Deus abençoe muito a sua vida, seus planos, suas escolhas e tudo aquilo que ainda está por vir.
+
+E que, quando você olhar para esse aniversário daqui a alguns anos, consiga pensar:
+
+“Foi um dia bom.”
+
+Feliz 18 anos, Issamara. 🎉🎂
+
+Com carinho,
+Luis Fernando Santos
+          </div>
+        </div>
+
+        <!-- 5. MENSAGEM FINAL -->
+        <div style="margin-bottom: 24px; padding: 16px; background: rgba(255, 240, 245, 0.8); border-radius: 12px; text-align: center;">
+          <h3 style="color: #c2185b; font-size: 16px; margin: 0 0 6px;">5. Mensagem Final</h3>
+          <p style="font-size: 15px; margin: 0 0 8px; font-style: italic;">
+            “Que os próximos anos sejam tão bonitos quanto os que ainda estão por vir.”
+          </p>
+          <div style="font-size: 17px; font-weight: 700; color: #d81b60;">Feliz 18 anos. ❤️</div>
+        </div>
+
+        <!-- 6. CRÉDITOS & DEDICATÓRIA -->
+        <div style="border-top: 1.5px solid #ffccd7; padding-top: 16px; text-align: center; font-size: 13px; color: #666;">
+          <p style="margin: 0 0 4px;"><strong>Uma pequena experiência feita com grande carinho, especialmente para Issamara.</strong></p>
+          <p style="margin: 0 0 8px;">Criado por Luis Fernando Santos • 8 de setembro</p>
+          <p style="font-style: italic; color: #d81b60; margin: 0 0 8px;">“Dando meu melhor pra uma pessoa que merece tudo de bom que esse mundo tem.”</p>
+          <p style="font-size: 14px; font-weight: 600; color: #880e4f; margin: 0;">“Espero poder te ver novamente.”</p>
+        </div>
+
+        <!-- Mensagem oculta no PDF -->
+        <div style="margin-top: 26px; text-align: right; padding-top: 8px; font-size: 10px; color: #b87b92; letter-spacing: 0.6px; font-family: monospace; opacity: 0.55;">
+          <span>(removido do sistema. Te amo ❤️🔥)</span>
+        </div>
+      `;
+
+      document.body.appendChild(pdfContainer);
+
+      if (window.html2pdf) {
+        const opt = {
+          margin: 8,
+          filename: 'Issamara_18_Anos_Textos_Completos.pdf',
+          image: { type: 'jpeg', quality: 0.98 },
+          html2canvas: { scale: 2, useCORS: true },
+          jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        };
+        window.html2pdf().set(opt).from(pdfContainer).save().then(() => {
+          if (pdfContainer.parentNode) pdfContainer.parentNode.removeChild(pdfContainer);
+        }).catch(() => {
+          window.print();
+          if (pdfContainer.parentNode) pdfContainer.parentNode.removeChild(pdfContainer);
+        });
+      } else {
+        window.print();
+        if (pdfContainer.parentNode) pdfContainer.parentNode.removeChild(pdfContainer);
+      }
+    }
+
+    /**
+     * Executa com fidelidade e sincronismo os passos 1 a 28
+     */
+    runSequence() {
+      // Ajuste suave do áudio ambiente para o prólogo contemplativo
+      if (this.sys && this.sys.audioManager) {
+        this.sys.audioManager.fadeTo(0.28, 1400);
+      }
+
+      // ========================================================
+      // 1. ENTRADA NO CAPÍTULO (Transição orgânica da tela anterior)
+      // A luminosidade diminui suavemente, a linha luminosa surge e cruza a tela
+      // ========================================================
+      this.addTimeout(() => {
+        if (this.curtain) {
+          this.curtain.classList.add('curtain-fade');
+        }
+        if (this.livingLine) {
+          this.livingLine.classList.add('line-moving');
+        }
+        // Som ambiente sutil de harpa
+        if (this.sys && this.sys.soundEffects && this.sys.soundEffects.playChimeChord) {
+          this.sys.soundEffects.playChimeChord();
+        }
+      }, 400);
+
+      // ========================================================
+      // 2. RETORNO DA LINHA DO TEMPO (2008 ... 2026)
+      // ========================================================
+      this.addTimeout(() => {
+        if (this.timelineWrap) {
+          this.timelineWrap.classList.add('timeline-visible');
+        }
+        if (this.trackFill) {
+          this.trackFill.classList.add('fill-animating');
+        }
+        if (this.headDot) {
+          this.headDot.classList.add('dot-animating');
+        }
+        if (this.marker2008) {
+          this.marker2008.classList.add('marker-visible');
+        }
+      }, 1400);
+
+      // ========================================================
+      // 3. CHEGADA EM 24 DE SETEMBRO
+      // Linha chega -> 2026 -> 24 de setembro -> 18 anos
+      // ========================================================
+      this.addTimeout(() => {
+        if (this.marker2026) {
+          this.marker2026.classList.add('marker-visible', 'marker-glowing');
+        }
+      }, 3400);
+
+      this.addTimeout(() => {
+        if (this.milestoneBox) {
+          this.milestoneBox.classList.add('milestone-visible');
+        }
+        if (this.dateCapsule) {
+          this.dateCapsule.classList.add('capsule-visible');
+        }
+      }, 4200);
+
+      this.addTimeout(() => {
+        if (this.dateExpanded) {
+          this.dateExpanded.classList.add('expanded-visible');
+        }
+      }, 4900);
+
+      this.addTimeout(() => {
+        if (this.ageCelebrated) {
+          this.ageCelebrated.classList.add('age-visible');
+        }
+      }, 5600);
+
+      // ========================================================
+      // 4. A LINHA PARA (Sem 2027/2028: "Chegamos até aqui...")
+      // ========================================================
+      this.addTimeout(() => {
+        if (this.unwrittenHint) {
+          this.unwrittenHint.classList.add('hint-visible');
+        }
+      }, 6400);
+
+      // ========================================================
+      // 6. A LINHA COMEÇA A DESAPARECER (Linha -> Partículas Estelares)
+      // ========================================================
+      this.addTimeout(() => {
+        if (this.timelineWrap) {
+          this.timelineWrap.classList.add('timeline-dissolving');
+        }
+      }, 9200);
+
+      // ========================================================
+      // 7 & 8. AS PARTÍCULAS SOBEM E TRANSFORMAM-SE EM CONSTELAÇÕES
+      // ========================================================
+      this.addTimeout(() => {
+        if (this.timelineWrap) {
+          this.timelineWrap.style.display = 'none';
+        }
+        this.showConstellations = true;
+      }, 10400);
+
+      // ========================================================
+      // 9 & 10. O DESENHO BOTÂNICO DA FLOR PELAS ESTRELAS
+      // Caule -> Folhas & Nervuras -> Sépalas -> Pétalas Externas (6) -> Médias (6) -> Frontais (6) & Nervuras -> Estames (12) -> Centro
+      // ========================================================
+      this.addTimeout(() => {
+        this.showConstellations = false;
+        if (this.flowerWrap) {
+          this.flowerWrap.classList.add('flower-wrap-visible');
+        }
+
+        if (this.sys && this.sys.audioManager) {
+          this.sys.audioManager.fadeTo(0.40, 2000);
+        }
+      }, 11400);
+
+      // Desenho: Caule Orgânico (Passo 10.1)
+      this.addTimeout(() => {
+        const stem = this.stage.querySelector('#flower-path-stem');
+        if (stem) stem.classList.add('line-drawn');
+      }, 11800);
+
+      // Folhas Botânicas e Nervuras de Luz (Passo 10.2)
+      this.addTimeout(() => {
+        const l1 = this.stage.querySelector('#flower-path-leaf1');
+        const v1 = this.stage.querySelector('#flower-leaf1-vein');
+        const l2 = this.stage.querySelector('#flower-path-leaf2');
+        const v2 = this.stage.querySelector('#flower-leaf2-vein');
+        const otherVeins = this.stage.querySelectorAll('#flower-leaf1-group .vein-line, #flower-leaf2-group .vein-line');
+        if (l1) l1.classList.add('line-drawn');
+        if (v1) v1.classList.add('line-drawn');
+        setTimeout(() => {
+          if (l2) l2.classList.add('line-drawn');
+          if (v2) v2.classList.add('line-drawn');
+          otherVeins.forEach(v => v.classList.add('line-drawn'));
+        }, 300);
+      }, 12500);
+
+      // Cálice Floral & Sépalas (Passo 10.3)
+      this.addTimeout(() => {
+        const sepals = this.stage.querySelectorAll('.flower-sepal-item, #flower-sepals-group .flower-draw-line');
+        sepals.forEach((s, idx) => {
+          setTimeout(() => s.classList.add('line-drawn'), idx * 75);
+        });
+      }, 13400);
+
+      // Camada 1: Pétalas de Fundo (6 Pétalas Radiais em 360°) (Passo 10.4)
+      this.addTimeout(() => {
+        const outerPetals = this.stage.querySelectorAll('.flower-outer-petal');
+        outerPetals.forEach((op, idx) => {
+          setTimeout(() => {
+            op.classList.add('line-drawn');
+          }, idx * 100);
+        });
+      }, 14100);
+
+      // Camada 2: Pétalas Intermediárias Intercaladas (6 Pétalas de Volume) (Passo 10.5)
+      this.addTimeout(() => {
+        const midPetals = this.stage.querySelectorAll('.flower-mid-petal');
+        midPetals.forEach((mp, idx) => {
+          setTimeout(() => {
+            mp.classList.add('line-drawn');
+          }, idx * 100);
+        });
+      }, 14900);
+
+      // Camada 3: Pétalas Frontais / Coração Floral e Nervuras Luminosas (Passo 10.6)
+      this.addTimeout(() => {
+        const innerPetals = this.stage.querySelectorAll('.flower-inner-petal');
+        const veins = this.stage.querySelectorAll('.flower-vein-item');
+        innerPetals.forEach((pet, idx) => {
+          setTimeout(() => {
+            pet.classList.add('line-drawn');
+          }, idx * 95);
+        });
+        veins.forEach((vein, idx) => {
+          setTimeout(() => {
+            vein.classList.add('line-drawn');
+          }, idx * 80);
+        });
+      }, 15700);
+
+      // Coroa de 12 Estames Dourados Radiantes (Passo 10.7)
+      this.addTimeout(() => {
+        const stamens = this.stage.querySelectorAll('.flower-stamen');
+        stamens.forEach((st, idx) => {
+          setTimeout(() => {
+            st.classList.add('stamen-drawn');
+          }, idx * 45);
+        });
+      }, 16700);
+
+      // ========================================================
+      // 11. A FLOR GANHA VIDA (Halo se expande, centro pulsa radiante, 100% desenhada)
+      // ========================================================
+      this.addTimeout(() => {
+        if (this.flowerWrap) {
+          this.flowerWrap.classList.add('flower-alive-glowing');
+        }
+        // Assegura que absolutamente todas as linhas e pétalas fiquem totalmente desenhadas
+        const allDrawLines = this.stage.querySelectorAll('.flower-draw-line');
+        allDrawLines.forEach(el => el.classList.add('line-drawn'));
+        const allStamens = this.stage.querySelectorAll('.flower-stamen');
+        allStamens.forEach(st => st.classList.add('stamen-drawn'));
+
+        this.pollenActive = true;
+      }, 17600);
+
+      // ========================================================
+      // 12. PRIMEIRA FRASE: “Algumas coisas a gente não consegue prever.”
+      // ========================================================
+      this.addTimeout(() => {
+        if (this.phraseOne) {
+          this.phraseOne.classList.add('phrase-visible');
+        }
+      }, 19200);
+
+      // ========================================================
+      // 13. SEGUNDA FRASE: “Só consegue viver.”
+      // ========================================================
+      this.addTimeout(() => {
+        if (this.phraseOne) {
+          this.phraseOne.classList.remove('phrase-visible');
+          this.phraseOne.classList.add('phrase-exit');
+        }
+      }, 22200);
+
+      this.addTimeout(() => {
+        if (this.phraseTwo) {
+          this.phraseTwo.classList.add('phrase-visible', 'phrase-glowing');
+        }
+      }, 23000);
+
+      // ========================================================
+      // 14 & 15. A PRIMEIRA EXPLOSÃO VISUAL, ONDAS DE CHOQUE E PÉTALAS
+      // ========================================================
+      this.addTimeout(() => {
+        if (this.phraseTwo) {
+          this.phraseTwo.classList.remove('phrase-visible');
+          this.phraseTwo.classList.add('phrase-exit');
+        }
+
+        // Música cresce gradualmente para comemoração
+        if (this.sys && this.sys.audioManager) {
+          this.sys.audioManager.fadeTo(0.85, 2000);
+        }
+
+        // Explosão de luzes no centro da flor
+        if (this.flowerWrap) {
+          this.flowerWrap.classList.add('flower-bursting');
+        }
+
+        // Ondas de choque no canvas + chuva suave de pétalas
+        this.triggerShockwave();
+        this.fallingPetalsActive = true;
+        this.fireCelebrationBursts();
+      }, 25800);
+
+      // ========================================================
+      // 16. SURGIMENTO DO TEXTO PRINCIPAL:
+      // FELIZ -> ANIVERSÁRIO -> ISSAMARA
+      // ========================================================
+      this.addTimeout(() => {
+        if (this.celebrationTitleWrap) {
+          this.celebrationTitleWrap.classList.add('wrap-visible');
+        }
+        if (this.wordFeliz) {
+          this.wordFeliz.classList.add('word-visible');
+        }
+      }, 26600);
+
+      this.addTimeout(() => {
+        if (this.wordBday) {
+          this.wordBday.classList.add('word-visible');
+        }
+      }, 27400);
+
+      this.addTimeout(() => {
+        if (this.wordName) {
+          this.wordName.classList.add('name-grand-entrance');
+        }
+        // Explosão adicional com choque cósmico
+        this.triggerShockwave();
+        this.fireGrandSalvo();
+      }, 28300);
+
+      // ========================================================
+      // 17 & 18. GRANDE CELEBRAÇÃO (Pico harmônico, profundidade e paralaxe)
+      // ========================================================
+      this.addTimeout(() => {
+        this.fireGrandSalvo();
+      }, 30800);
+
+      // ========================================================
+      // 20. A COMEMORAÇÃO DESACELERA SUAVEMENTE
+      // 21. A FLOR CONTINUA SOZINHA NO CENTRO
+      // ========================================================
+      this.addTimeout(() => {
+        if (this.celebrationTitleWrap) {
+          this.celebrationTitleWrap.classList.remove('wrap-visible');
+          this.celebrationTitleWrap.classList.add('wrap-fade-out');
+        }
+        if (this.flowerWrap) {
+          this.flowerWrap.classList.remove('flower-bursting');
+          this.flowerWrap.classList.add('flower-serene');
+        }
+        if (this.sys && this.sys.audioManager) {
+          this.sys.audioManager.fadeTo(0.40, 2500);
+        }
+      }, 33800);
+
+      // ========================================================
+      // 22. MENSAGEM FINAL
+      // “Que os próximos anos sejam tão bonitos...” -> “Feliz 18 anos. ❤️”
+      // ========================================================
+      this.addTimeout(() => {
+        if (this.farewellWrap) {
+          this.farewellWrap.classList.add('farewell-visible');
+        }
+        if (this.farewellP1) {
+          this.farewellP1.classList.add('p-visible');
+        }
+      }, 36200);
+
+      this.addTimeout(() => {
+        if (this.farewellP2) {
+          this.farewellP2.classList.add('p-visible', 'p-heart-glow');
+        }
+      }, 38600);
+
+      // ========================================================
+      // 23. ASSINATURA COM A BRINCADEIRA VISUAL:
+      // Luis -> Criatura -> Luis -> Criatura -> Luis
+      // ========================================================
+      this.addTimeout(() => {
+        const box = this.stage.querySelector('#eagora-signature-box');
+        if (box) box.classList.add('sig-visible');
+        this.animateSignaturePlay();
+      }, 40500);
+
+      // ========================================================
+      // 24. ÚLTIMA PAUSA CONTEMPLATIVA
+      // 25. ENCERRAMENTO VISUAL: Flor perde luminosidade, resta 1 estrela
+      // ========================================================
+      this.addTimeout(() => {
+        if (this.flowerWrap) {
+          this.flowerWrap.classList.add('flower-fade-dim');
+        }
+        if (this.farewellWrap) {
+          this.farewellWrap.classList.add('farewell-fade-out');
+        }
+      }, 47200);
+
+      this.addTimeout(() => {
+        if (this.loneStar) {
+          this.loneStar.classList.add('star-visible');
+        }
+      }, 49500);
+
+      this.addTimeout(() => {
+        if (this.loneStar) {
+          this.loneStar.classList.remove('star-visible');
+          this.loneStar.classList.add('star-fade');
+        }
+      }, 51500);
+
+      // ========================================================
+      // 26. “Fim.”
+      // ========================================================
+      this.addTimeout(() => {
+        if (this.simpleEnd) {
+          this.simpleEnd.classList.add('end-visible');
+        }
+      }, 52500);
+
+      this.addTimeout(() => {
+        if (this.simpleEnd) {
+          this.simpleEnd.classList.remove('end-visible');
+          this.simpleEnd.classList.add('end-fade');
+        }
+      }, 55000);
+
+      // ========================================================
+      // 27 & 28. CRÉDITOS ELEGANTES & “Espero poder te ver novamente.”
+      // ========================================================
+      this.addTimeout(() => {
+        if (this.creditsScreen) {
+          this.creditsScreen.classList.add('credits-visible');
+        }
+      }, 56200);
+    }
+
+    /**
+     * Passo 23: Brincadeira visual tipográfica suave e afetuosa
+     * Luis -> Criatura -> Luis -> Criatura -> Luis
+     */
+    animateSignaturePlay() {
+      if (!this.sigName) return;
+
+      const sequence = [
+        { text: 'Luis', delay: 1000 },
+        { text: 'Criatura', delay: 1800 },
+        { text: 'Luis', delay: 2600 },
+        { text: 'Criatura', delay: 3400 },
+        { text: 'Luis', delay: 4200 }
+      ];
+
+      sequence.forEach((step) => {
+        this.addTimeout(() => {
+          if (!this.sigName) return;
+          this.sigName.classList.add('sig-transitioning');
+          setTimeout(() => {
+            if (this.sigName) {
+              this.sigName.textContent = step.text;
+              this.sigName.classList.remove('sig-transitioning');
+            }
+          }, 240);
+        }, step.delay);
+      });
+    }
+
+    fireCelebrationBursts() {
+      if (!window.confetti) return;
+      window.confetti({
+        particleCount: 40,
+        spread: 65,
+        origin: { x: 0.5, y: 0.44 },
+        colors: ['#ff758c', '#ffccd7', '#ffeb3b', '#ffffff', '#a8e6cf']
+      });
+    }
+
+    fireGrandSalvo() {
+      if (!window.confetti) return;
+      window.confetti({
+        particleCount: 50,
+        angle: 60,
+        spread: 75,
+        origin: { x: 0.1, y: 0.55 },
+        colors: ['#ff758c', '#ffccd7', '#ffb6c1', '#ffd166', '#ffffff']
+      });
+      window.confetti({
+        particleCount: 50,
+        angle: 120,
+        spread: 75,
+        origin: { x: 0.9, y: 0.55 },
+        colors: ['#ff758c', '#ffccd7', '#ffb6c1', '#ffd166', '#ffffff']
+      });
+    }
+
     destroy() {
       this.isDestroyed = true;
-      if (this.animFrameId) {
-        cancelAnimationFrame(this.animFrameId);
-        this.animFrameId = null;
+      document.body.classList.remove('eagora-fullscreen-active');
+
+      if (this.resizeHandler) {
+        window.removeEventListener('resize', this.resizeHandler);
+        this.resizeHandler = null;
       }
-      this.timeouts.forEach((id) => clearTimeout(id));
+
+      if (this.animFrame) {
+        cancelAnimationFrame(this.animFrame);
+        this.animFrame = null;
+      }
+      this.timeouts.forEach(t => clearTimeout(t));
       this.timeouts = [];
-      if (this.viewport && this.viewport.parentNode) {
-        this.viewport.parentNode.removeChild(this.viewport);
+      if (this.stage && this.stage.parentNode) {
+        this.stage.parentNode.removeChild(this.stage);
       }
     }
   }
 
-  // ==========================================================================
+  // Compatibilidade com referências existentes
+  window.EAgoraFinaleController = EAgoraFinaleController;
+  const DefinitiveFinaleController = EAgoraFinaleController;
+
+    // ==========================================================================
   // 4.5. CINEMATIC ENTRY CONTROLLER (Prólogo Cinematográfico: 2008 a 2026)
   // ==========================================================================
   class CinematicEntryController {
@@ -3479,11 +4685,11 @@
       this.cameraEl = document.getElementById('cinematic-camera');
       this.bgEl = document.getElementById('cinematic-bg');
       this.canvasEl = document.getElementById('cinematic-canvas');
-      this.skipBtn = document.getElementById('btn-cinematic-skip') || document.getElementById('btn-skip-cinematic');
       this.startPromptBtn = document.getElementById('cinematic-start-prompt');
       this.fallingPetal = document.getElementById('cinematic-falling-petal');
 
       // Elementos do Palco Botânico (SVG)
+      this.botanicalSvg = document.getElementById('botanical-svg');
       this.seedGroup = document.getElementById('plant-seed-group');
       this.rootsGroup = document.getElementById('plant-roots');
       this.stem = document.getElementById('plant-stem');
@@ -3708,34 +4914,6 @@
     }
 
     bindControls() {
-      // Botão discreto de áudio / música no topo
-      const audioBtn = document.getElementById('btn-cinematic-audio');
-      if (audioBtn) {
-        audioBtn.addEventListener('click', (e) => {
-          e.stopPropagation();
-          if (this.sys && this.sys.audioManager) {
-            if (!this.sys.audioManager.isPlaying) {
-              this.sys.audioManager.startExperienceAudio();
-            } else {
-              this.sys.audioManager.toggleMute();
-            }
-            this.updateAudioBtnUI();
-          }
-        });
-      }
-
-      // Botão discreto de pular introdução
-      const skipButton = document.getElementById('btn-cinematic-skip') || document.getElementById('btn-skip-cinematic');
-      if (skipButton) {
-        skipButton.addEventListener('click', (e) => {
-          e.stopPropagation();
-          if (this.sys && this.sys.audioManager) {
-            this.sys.audioManager.startExperienceAudio();
-          }
-          this.transitionToBook(true);
-        });
-      }
-
       // Botão "Toque para começar a jornada" (após a revelação final de 18 anos)
       if (this.startPromptBtn) {
         this.startPromptBtn.addEventListener('click', (e) => {
@@ -3744,15 +4922,29 @@
         });
       }
 
+      // Ouvinte no SVG botânico (#botanical-svg) para crescer ou ampliar temporariamente ao clicar
+      if (this.botanicalSvg) {
+        this.botanicalSvg.addEventListener('click', (e) => {
+          e.stopPropagation();
+          this.pulseBotanicalPlant();
+        });
+        this.botanicalSvg.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            e.stopPropagation();
+            this.pulseBotanicalPlant();
+          }
+        });
+      }
+
       // Toque em qualquer ponto da tela
       if (this.entryEl) {
         this.entryEl.addEventListener('click', (e) => {
-          if (e.target.closest('#cinematic-header-controls')) return;
+          if (e.target.closest('#botanical-svg')) return;
 
           // Se áudio estiver bloqueado pelo navegador até o primeiro gesto, desbloqueia suavemente
           if (this.sys && this.sys.audioManager && !this.sys.audioManager.isPlaying) {
             this.sys.audioManager.startExperienceAudio();
-            this.updateAudioBtnUI();
           }
 
           // Se a flor já desabrochou e revelou os textos, permite avançar para o livro por toque
@@ -3770,17 +4962,54 @@
       window.addEventListener('resize', () => this.resizeCanvas());
     }
 
+    /**
+     * Faz a planta botânica crescer ou ampliar temporariamente com animação orgânica e reflexos luminosos
+     */
+    pulseBotanicalPlant() {
+      if (!this.botanicalSvg) return;
+
+      // Reinicia a animação para permitir toques consecutivos
+      this.botanicalSvg.classList.remove('plant-grow-active');
+      void this.botanicalSvg.offsetWidth;
+      this.botanicalSvg.classList.add('plant-grow-active');
+
+      // Toca efeito sonoro suave se disponível
+      if (this.sys && this.sys.soundEffects && typeof this.sys.soundEffects.playChimeChord === 'function') {
+        this.sys.soundEffects.playChimeChord();
+      }
+
+      // Dispara confetes delicados e pétalas leves a partir do coração da flor
+      if (window.confetti) {
+        try {
+          const rect = this.botanicalSvg.getBoundingClientRect();
+          const originX = ((rect.left + rect.width / 2) / window.innerWidth) || 0.5;
+          const originY = ((rect.top + rect.height * 0.42) / window.innerHeight) || 0.5;
+          window.confetti({
+            particleCount: 16,
+            spread: 60,
+            startVelocity: 14,
+            origin: { x: originX, y: originY },
+            colors: ['#ff80ab', '#ffb6c1', '#ffd54f', '#ffffff', '#a5d6a7'],
+            ticks: 70,
+            gravity: 0.65,
+            scalar: 0.8
+          });
+        } catch (err) {}
+      }
+
+      if (this.plantGrowTimer) {
+        clearTimeout(this.plantGrowTimer);
+      }
+      this.plantGrowTimer = setTimeout(() => {
+        if (this.botanicalSvg) {
+          this.botanicalSvg.classList.remove('plant-grow-active');
+        }
+        this.plantGrowTimer = null;
+      }, 1200);
+    }
+
     updateAudioBtnUI() {
-      const audioIcon = document.getElementById('cinematic-audio-icon');
-      const audioLabel = document.getElementById('cinematic-audio-label');
-      if (!this.sys || !this.sys.audioManager) return;
-      const isMuted = this.sys.audioManager.isMuted || !this.sys.audioManager.isPlaying;
-      if (audioIcon) {
-        audioIcon.className = isMuted ? 'fas fa-volume-mute' : 'fas fa-volume-up';
-      }
-      if (audioLabel) {
-        audioLabel.textContent = isMuted ? 'Ativar som' : 'Música';
-      }
+      // Sem controles de áudio na tela na experiência cinematográfica
     }
 
     initCanvasParticleSystem() {
@@ -4433,6 +5662,7 @@
       this.audioManager = new AudioManager();
       this.soundEffects = new SoundEffects();
       this.progressManager = new ProgressManager();
+      this.viewportPetals = new ViewportPetalsSystem();
       this.activeBookController = null;
       this.activeAnimController = null;
       this.activeFinaleController = null;
@@ -4440,7 +5670,7 @@
       this.isPaused = false;
       this.completedChapters = [1];
       this.stage = document.getElementById('stage-wrapper');
-      this.tapBar = document.getElementById('bottom-tap-bar');
+      this.tapBar = null;
 
       this.init();
       // Inicializa o orquestrador da abertura cinematográfica
@@ -4454,33 +5684,82 @@
       this.bindGlobalEvents();
       this.renderChapterListModal();
       this.goToChapter(1, false);
+
+      // Passo 31: Verificação de conclusão prévia no dispositivo
+      if (localStorage.getItem('issamara_exp_concluded') === 'true') {
+        setTimeout(() => {
+          this.showReconnectionModal();
+        }, 400);
+      }
     }
 
-    bindGlobalEvents() {
-      // Top Navigation buttons
-      const btnPrev = document.getElementById('btn-prev');
-      const btnNext = document.getElementById('btn-next');
-      const btnPause = document.getElementById('btn-pause');
-      const btnSound = document.getElementById('btn-sound');
-      const btnMenu = document.getElementById('btn-menu');
-      const chapterBadge = document.getElementById('chapter-badge');
+    showReconnectionModal() {
+      const existing = document.getElementById('eagora-reconnection-modal');
+      if (existing) existing.remove();
 
-      if (btnPrev) btnPrev.addEventListener('click', () => this.prevChapter());
-      if (btnNext) btnNext.addEventListener('click', () => this.nextChapter());
-      if (btnPause) btnPause.addEventListener('click', () => this.togglePause());
-      if (btnSound) btnSound.addEventListener('click', () => this.openAudioModal());
-      if (btnMenu) btnMenu.addEventListener('click', () => this.openChaptersModal());
-      if (chapterBadge) chapterBadge.addEventListener('click', () => this.openChaptersModal());
+      const modal = document.createElement('div');
+      modal.id = 'eagora-reconnection-modal';
+      modal.className = 'eagora-concluded-screen';
+      modal.style.zIndex = '9999';
+      modal.innerHTML = `
+        <div class="eagora-concluded-card">
+          <div class="eagora-concluded-icon">🌸✨</div>
+          <h3>Essa experiência já foi concluída.</h3>
+          <p>
+            As memórias dos 18 anos de Issamara estão guardadas com carinho.
+          </p>
+          <div class="eagora-concluded-actions">
+            <button class="eagora-btn btn-restart" id="btn-reconnect-restart">
+              <i class="fa-solid fa-rotate-left"></i> Recomeçar experiência
+            </button>
+            <button class="eagora-btn btn-save" id="btn-reconnect-finale">
+              <i class="fa-solid fa-sparkles"></i> Ver encerramento
+            </button>
+            <button class="eagora-btn btn-pdf" id="btn-reconnect-pdf">
+              <i class="fa-solid fa-file-pdf"></i> Baixar os textos em PDF
+            </button>
+          </div>
+        </div>
+      `;
 
-      // Tap prompt on bottom & stage tap
-      if (this.tapBar) {
-        this.tapBar.addEventListener('click', (e) => {
-          e.stopPropagation();
-          this.handleTapAdvance();
+      document.body.appendChild(modal);
+
+      const btnRestart = modal.querySelector('#btn-reconnect-restart');
+      const btnFinale = modal.querySelector('#btn-reconnect-finale');
+      const btnPdf = modal.querySelector('#btn-reconnect-pdf');
+
+      if (btnRestart) {
+        btnRestart.addEventListener('click', () => {
+          localStorage.removeItem('issamara_exp_concluded');
+          modal.remove();
+          this.restartExperience();
         });
       }
 
-      // Stage click for easy mobile advance
+      if (btnFinale) {
+        btnFinale.addEventListener('click', () => {
+          modal.remove();
+          if (this.cinematicIntro && typeof this.cinematicIntro.completeCinematic === 'function') {
+            this.cinematicIntro.completeCinematic();
+          }
+          this.goToChapter(20, false);
+        });
+      }
+
+      if (btnPdf) {
+        btnPdf.addEventListener('click', () => {
+          if (this.activeFinaleController && typeof this.activeFinaleController.downloadAllTextsPdf === 'function') {
+            this.activeFinaleController.downloadAllTextsPdf();
+          } else {
+            const controller = new EAgoraFinaleController(null, this);
+            controller.downloadAllTextsPdf();
+          }
+        });
+      }
+    }
+
+    bindGlobalEvents() {
+      // Avanço tátil em qualquer ponto do palco (exceto botões, links e inputs)
       if (this.stage) {
         this.stage.addEventListener('click', (e) => {
           if (e.target.closest('button') || e.target.closest('input') || e.target.closest('a') || e.target.closest('.book-stage')) {
@@ -4490,24 +5769,17 @@
         });
       }
 
-      // Audio Modal elements
-      const btnCloseAudio = document.getElementById('btn-close-audio-modal');
-      const btnConfirmAudio = document.getElementById('btn-confirm-audio-modal');
-      const volSlider = document.getElementById('audio-volume-slider');
-      const btnToggleMute = document.getElementById('btn-toggle-mute');
+      // Navegação universal por teclado (Seta Direita / Espaço para avançar, Seta Esquerda para voltar)
+      window.addEventListener('keydown', (e) => {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+        if (e.key === 'ArrowRight' || e.key === ' ') {
+          this.nextChapter();
+        } else if (e.key === 'ArrowLeft') {
+          this.prevChapter();
+        }
+      });
 
-      if (btnCloseAudio) btnCloseAudio.addEventListener('click', () => this.closeAudioModal());
-      if (btnConfirmAudio) btnConfirmAudio.addEventListener('click', () => this.closeAudioModal());
-      if (volSlider) {
-        volSlider.addEventListener('input', (e) => {
-          this.audioManager.setVolume(parseFloat(e.target.value) / 100);
-        });
-      }
-      if (btnToggleMute) {
-        btnToggleMute.addEventListener('click', () => this.audioManager.toggleMute());
-      }
-
-      // Chapter Modal close
+      // Chapter Modal close (se acionado internamente)
       const btnCloseChapters = document.getElementById('btn-close-chapters-modal');
       const btnCloseChaptersFooter = document.getElementById('btn-close-modal-footer');
       if (btnCloseChapters) btnCloseChapters.addEventListener('click', () => this.closeChaptersModal());
@@ -4575,8 +5847,8 @@
         const isFinished = chapter.id === 20;
         this.progressManager.save(chapter.id, this.completedChapters, true, isFinished);
 
-        // Audio fade / level & continuity (sem reiniciar)
-        if (autoPlayAudio && this.audioManager && this.audioManager.audio && this.audioManager.audio.paused && !this.audioManager.isMuted) {
+        // Audio fade / level & continuity (sem reiniciar, respeitando restrição de background)
+        if (autoPlayAudio && this.audioManager && this.audioManager.audio && this.audioManager.audio.paused && !this.audioManager.isMuted && !document.hidden && !this.audioManager.pausedByBackground) {
           const p = this.audioManager.audio.play();
           if (p !== undefined) {
             p.then(() => {
@@ -4678,33 +5950,20 @@
       if (this.isPaused) {
         this.timer.pauseAll();
         this.audioManager.pause();
+        if (this.viewportPetals) this.viewportPetals.pause();
         if (icon) icon.className = 'fas fa-play text-success';
         if (btn) btn.classList.add('active');
       } else {
         this.timer.resumeAll();
         this.audioManager.play();
+        if (this.viewportPetals) this.viewportPetals.resume();
         if (icon) icon.className = 'fas fa-pause';
         if (btn) btn.classList.remove('active');
       }
     }
 
     updateNavbar() {
-      const chapter = CHAPTERS[this.currentChapterIndex];
-      const badge = document.getElementById('chapter-badge');
-      const btnPrev = document.getElementById('btn-prev');
-      const btnNext = document.getElementById('btn-next');
-
-      if (badge && chapter) {
-        badge.innerText = `Cap. ${chapter.id}/20: ${chapter.title}`;
-      }
-
-      if (btnPrev) {
-        btnPrev.disabled = this.currentChapterIndex === 0;
-      }
-
-      if (btnNext) {
-        btnNext.disabled = false;
-      }
+      // Interface cinematográfica sem barra de topo fixa
     }
 
     restartExperience() {
@@ -4733,9 +5992,6 @@
       }
       if (this.stage) this.stage.innerHTML = '';
       this.isTransitioningChapter = false;
-
-      const badge = document.getElementById('chapter-badge');
-      if (badge) badge.innerText = 'Créditos da Experiência';
 
       const container = document.createElement('div');
       container.className = 'kotak animate__animated animate__fadeIn';
@@ -4851,14 +6107,11 @@
     }
 
     openAudioModal() {
-      this.audioManager.updateUI();
-      const m = document.getElementById('modal-audio');
-      if (m) m.classList.remove('d-none');
+      // Interface cinematográfica sem modal de áudio separado
     }
 
     closeAudioModal() {
-      const m = document.getElementById('modal-audio');
-      if (m) m.classList.add('d-none');
+      // Interface cinematográfica sem modal de áudio separado
     }
 
     openRestartModal() {
@@ -5234,6 +6487,26 @@
   // ==========================================
   window.addEventListener('DOMContentLoaded', () => {
     window.appExperience = new ExperienceSystem();
+
+    // Ouvinte garantido no SVG botânico (#botanical-svg) para crescer/ampliar temporariamente ao toque
+    const plantSvg = document.getElementById('botanical-svg');
+    if (plantSvg && !plantSvg._hasPlantClickListener) {
+      plantSvg._hasPlantClickListener = true;
+      plantSvg.addEventListener('click', (e) => {
+        e.stopPropagation();
+        plantSvg.classList.remove('plant-grow-active');
+        void plantSvg.offsetWidth;
+        plantSvg.classList.add('plant-grow-active');
+
+        if (window.appExperience && window.appExperience.soundEffects && typeof window.appExperience.soundEffects.playChimeChord === 'function') {
+          window.appExperience.soundEffects.playChimeChord();
+        }
+
+        setTimeout(() => {
+          plantSvg.classList.remove('plant-grow-active');
+        }, 1200);
+      });
+    }
   });
 
 })();
