@@ -11,27 +11,33 @@ const PORT = 3000;
 // Enable CORS and cache control headers
 app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
   next();
 });
 
 // Explicit static handlers to guarantee correct MIME types across any host/proxy/serverless
 app.get('/style.css', (req, res) => {
   res.setHeader('Content-Type', 'text/css; charset=utf-8');
+  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
   res.sendFile(path.resolve(__dirname, 'style.css'));
 });
 
 app.get('/script.js', (req, res) => {
   res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
+  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
   res.sendFile(path.resolve(__dirname, 'script.js'));
 });
 
 // Serve all static files from root directory with explicit MIME type handling
 app.use(express.static(__dirname, {
   dotfiles: 'ignore',
-  etag: true,
+  etag: false,
   index: ['index.html'],
-  maxAge: '1h',
+  maxAge: '0',
   setHeaders: (res, filePath) => {
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
     if (filePath.endsWith('.css')) {
       res.setHeader('Content-Type', 'text/css; charset=utf-8');
     } else if (filePath.endsWith('.js')) {

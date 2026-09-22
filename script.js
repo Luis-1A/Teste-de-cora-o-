@@ -3579,32 +3579,32 @@
         <!-- O Discreto "Fim." -->
         <div class="eagora-simple-end" id="eagora-simple-end">Fim.</div>
 
-        <!-- Painel Integrado de Créditos Elegantes & Ações Finais -->
+        <!-- Painel Único Aprovado de Créditos & Encerramento Suave -->
         <div class="eagora-credits-screen" id="eagora-credits-screen">
-          <div class="eagora-credits-card">
-            <div class="eagora-credits-icon">🌸</div>
-            <p class="eagora-credits-lead">
+          <div class="credits-approved-card" id="credits-approved-card">
+            <div class="eagora-credits-icon" style="font-size: 32px; margin-bottom: 10px;">🌸</div>
+            <p class="eagora-credits-lead" style="font-size: 15.5px; line-height: 1.6; color: #3b0f2a; margin: 0 0 14px; font-weight: 500;">
               Uma pequena experiência feita com grande carinho, especialmente para Issamara.
             </p>
-            <div class="eagora-credits-author">
-              <strong>Criado por Luis Fernando Santos</strong>
+            <div class="eagora-credits-author" style="display: flex; flex-direction: column; gap: 2px; font-size: 14px; color: #7b4055; margin-bottom: 14px;">
+              <strong style="color: #c2185b; font-size: 15.5px;">Criado por Luis Fernando Santos</strong>
               <span>8 de setembro</span>
             </div>
-            <blockquote class="eagora-credits-dedication">
+            <blockquote class="eagora-credits-dedication" style="font-family: 'Handlee', 'Quicksand', cursive; font-size: 16.5px; color: #ad1457; line-height: 1.55; margin: 0 0 14px; padding: 0 10px; font-style: italic;">
               “Dando meu melhor pra uma pessoa que merece tudo de bom que esse mundo tem.”
             </blockquote>
-            <p class="eagora-credits-final-wish" id="eagora-credits-final-wish">
+            <p class="eagora-credits-final-wish" id="eagora-credits-final-wish" style="font-size: 14.5px; font-weight: 600; color: #880e4f; margin: 0 0 20px; font-style: italic;">
               “Espero poder te ver novamente.”
             </p>
 
-            <!-- Ações Conclusivas com Opção Clara de Baixar -->
-            <div class="eagora-actions-row" style="margin-top: 24px; display: flex; flex-direction: column; align-items: center; gap: 12px; width: 100%;">
+            <!-- Ações Conclusivas Aprovadas -->
+            <div class="eagora-actions-row" style="margin-top: 20px; display: flex; flex-direction: column; align-items: center; gap: 12px; width: 100%;">
               <button class="eagora-btn btn-pdf" id="btn-eagora-pdf" style="width: 100%; max-width: 320px; font-weight: 700; font-size: 15px; padding: 13px 24px; background: linear-gradient(135deg, #e91e63, #c2185b); color: #fff; border: none; border-radius: 50px; box-shadow: 0 6px 20px rgba(233, 30, 99, 0.35); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: transform 0.2s ease, box-shadow 0.2s ease;">
                 <i class="fas fa-file-pdf"></i> Baixar a Carta em PDF
               </button>
               <div style="display: flex; gap: 10px; justify-content: center; width: 100%; flex-wrap: wrap;">
-                <button class="eagora-btn btn-save" id="btn-eagora-save" style="border: 1px solid rgba(255, 107, 139, 0.4); background: rgba(255, 255, 255, 0.95); color: #c2185b; border-radius: 50px; padding: 8px 18px; font-size: 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
-                  <i class="fas fa-bookmark"></i> Guardar Lembrança
+                <button class="eagora-btn btn-read-letter" id="btn-eagora-read-letter" style="border: 1px solid rgba(233, 30, 99, 0.45); background: rgba(255, 255, 255, 0.95); color: #c2185b; border-radius: 50px; padding: 8px 18px; font-size: 13px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+                  <i class="fas fa-envelope-open-text"></i> Ler Carta na Tela ✍️
                 </button>
                 <button class="eagora-btn btn-restart" id="btn-eagora-restart" style="border: 1px solid rgba(150, 150, 150, 0.3); background: rgba(255, 255, 255, 0.95); color: #666; border-radius: 50px; padding: 8px 18px; font-size: 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
                   <i class="fas fa-redo"></i> Recomeçar
@@ -3612,17 +3612,11 @@
               </div>
             </div>
           </div>
-        </div>
 
-        <!-- Modal Acolhedor de Como Guardar a Experiência -->
-        <div class="eagora-save-modal d-none" id="eagora-save-modal">
-          <div class="eagora-save-card">
-            <h4><i class="fas fa-heart text-danger"></i> Guardar esta Experiência</h4>
-            <p>
-              Esta lembrança foi feita exclusivamente para você e estará sempre disponível neste link.
-              Você pode adicioná-lo aos favoritos do seu navegador ou compartilhar consigo mesma para rever quando quiser.
-            </p>
-            <button class="eagora-btn btn-save" id="btn-close-save-modal">Entendido ✨</button>
+          <!-- NOVO ENCERRAMENTO SUAVE (Etapas 8, 9, 10) -->
+          <div class="final-closing-section" id="final-closing-section">
+            <p class="closing-phrase" id="closing-phrase-1">Bom, terminamos por aqui.</p>
+            <p class="closing-phrase closing-p2" id="closing-phrase-2">Mas o dia continua sendo uma maravilha. 🌸</p>
           </div>
         </div>
       `;
@@ -3658,6 +3652,10 @@
       this.loneStar = this.stage.querySelector('#eagora-lone-star');
       this.simpleEnd = this.stage.querySelector('#eagora-simple-end');
       this.creditsScreen = this.stage.querySelector('#eagora-credits-screen');
+      this.creditsCard = this.stage.querySelector('#credits-approved-card');
+      this.finalClosingSection = this.stage.querySelector('#final-closing-section');
+      this.closingPhrase1 = this.stage.querySelector('#closing-phrase-1');
+      this.closingPhrase2 = this.stage.querySelector('#closing-phrase-2');
 
       // Interatividade: Toque ou clique na flor viva do encerramento
       if (this.flowerWrap) {
@@ -3960,6 +3958,7 @@
 
     bindActions() {
       const btnPdf = this.stage.querySelector('#btn-eagora-pdf');
+      const btnReadLetter = this.stage.querySelector('#btn-eagora-read-letter');
       const btnSave = this.stage.querySelector('#btn-eagora-save');
       const btnClose = this.stage.querySelector('#btn-eagora-close');
       const btnRestart = this.stage.querySelector('#btn-eagora-restart');
@@ -3969,6 +3968,14 @@
       if (btnPdf) {
         btnPdf.addEventListener('click', () => {
           this.downloadAllTextsPdf();
+        });
+      }
+
+      if (btnReadLetter) {
+        btnReadLetter.addEventListener('click', () => {
+          if (this.sys && typeof this.sys.openPdfModal === 'function') {
+            this.sys.openPdfModal();
+          }
         });
       }
 
@@ -4167,11 +4174,6 @@ Luis Fernando Santos
           <p style="margin: 0 0 8px;">Criado por Luis Fernando Santos • 8 de setembro</p>
           <p style="font-style: italic; color: #d81b60; margin: 0 0 8px;">“Dando meu melhor pra uma pessoa que merece tudo de bom que esse mundo tem.”</p>
           <p style="font-size: 14px; font-weight: 600; color: #880e4f; margin: 0;">“Espero poder te ver novamente.”</p>
-        </div>
-
-        <!-- Mensagem oculta no PDF -->
-        <div style="margin-top: 26px; text-align: right; padding-top: 8px; font-size: 10px; color: #b87b92; letter-spacing: 0.6px; font-family: monospace; opacity: 0.55;">
-          <span>(removido do sistema. Te amo ❤️🔥)</span>
         </div>
       `;
 
@@ -4582,13 +4584,52 @@ Luis Fernando Santos
       }, 55000);
 
       // ========================================================
-      // 27 & 28. CRÉDITOS ELEGANTES & “Espero poder te ver novamente.”
+      // 27 & 28. CRÉDITOS ÚNICOS APROVADOS & “Espero poder te ver novamente.”
       // ========================================================
       this.addTimeout(() => {
         if (this.creditsScreen) {
           this.creditsScreen.classList.add('credits-visible');
         }
       }, 56200);
+
+      // ========================================================
+      // 29 & 30. NOVO ENCERRAMENTO SUAVE
+      // ========================================================
+      // Frase 1: "Bom, terminamos por aqui." + Pétalas suaves caindo
+      this.addTimeout(() => {
+        if (this.finalClosingSection) {
+          this.finalClosingSection.classList.add('closing-visible');
+        }
+        if (this.closingPhrase1) {
+          this.closingPhrase1.classList.add('phrase-visible');
+        }
+        this.fallingPetalsActive = true;
+        this.pollenActive = true;
+      }, 60000);
+
+      // Frase 2 (após pausa suave): "Mas o dia continua sendo uma maravilha. 🌸"
+      this.addTimeout(() => {
+        if (this.closingPhrase2) {
+          this.closingPhrase2.classList.add('phrase-visible');
+        }
+      }, 63200);
+    }
+
+    triggerCreditsNow() {
+      if (this.creditsScreen) {
+        this.creditsScreen.classList.add('credits-visible');
+      }
+      if (this.finalClosingSection) {
+        this.finalClosingSection.classList.add('closing-visible');
+      }
+      if (this.closingPhrase1) {
+        this.closingPhrase1.classList.add('phrase-visible');
+      }
+      if (this.closingPhrase2) {
+        this.closingPhrase2.classList.add('phrase-visible');
+      }
+      this.fallingPetalsActive = true;
+      this.pollenActive = true;
     }
 
     /**
@@ -4689,6 +4730,7 @@ Luis Fernando Santos
       this.fallingPetal = document.getElementById('cinematic-falling-petal');
 
       // Elementos do Palco Botânico (SVG)
+      this.plantStage = document.getElementById('cinematic-plant-stage');
       this.botanicalSvg = document.getElementById('botanical-svg');
       this.seedGroup = document.getElementById('plant-seed-group');
       this.rootsGroup = document.getElementById('plant-roots');
@@ -4922,10 +4964,158 @@ Luis Fernando Santos
         });
       }
 
-      // Ouvinte no SVG botânico (#botanical-svg) para crescer ou ampliar temporariamente ao clicar
+      // =========================================================================
+      // Efeito de Brilho Pulsante (Glow) e Aumento de Intensidade ao Manter Clique
+      // =========================================================================
+      let isHolding = false;
+      let holdStartTime = 0;
+      let holdRafId = null;
+      let lastParticleTime = 0;
+      let maxChargeTriggered = false;
+      let holdCompleted = false;
+
+      const startPlantHold = (e) => {
+        // Ignora botão direito ou toques múltiplos secundários
+        if (e.button && e.button !== 0) return;
+        if (isHolding) return;
+
+        isHolding = true;
+        holdCompleted = false;
+        holdStartTime = performance.now();
+        lastParticleTime = holdStartTime;
+        maxChargeTriggered = false;
+
+        if (this.plantStage) {
+          this.plantStage.classList.add('plant-holding');
+        }
+        if (this.botanicalSvg) {
+          this.botanicalSvg.classList.add('plant-holding');
+        }
+
+        // Toca tom introdutório sutil se o áudio ainda não foi desbloqueado
+        if (this.sys && this.sys.audioManager && !this.sys.audioManager.isPlaying) {
+          this.sys.audioManager.startExperienceAudio();
+        }
+
+        const updateHoldGlow = () => {
+          if (!isHolding) return;
+
+          const now = performance.now();
+          const elapsed = now - holdStartTime;
+          // Progressão de intensidade suave que atinge o ápice em ~1.3s
+          const rawProgress = Math.min(1, elapsed / 1300);
+          const intensity = Math.pow(rawProgress, 0.85);
+
+          if (this.plantStage) {
+            this.plantStage.style.setProperty('--plant-glow-scale', (1.0 + intensity * 0.38).toFixed(3));
+            this.plantStage.style.setProperty('--plant-glow-blur-add', `${(intensity * 24).toFixed(1)}px`);
+            this.plantStage.style.setProperty('--plant-glow-opacity', (0.68 + intensity * 0.32).toFixed(3));
+          }
+
+          // Atingiu carga máxima durante o clique mantido
+          if (rawProgress >= 1.0 && !maxChargeTriggered) {
+            maxChargeTriggered = true;
+            if (this.sys && this.sys.soundEffects && typeof this.sys.soundEffects.playChimeChord === 'function') {
+              this.sys.soundEffects.playChimeChord();
+            }
+          }
+
+          // Emissão suave de microfagulhas de luz enquanto mantido
+          if (elapsed > 250 && (now - lastParticleTime) > 130) {
+            lastParticleTime = now;
+            if (window.confetti && this.botanicalSvg) {
+              try {
+                const rect = this.botanicalSvg.getBoundingClientRect();
+                const originX = ((rect.left + rect.width / 2) / window.innerWidth) || 0.5;
+                const originY = ((rect.top + rect.height * 0.42) / window.innerHeight) || 0.5;
+                window.confetti({
+                  particleCount: 2,
+                  spread: 42,
+                  startVelocity: 6 + intensity * 7,
+                  origin: { x: originX, y: originY },
+                  colors: ['#ffffff', '#ffd54f', '#ff80ab', '#ff4081'],
+                  ticks: 45,
+                  gravity: 0.5,
+                  scalar: 0.6 + intensity * 0.3
+                });
+              } catch (err) {}
+            }
+          }
+
+          holdRafId = requestAnimationFrame(updateHoldGlow);
+        };
+
+        holdRafId = requestAnimationFrame(updateHoldGlow);
+      };
+
+      const endPlantHold = (e) => {
+        if (!isHolding) return;
+        isHolding = false;
+
+        if (holdRafId) {
+          cancelAnimationFrame(holdRafId);
+          holdRafId = null;
+        }
+
+        const elapsed = performance.now() - holdStartTime;
+
+        if (this.plantStage) {
+          this.plantStage.classList.remove('plant-holding');
+          this.plantStage.style.removeProperty('--plant-glow-scale');
+          this.plantStage.style.removeProperty('--plant-glow-blur-add');
+          this.plantStage.style.removeProperty('--plant-glow-opacity');
+        }
+        if (this.botanicalSvg) {
+          this.botanicalSvg.classList.remove('plant-holding');
+        }
+
+        // Se o usuário manteve o clique pressionado por mais de 300ms, consideramos uma liberação de carga
+        if (elapsed >= 300) {
+          holdCompleted = true;
+          setTimeout(() => { holdCompleted = false; }, 250);
+
+          if (this.sys && this.sys.soundEffects && typeof this.sys.soundEffects.playChimeChord === 'function') {
+            this.sys.soundEffects.playChimeChord();
+          }
+
+          if (window.confetti && this.botanicalSvg) {
+            try {
+              const rect = this.botanicalSvg.getBoundingClientRect();
+              const originX = ((rect.left + rect.width / 2) / window.innerWidth) || 0.5;
+              const originY = ((rect.top + rect.height * 0.42) / window.innerHeight) || 0.5;
+              const burstCount = Math.min(32, Math.floor(14 + (elapsed / 80)));
+              window.confetti({
+                particleCount: burstCount,
+                spread: 75,
+                startVelocity: 16,
+                origin: { x: originX, y: originY },
+                colors: ['#ff80ab', '#ffb6c1', '#ffd54f', '#ffffff', '#a5d6a7'],
+                ticks: 80,
+                gravity: 0.6,
+                scalar: 0.85
+              });
+            } catch (err) {}
+          }
+        }
+      };
+
+      // Ouvinte no SVG botânico (#botanical-svg) para crescer ou ampliar ao clicar ou ao manter pressionado
       if (this.botanicalSvg) {
+        this.botanicalSvg._hasPlantClickListener = true;
+        this.botanicalSvg.addEventListener('pointerdown', startPlantHold);
+        window.addEventListener('pointerup', endPlantHold);
+        window.addEventListener('pointercancel', endPlantHold);
+
+        // Fallbacks para desktop e mobile
+        this.botanicalSvg.addEventListener('mousedown', startPlantHold);
+        window.addEventListener('mouseup', endPlantHold);
+        this.botanicalSvg.addEventListener('touchstart', startPlantHold, { passive: true });
+        window.addEventListener('touchend', endPlantHold, { passive: true });
+        window.addEventListener('touchcancel', endPlantHold, { passive: true });
+
         this.botanicalSvg.addEventListener('click', (e) => {
           e.stopPropagation();
+          if (holdCompleted) return;
           this.pulseBotanicalPlant();
         });
         this.botanicalSvg.addEventListener('keydown', (e) => {
@@ -4959,7 +5149,11 @@ Luis Fernando Santos
         });
       }
 
-      window.addEventListener('resize', () => this.resizeCanvas());
+      window.addEventListener('resize', () => this.resizeCanvas(), { passive: true });
+      window.addEventListener('orientationchange', () => this.resizeCanvas(), { passive: true });
+      if (window.visualViewport) {
+        window.visualViewport.addEventListener('resize', () => this.resizeCanvas(), { passive: true });
+      }
     }
 
     /**
@@ -5036,8 +5230,9 @@ Luis Fernando Santos
 
     resizeCanvas() {
       if (!this.canvasEl) return;
-      this.canvasWidth = window.innerWidth;
-      this.canvasHeight = window.innerHeight;
+      const rect = this.cameraEl ? this.cameraEl.getBoundingClientRect() : null;
+      this.canvasWidth = rect && rect.width > 0 ? Math.round(rect.width) : (window.innerWidth || document.documentElement.clientWidth);
+      this.canvasHeight = rect && rect.height > 0 ? Math.round(rect.height) : (window.innerHeight || document.documentElement.clientHeight);
       this.canvasEl.width = this.canvasWidth;
       this.canvasEl.height = this.canvasHeight;
     }
@@ -5653,6 +5848,122 @@ Luis Fernando Santos
 
 
   // ==========================================
+  // 4.5. VISUAL INTEGRITY GUARD
+  // Monitora layout, duplicatas e alinhamento de cena via requestAnimationFrame
+  // ==========================================
+  class VisualIntegrityGuard {
+    constructor() {
+      this.rafId = null;
+      this.lastCheckTime = 0;
+      this.throttleMs = 150;
+      this.isChecking = false;
+      this.mutationObserver = null;
+    }
+
+    start() {
+      // 1. Escuta redimensionamentos e mudanças de orientação
+      window.addEventListener('resize', () => this.requestCheck(), { passive: true });
+      window.addEventListener('orientationchange', () => this.requestCheck(), { passive: true });
+
+      // 2. MutationObserver para monitorar injeções de elementos e prevenir duplicatas
+      if (typeof MutationObserver !== 'undefined') {
+        this.mutationObserver = new MutationObserver((mutations) => {
+          let shouldCheck = false;
+          for (let i = 0; i < mutations.length; i++) {
+            if (mutations[i].addedNodes && mutations[i].addedNodes.length > 0) {
+              shouldCheck = true;
+              break;
+            }
+          }
+          if (shouldCheck) {
+            this.requestCheck();
+          }
+        });
+
+        const target = document.getElementById('stage-wrapper') || document.body;
+        if (target) {
+          this.mutationObserver.observe(target, { childList: true, subtree: true });
+        }
+      }
+
+      // Verificação inicial rápida
+      this.requestCheck();
+    }
+
+    requestCheck() {
+      if (this.rafId) return;
+
+      this.rafId = requestAnimationFrame(() => {
+        this.rafId = null;
+        const now = performance.now();
+        if (now - this.lastCheckTime >= this.throttleMs) {
+          this.lastCheckTime = now;
+          this.performCheck();
+        }
+      });
+    }
+
+    performCheck() {
+      if (this.isChecking) return;
+      this.isChecking = true;
+
+      try {
+        // A. Prevenção de vazamento de scroll horizontal da página
+        if (document.documentElement.scrollWidth > window.innerWidth) {
+          document.documentElement.style.overflowX = 'hidden';
+          document.body.style.overflowX = 'hidden';
+        }
+
+        // B. Verificação e remoção de créditos duplicados caso surjam
+        const oldDuplicateCards = document.querySelectorAll('.kotak:has(#btn-credits-back), .kotak:has(#easter-egg-name)');
+        if (oldDuplicateCards.length > 0) {
+          oldDuplicateCards.forEach((el) => {
+            if (el && el.parentNode) {
+              el.parentNode.removeChild(el);
+            }
+          });
+        }
+
+        // C. Alinhamento da cena final e preservação de bordas/fundos
+        const activeStage = document.querySelector('.eagora-stage');
+        if (activeStage && document.body.classList.contains('eagora-fullscreen-active')) {
+          if (document.body.style.margin && document.body.style.margin !== '0px') {
+            document.body.style.margin = '0';
+          }
+        }
+
+        // D. Verificação estrutural e correção de bordas na abertura (cinematic-scene / camera)
+        const cinematicEntry = document.getElementById('cinematic-entry');
+        if (cinematicEntry && !cinematicEntry.classList.contains('fade-out-complete')) {
+          const cScene = document.querySelector('.cinematic-scene');
+          const cCamera = document.querySelector('.cinematic-camera');
+          if (cScene && cScene.style.margin && cScene.style.margin !== '0px auto' && cScene.style.margin !== '0px') {
+            cScene.style.margin = '0 auto';
+          }
+          if (cCamera && cCamera.style.margin && cCamera.style.margin !== '0px auto' && cCamera.style.margin !== '0px') {
+            cCamera.style.margin = '0 auto';
+          }
+        }
+      } catch (e) {
+        // Operação não obstrutiva
+      } finally {
+        this.isChecking = false;
+      }
+    }
+
+    destroy() {
+      if (this.rafId) {
+        cancelAnimationFrame(this.rafId);
+        this.rafId = null;
+      }
+      if (this.mutationObserver) {
+        this.mutationObserver.disconnect();
+        this.mutationObserver = null;
+      }
+    }
+  }
+
+  // ==========================================
   // 5. CORE SYSTEM CONTROLLER
   // ==========================================
   class ExperienceSystem {
@@ -5680,6 +5991,11 @@ Luis Fernando Santos
     init() {
       const saved = this.progressManager.load();
       this.completedChapters = saved.completedChapters || [1];
+
+      const letterEl = document.getElementById('pdf-letter-content');
+      if (letterEl) {
+        this.fullLetterRawText = letterEl.innerText.trim();
+      }
 
       this.bindGlobalEvents();
       this.renderChapterListModal();
@@ -5913,7 +6229,9 @@ Luis Fernando Santos
       if (this.currentChapterIndex < CHAPTERS.length - 1) {
         this.goToChapter(this.currentChapterIndex + 2);
       } else {
-        this.renderCredits();
+        if (this.activeFinaleController && typeof this.activeFinaleController.triggerCreditsNow === 'function') {
+          this.activeFinaleController.triggerCreditsNow();
+        }
       }
     }
 
@@ -5973,98 +6291,18 @@ Luis Fernando Santos
     }
 
     // ==========================================
-    // CREDITS VIEW
+    // CREDITS VIEW - UNIFIED WITH FINALE (Capítulo 20)
     // ==========================================
     renderCredits() {
-      this.timer.clearAll();
-      this.hideTapPrompt();
-      if (this.activeBookController) {
-        this.activeBookController.destroy();
-        this.activeBookController = null;
+      // Se não estiver no Capítulo 20 (Grande Encerramento), navega diretamente para ele
+      if (this.currentChapterIndex !== 19) {
+        this.goToChapter(20);
+        return;
       }
-      if (this.activeFinaleController) {
-        this.activeFinaleController.destroy();
-        this.activeFinaleController = null;
+      // Se já estiver no Capítulo 20, aciona a exibição imediata dos créditos aprovados
+      if (this.activeFinaleController && typeof this.activeFinaleController.triggerCreditsNow === 'function') {
+        this.activeFinaleController.triggerCreditsNow();
       }
-      if (this.activeAnimController) {
-        this.activeAnimController.destroy();
-        this.activeAnimController = null;
-      }
-      if (this.stage) this.stage.innerHTML = '';
-      this.isTransitioningChapter = false;
-
-      const container = document.createElement('div');
-      container.className = 'kotak animate__animated animate__fadeIn';
-      container.innerHTML = `
-        <div class="py-2">
-          <div class="mb-3">
-            <i class="fas fa-heart text-danger fa-2x animate__animated animate__pulse animate__infinite"></i>
-          </div>
-          <p class="lead-text font-weight-bold animate__animated animate__fadeIn">
-            Uma pequena experiência feita especialmente para Issamara.
-          </p>
-          <p class="text-muted sub-text animate__animated animate__fadeIn">
-            Com carinho e amizade.
-          </p>
-
-          <hr class="my-3">
-
-          <small class="text-muted text-uppercase d-block mb-1">Criado por</small>
-          <div class="my-2">
-            <h3 id="author-name" class="font-weight-bold text-primary animate__animated animate__fadeIn">
-              Luis Fernando Santos
-            </h3>
-          </div>
-          <small class="text-muted d-block mb-3">08/09/2026</small>
-
-          <p class="sub-text font-italic text-secondary mt-3">
-            «Dando meu melhor para uma pessoa que merece tudo de bom que esse mundo tem.»
-          </p>
-
-          <!-- Playful Easter Egg Name Swap from user requirements -->
-          <div class="p-2 border rounded bg-light my-3">
-            <span class="small text-muted">Assinatura: </span>
-            <span id="easter-egg-name" class="font-weight-bold text-danger">LUIS</span>
-          </div>
-
-          <div class="mt-4 d-flex justify-content-center gap-2">
-            <button id="btn-credits-back" class="btn btn-outline-primary btn-sm mr-2">
-              <i class="fas fa-list-ul mr-1"></i> Lista de Capítulos
-            </button>
-            <button id="btn-credits-pdf" class="btn btn-danger btn-sm">
-              <i class="fas fa-file-pdf mr-1"></i> Baixar Carta em PDF
-            </button>
-          </div>
-        </div>
-      `;
-      this.stage.appendChild(container);
-
-      // Playful Easter egg swap: LUIS -> CRIATURA -> LUIS
-      const eeName = document.getElementById('easter-egg-name');
-      if (eeName) {
-        this.timer.setTimeout(() => {
-          eeName.className = 'animate__animated animate__fadeOut font-weight-bold text-warning';
-          setTimeout(() => {
-            eeName.innerText = 'CRIATURA';
-            eeName.className = 'animate__animated animate__fadeIn font-weight-bold text-warning';
-          }, 300);
-        }, 2200);
-
-        this.timer.setTimeout(() => {
-          eeName.className = 'animate__animated animate__fadeOut font-weight-bold text-danger';
-          setTimeout(() => {
-            eeName.innerText = 'LUIS';
-            eeName.className = 'animate__animated animate__fadeIn font-weight-bold text-danger';
-          }, 300);
-        }, 4400);
-      }
-
-      document.getElementById('btn-credits-back').addEventListener('click', () => {
-        this.openChaptersModal();
-      });
-      document.getElementById('btn-credits-pdf').addEventListener('click', () => {
-        this.openPdfModal();
-      });
     }
 
     // ==========================================
@@ -6126,24 +6364,176 @@ Luis Fernando Santos
 
     openPdfModal() {
       const m = document.getElementById('modal-pdf');
-      if (m) m.classList.remove('d-none');
+      if (m) {
+        m.classList.remove('d-none');
+        this.startLetterTypingEffect();
+      }
     }
 
     closePdfModal() {
+      this.stopLetterTypingEffect();
       const m = document.getElementById('modal-pdf');
       if (m) m.classList.add('d-none');
+    }
+
+    startLetterTypingEffect() {
+      const container = document.getElementById('pdf-letter-content');
+      if (!container) return;
+
+      this.stopLetterTypingEffect();
+
+      if (!this.fullLetterRawText) {
+        this.fullLetterRawText = container.innerText.trim();
+      }
+      const fullText = this.fullLetterRawText;
+
+      // Container dos controles de digitação acima da carta
+      let controlsBar = document.getElementById('letter-typing-controls');
+      if (!controlsBar) {
+        controlsBar = document.createElement('div');
+        controlsBar.id = 'letter-typing-controls';
+        controlsBar.className = 'letter-typing-controls';
+        container.parentNode.insertBefore(controlsBar, container);
+      }
+      controlsBar.innerHTML = `
+        <div class="typing-status-pill">
+          <span class="typing-pen-icon">✍️</span>
+          <span class="typing-status-text">Escrevendo carta em tempo real...</span>
+        </div>
+        <button type="button" class="btn-skip-typing" id="btn-skip-typing-effect" title="Exibir toda a carta imediatamente">
+          <i class="fas fa-forward mr-1"></i> Pular digitação
+        </button>
+      `;
+
+      const btnSkip = document.getElementById('btn-skip-typing-effect');
+      if (btnSkip) {
+        btnSkip.addEventListener('click', (e) => {
+          e.stopPropagation();
+          this.completeLetterTypingImmediately();
+        });
+      }
+
+      // Prepara o container da carta
+      container.innerHTML = '';
+      container.style.whiteSpace = 'pre-wrap';
+
+      const cursor = document.createElement('span');
+      cursor.className = 'letter-typing-cursor';
+      cursor.id = 'letter-typing-cursor';
+      container.appendChild(cursor);
+
+      let charIndex = 0;
+      this.isTypingLetter = true;
+
+      const modalBody = container.closest('.custom-modal-body');
+
+      const typeNext = () => {
+        if (!this.isTypingLetter) return;
+
+        if (charIndex < fullText.length) {
+          const char = fullText[charIndex];
+          const textNode = document.createTextNode(char);
+          container.insertBefore(textNode, cursor);
+          charIndex++;
+
+          // Rola suavemente para acompanhar a linha escrita
+          if (modalBody && (char === '\n' || charIndex % 20 === 0)) {
+            modalBody.scrollTop = modalBody.scrollHeight;
+          }
+
+          // Ritmo realista de escrita humana
+          let delay = 15;
+          if (char === '.' || char === '!' || char === '?') {
+            delay = 140;
+          } else if (char === ',') {
+            delay = 75;
+          } else if (char === '\n') {
+            delay = 95;
+          }
+
+          this.typingLetterTimeoutId = setTimeout(typeNext, delay);
+        } else {
+          this.finishLetterTyping(cursor, controlsBar);
+        }
+      };
+
+      typeNext();
+    }
+
+    completeLetterTypingImmediately() {
+      this.stopLetterTypingEffect();
+      const container = document.getElementById('pdf-letter-content');
+      if (container && this.fullLetterRawText) {
+        container.innerHTML = '';
+        container.style.whiteSpace = 'pre-wrap';
+        container.textContent = this.fullLetterRawText;
+      }
+      const controlsBar = document.getElementById('letter-typing-controls');
+      if (controlsBar) {
+        controlsBar.innerHTML = `
+          <div class="typing-status-pill finished">
+            <span class="typing-pen-icon">💌</span>
+            <span class="typing-status-text">Carta concluída</span>
+          </div>
+          <button type="button" class="btn-skip-typing" id="btn-replay-typing-effect">
+            <i class="fas fa-redo mr-1"></i> Digitar novamente
+          </button>
+        `;
+        const btnReplay = document.getElementById('btn-replay-typing-effect');
+        if (btnReplay) {
+          btnReplay.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.startLetterTypingEffect();
+          });
+        }
+      }
+    }
+
+    stopLetterTypingEffect() {
+      this.isTypingLetter = false;
+      if (this.typingLetterTimeoutId) {
+        clearTimeout(this.typingLetterTimeoutId);
+        this.typingLetterTimeoutId = null;
+      }
+      const cursor = document.getElementById('letter-typing-cursor');
+      if (cursor) cursor.remove();
+    }
+
+    finishLetterTyping(cursor, controlsBar) {
+      this.isTypingLetter = false;
+      if (cursor && cursor.parentNode) cursor.remove();
+      if (controlsBar) {
+        controlsBar.innerHTML = `
+          <div class="typing-status-pill finished">
+            <span class="typing-pen-icon">💌</span>
+            <span class="typing-status-text">Carta concluída</span>
+          </div>
+          <button type="button" class="btn-skip-typing" id="btn-replay-typing-effect">
+            <i class="fas fa-redo mr-1"></i> Digitar novamente
+          </button>
+        `;
+        const btnReplay = document.getElementById('btn-replay-typing-effect');
+        if (btnReplay) {
+          btnReplay.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.startLetterTypingEffect();
+          });
+        }
+      }
     }
 
     // ==========================================
     // PDF GENERATION & PRINTING
     // ==========================================
     printLetter() {
+      this.completeLetterTypingImmediately();
       const content = document.getElementById('pdf-template');
       if (!content) return;
       window.print();
     }
 
     downloadPdf() {
+      this.completeLetterTypingImmediately();
       const element = document.getElementById('pdf-template');
       if (!element) return;
 
@@ -6224,7 +6614,7 @@ Luis Fernando Santos
           name: 'Português',
           short: 'PT',
           headline: 'Feliz Aniversário de 18 Anos, Issamara!',
-          msg: 'Que este novo ciclo traga horizontes infinitos, conquistas grandiosas, amor sincero e muita luz para a sua vida!'
+          msg: 'Que este novo ciclo traga horizontes infinitos, conquistas grandiosas, alegrias sinceras e muita luz para a sua vida!'
         },
         {
           id: 'en',
@@ -6337,7 +6727,7 @@ Luis Fernando Santos
             </div>
             <h2 class="finale-lang-headline" id="finale-lang-headline">Feliz Aniversário de 18 Anos, Issamara!</h2>
             <p class="finale-lang-msg" id="finale-lang-msg">
-              Que este novo ciclo traga horizontes infinitos, conquistas grandiosas, amor sincero e muita luz para a sua vida!
+              Que este novo ciclo traga horizontes infinitos, conquistas grandiosas, alegrias sinceras e muita luz para a sua vida!
             </p>
           </div>
 
@@ -6486,6 +6876,10 @@ Luis Fernando Santos
   // INITIALIZATION ON DOM READY
   // ==========================================
   window.addEventListener('DOMContentLoaded', () => {
+    // Inicializa o guardião de integridade visual com rAF
+    window.visualIntegrityGuard = new VisualIntegrityGuard();
+    window.visualIntegrityGuard.start();
+
     window.appExperience = new ExperienceSystem();
 
     // Ouvinte garantido no SVG botânico (#botanical-svg) para crescer/ampliar temporariamente ao toque
