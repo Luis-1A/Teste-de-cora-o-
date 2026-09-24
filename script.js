@@ -3594,7 +3594,7 @@
     }
 
     // 4. A animação começa a brincar com os créditos:
-    // Linha desenhada -> ramo -> flor ilustrada completa e deslumbrante nasce e balança -> "Feito com carinho."
+    // Linha desenhada -> ramo -> flor ilustrada completa e deslumbrante nasce pétala por pétala -> "Feito com carinho."
     renderCredit04() {
       if (!this.stageInner) return;
       this.stageInner.innerHTML = `
@@ -3634,8 +3634,8 @@
                 <!-- Gradiente das Pétalas Externas -->
                 <radialGradient id="outerPetalGrad" cx="50%" cy="15%" r="85%">
                   <stop offset="0%" stop-color="#ffffff" />
-                  <stop offset="30%" stop-color="#ffc1e3" />
-                  <stop offset="65%" stop-color="#ff80ab" />
+                  <stop offset="28%" stop-color="#ffc1e3" />
+                  <stop offset="62%" stop-color="#ff80ab" />
                   <stop offset="88%" stop-color="#e91e63" />
                   <stop offset="100%" stop-color="#ad1457" />
                 </radialGradient>
@@ -3643,8 +3643,8 @@
                 <!-- Gradiente das Pétalas Médias -->
                 <radialGradient id="midPetalGrad" cx="50%" cy="20%" r="80%">
                   <stop offset="0%" stop-color="#ffffff" />
-                  <stop offset="32%" stop-color="#ffb6c1" />
-                  <stop offset="68%" stop-color="#ff4081" />
+                  <stop offset="30%" stop-color="#ffb6c1" />
+                  <stop offset="65%" stop-color="#ff4081" />
                   <stop offset="90%" stop-color="#c2185b" />
                   <stop offset="100%" stop-color="#880e4f" />
                 </radialGradient>
@@ -3688,61 +3688,133 @@
                 <path class="branch-leaf-vein" d="M176,134 C184,129 190,125 194,121" fill="none" stroke="rgba(255,255,255,0.35)" stroke-width="1.2" />
               </g>
 
-              <!-- 2. Cabeça da Flor Deslumbrante e Completa -->
+              <!-- 2. Cabeça da Flor Deslumbrante (Pétala por Pétala em Camadas SVG 2D) -->
               <g class="branch-flower-head" id="branch-flower-head">
                 <!-- Aura de Luz / Brilho Suave -->
                 <circle cx="120" cy="80" r="56" fill="url(#flowerHaloGrad)" />
 
                 <!-- Sépalas (Cálice Verdejante que segura a flor) -->
-                <g class="branch-sepal">
+                <g class="branch-sepal" id="branch-sepal-group">
                   <path d="M120,95 C110,108 98,112 94,116 C102,105 112,98 116,94 Z" fill="#2e7d32" />
                   <path d="M120,95 C130,108 142,112 146,116 C138,105 128,98 124,94 Z" fill="#2e7d32" />
                   <path d="M120,95 C117,110 119,118 120,120 C121,118 123,110 120,95 Z" fill="#43a047" />
                 </g>
 
-                <!-- CAMADA 1: Pétalas Externas (8 pétalas exuberantes com curvas orgânicas) -->
-                <g class="branch-petal-outer">
-                  <!-- Norte -->
-                  <path d="M120,80 C104,46 92,26 120,16 C148,26 136,46 120,80 Z" fill="url(#outerPetalGrad)" opacity="0.95" />
-                  <!-- Nordeste -->
-                  <path d="M120,80 C140,50 162,40 172,62 C162,84 144,80 120,80 Z" fill="url(#outerPetalGrad)" opacity="0.95" />
-                  <!-- Leste -->
-                  <path d="M120,80 C148,66 178,72 182,92 C170,114 144,102 120,80 Z" fill="url(#outerPetalGrad)" opacity="0.95" />
-                  <!-- Sudeste -->
-                  <path d="M120,80 C140,100 156,124 138,136 C122,132 126,108 120,80 Z" fill="url(#outerPetalGrad)" opacity="0.95" />
-                  <!-- Sul -->
-                  <path d="M120,80 C132,108 126,138 120,140 C114,138 108,108 120,80 Z" fill="url(#outerPetalGrad)" opacity="0.95" />
-                  <!-- Sudoeste -->
-                  <path d="M120,80 C102,110 96,132 82,136 C64,124 80,98 120,80 Z" fill="url(#outerPetalGrad)" opacity="0.95" />
-                  <!-- Oeste -->
-                  <path d="M120,80 C96,102 68,114 58,92 C62,72 92,66 120,80 Z" fill="url(#outerPetalGrad)" opacity="0.95" />
-                  <!-- Noroeste -->
-                  <path d="M120,80 C96,80 78,84 68,62 C78,40 100,50 120,80 Z" fill="url(#outerPetalGrad)" opacity="0.95" />
+                <!-- CAMADA 1: Pétalas Externas (8 Pétalas detalhadas) -->
+                <!-- Pétala 1 (Norte) -->
+                <g class="credit-petal-group" id="group-petal-1">
+                  <path class="credit-petal-fill" id="petal-fill-1" d="M120,80 C104,46 92,26 120,16 C148,26 136,46 120,80 Z" fill="url(#outerPetalGrad)" />
+                  <path class="credit-petal-outline" id="petal-outline-1" d="M120,80 C104,46 92,26 120,16 C148,26 136,46 120,80 Z" />
+                  <path class="credit-petal-vein" id="petal-vein-1" d="M120,80 C120,55 120,35 120,18" />
                 </g>
 
-                <!-- CAMADA 2: Pétalas Médias (6 pétalas aveludadas intermediárias com profundidade) -->
-                <g class="branch-petal-mid">
-                  <path d="M120,80 C108,54 102,38 120,30 C138,38 132,54 120,80 Z" fill="url(#midPetalGrad)" />
-                  <path d="M120,80 C136,58 156,54 160,70 C150,86 136,84 120,80 Z" fill="url(#midPetalGrad)" />
-                  <path d="M120,80 C138,88 150,108 138,118 C124,116 124,96 120,80 Z" fill="url(#midPetalGrad)" />
-                  <path d="M120,80 C128,100 124,122 120,124 C116,122 112,100 120,80 Z" fill="url(#midPetalGrad)" />
-                  <path d="M120,80 C102,96 102,116 90,118 C78,108 90,88 120,80 Z" fill="url(#midPetalGrad)" />
-                  <path d="M120,80 C104,84 88,86 80,70 C84,54 104,58 120,80 Z" fill="url(#midPetalGrad)" />
+                <!-- Pétala 2 (Nordeste) -->
+                <g class="credit-petal-group" id="group-petal-2">
+                  <path class="credit-petal-fill" id="petal-fill-2" d="M120,80 C140,50 162,40 172,62 C162,84 144,80 120,80 Z" fill="url(#outerPetalGrad)" />
+                  <path class="credit-petal-outline" id="petal-outline-2" d="M120,80 C140,50 162,40 172,62 C162,84 144,80 120,80 Z" />
+                  <path class="credit-petal-vein" id="petal-vein-2" d="M120,80 C136,70 152,62 170,62" />
                 </g>
 
-                <!-- CAMADA 3: Pétalas Internas (5 pétalas centrais em botão desabrochado) -->
-                <g class="branch-petal-inner">
-                  <path d="M120,80 C110,64 108,48 120,44 C132,48 130,64 120,80 Z" fill="url(#innerPetalGrad)" />
-                  <path d="M120,80 C132,66 142,66 144,76 C138,86 130,84 120,80 Z" fill="url(#innerPetalGrad)" />
-                  <path d="M120,80 C132,86 138,100 130,106 C120,104 122,92 120,80 Z" fill="url(#innerPetalGrad)" />
-                  <path d="M120,80 C118,92 120,104 112,106 C104,100 110,88 120,80 Z" fill="url(#innerPetalGrad)" />
-                  <path d="M120,80 C108,86 102,88 96,78 C98,66 110,66 120,80 Z" fill="url(#innerPetalGrad)" />
+                <!-- Pétala 3 (Leste) -->
+                <g class="credit-petal-group" id="group-petal-3">
+                  <path class="credit-petal-fill" id="petal-fill-3" d="M120,80 C148,66 178,72 182,92 C170,114 144,102 120,80 Z" fill="url(#outerPetalGrad)" />
+                  <path class="credit-petal-outline" id="petal-outline-3" d="M120,80 C148,66 178,72 182,92 C170,114 144,102 120,80 Z" />
+                  <path class="credit-petal-vein" id="petal-vein-3" d="M120,80 C145,82 165,85 180,92" />
+                </g>
+
+                <!-- Pétala 4 (Sudeste) -->
+                <g class="credit-petal-group" id="group-petal-4">
+                  <path class="credit-petal-fill" id="petal-fill-4" d="M120,80 C140,100 156,124 138,136 C122,132 126,108 120,80 Z" fill="url(#outerPetalGrad)" />
+                  <path class="credit-petal-outline" id="petal-outline-4" d="M120,80 C140,100 156,124 138,136 C122,132 126,108 120,80 Z" />
+                  <path class="credit-petal-vein" id="petal-vein-4" d="M120,80 C128,96 138,118 138,134" />
+                </g>
+
+                <!-- Pétala 5 (Sul) -->
+                <g class="credit-petal-group" id="group-petal-5">
+                  <path class="credit-petal-fill" id="petal-fill-5" d="M120,80 C132,108 126,138 120,140 C114,138 108,108 120,80 Z" fill="url(#outerPetalGrad)" />
+                  <path class="credit-petal-outline" id="petal-outline-5" d="M120,80 C132,108 126,138 120,140 C114,138 108,108 120,80 Z" />
+                  <path class="credit-petal-vein" id="petal-vein-5" d="M120,80 C120,100 120,122 120,138" />
+                </g>
+
+                <!-- Pétala 6 (Sudoeste) -->
+                <g class="credit-petal-group" id="group-petal-6">
+                  <path class="credit-petal-fill" id="petal-fill-6" d="M120,80 C102,110 96,132 82,136 C64,124 80,98 120,80 Z" fill="url(#outerPetalGrad)" />
+                  <path class="credit-petal-outline" id="petal-outline-6" d="M120,80 C102,110 96,132 82,136 C64,124 80,98 120,80 Z" />
+                  <path class="credit-petal-vein" id="petal-vein-6" d="M120,80 C112,96 102,118 83,134" />
+                </g>
+
+                <!-- Pétala 7 (Oeste) -->
+                <g class="credit-petal-group" id="group-petal-7">
+                  <path class="credit-petal-fill" id="petal-fill-7" d="M120,80 C96,102 68,114 58,92 C62,72 92,66 120,80 Z" fill="url(#outerPetalGrad)" />
+                  <path class="credit-petal-outline" id="petal-outline-7" d="M120,80 C96,102 68,114 58,92 C62,72 92,66 120,80 Z" />
+                  <path class="credit-petal-vein" id="petal-vein-7" d="M120,80 C95,82 75,85 60,92" />
+                </g>
+
+                <!-- Pétala 8 (Noroeste) -->
+                <g class="credit-petal-group" id="group-petal-8">
+                  <path class="credit-petal-fill" id="petal-fill-8" d="M120,80 C96,80 78,84 68,62 C78,40 100,50 120,80 Z" fill="url(#outerPetalGrad)" />
+                  <path class="credit-petal-outline" id="petal-outline-8" d="M120,80 C96,80 78,84 68,62 C78,40 100,50 120,80 Z" />
+                  <path class="credit-petal-vein" id="petal-vein-8" d="M120,80 C104,70 88,62 70,62" />
+                </g>
+
+                <!-- CAMADA 2: Pétalas Médias (6 Pétalas com curvas suaves) -->
+                <g class="credit-petal-group" id="group-petal-9">
+                  <path class="credit-petal-fill" id="petal-fill-9" d="M120,80 C108,54 102,38 120,30 C138,38 132,54 120,80 Z" fill="url(#midPetalGrad)" />
+                  <path class="credit-petal-outline" id="petal-outline-9" d="M120,80 C108,54 102,38 120,30 C138,38 132,54 120,80 Z" stroke="#c2185b" />
+                  <path class="credit-petal-vein" id="petal-vein-9" d="M120,80 C120,60 120,45 120,32" />
+                </g>
+                <g class="credit-petal-group" id="group-petal-10">
+                  <path class="credit-petal-fill" id="petal-fill-10" d="M120,80 C136,58 156,54 160,70 C150,86 136,84 120,80 Z" fill="url(#midPetalGrad)" />
+                  <path class="credit-petal-outline" id="petal-outline-10" d="M120,80 C136,58 156,54 160,70 C150,86 136,84 120,80 Z" stroke="#c2185b" />
+                  <path class="credit-petal-vein" id="petal-vein-10" d="M120,80 C134,74 146,70 158,70" />
+                </g>
+                <g class="credit-petal-group" id="group-petal-11">
+                  <path class="credit-petal-fill" id="petal-fill-11" d="M120,80 C138,88 150,108 138,118 C124,116 124,96 120,80 Z" fill="url(#midPetalGrad)" />
+                  <path class="credit-petal-outline" id="petal-outline-11" d="M120,80 C138,88 150,108 138,118 C124,116 124,96 120,80 Z" stroke="#c2185b" />
+                  <path class="credit-petal-vein" id="petal-vein-11" d="M120,80 C128,94 134,106 136,116" />
+                </g>
+                <g class="credit-petal-group" id="group-petal-12">
+                  <path class="credit-petal-fill" id="petal-fill-12" d="M120,80 C128,100 124,122 120,124 C116,122 112,100 120,80 Z" fill="url(#midPetalGrad)" />
+                  <path class="credit-petal-outline" id="petal-outline-12" d="M120,80 C128,100 124,122 120,124 C116,122 112,100 120,80 Z" stroke="#c2185b" />
+                  <path class="credit-petal-vein" id="petal-vein-12" d="M120,80 C120,95 120,110 120,122" />
+                </g>
+                <g class="credit-petal-group" id="group-petal-13">
+                  <path class="credit-petal-fill" id="petal-fill-13" d="M120,80 C102,96 102,116 90,118 C78,108 90,88 120,80 Z" fill="url(#midPetalGrad)" />
+                  <path class="credit-petal-outline" id="petal-outline-13" d="M120,80 C102,96 102,116 90,118 C78,108 90,88 120,80 Z" stroke="#c2185b" />
+                  <path class="credit-petal-vein" id="petal-vein-13" d="M120,80 C110,94 100,106 92,116" />
+                </g>
+                <g class="credit-petal-group" id="group-petal-14">
+                  <path class="credit-petal-fill" id="petal-fill-14" d="M120,80 C104,84 88,86 80,70 C84,54 104,58 120,80 Z" fill="url(#midPetalGrad)" />
+                  <path class="credit-petal-outline" id="petal-outline-14" d="M120,80 C104,84 88,86 80,70 C84,54 104,58 120,80 Z" stroke="#c2185b" />
+                  <path class="credit-petal-vein" id="petal-vein-14" d="M120,80 C106,75 95,72 82,71" />
+                </g>
+
+                <!-- CAMADA 3: Pétalas Internas (5 Pétalas centrais em botão) -->
+                <g class="credit-petal-group" id="group-petal-15">
+                  <path class="credit-petal-fill" id="petal-fill-15" d="M120,80 C110,64 108,48 120,44 C132,48 130,64 120,80 Z" fill="url(#innerPetalGrad)" />
+                  <path class="credit-petal-outline" id="petal-outline-15" d="M120,80 C110,64 108,48 120,44 C132,48 130,64 120,80 Z" stroke="#d81b60" />
+                </g>
+                <g class="credit-petal-group" id="group-petal-16">
+                  <path class="credit-petal-fill" id="petal-fill-16" d="M120,80 C132,66 142,66 144,76 C138,86 130,84 120,80 Z" fill="url(#innerPetalGrad)" />
+                  <path class="credit-petal-outline" id="petal-outline-16" d="M120,80 C132,66 142,66 144,76 C138,86 130,84 120,80 Z" stroke="#d81b60" />
+                </g>
+                <g class="credit-petal-group" id="group-petal-17">
+                  <path class="credit-petal-fill" id="petal-fill-17" d="M120,80 C132,86 138,100 130,106 C120,104 122,92 120,80 Z" fill="url(#innerPetalGrad)" />
+                  <path class="credit-petal-outline" id="petal-outline-17" d="M120,80 C132,86 138,100 130,106 C120,104 122,92 120,80 Z" stroke="#d81b60" />
+                </g>
+                <g class="credit-petal-group" id="group-petal-18">
+                  <path class="credit-petal-fill" id="petal-fill-18" d="M120,80 C118,92 120,104 112,106 C104,100 110,88 120,80 Z" fill="url(#innerPetalGrad)" />
+                  <path class="credit-petal-outline" id="petal-outline-18" d="M120,80 C118,92 120,104 112,106 C104,100 110,88 120,80 Z" stroke="#d81b60" />
+                </g>
+                <g class="credit-petal-group" id="group-petal-19">
+                  <path class="credit-petal-fill" id="petal-fill-19" d="M120,80 C108,86 102,88 96,78 C98,66 110,66 120,80 Z" fill="url(#innerPetalGrad)" />
+                  <path class="credit-petal-outline" id="petal-outline-19" d="M120,80 C108,86 102,88 96,78 C98,66 110,66 120,80 Z" stroke="#d81b60" />
                 </g>
 
                 <!-- CAMADA 4: Miolo Dourado, Estames e Grãos de Pólen Radiantes -->
-                <g class="branch-flower-core">
+                <g class="credit-core-element" id="credit-flower-core">
                   <!-- Disco central com brilho quente -->
-                  <circle cx="120" cy="80" r="14" fill="url(#centerCoreGrad)" filter="drop-shadow(0 0 8px rgba(255, 215, 0, 0.75))" />
+                  <circle cx="120" cy="80" r="14" fill="url(#centerCoreGrad)" filter="drop-shadow(0 0 8px rgba(255, 215, 0, 0.8))" />
 
                   <!-- Filamentos e Anteras de Pólen Dourado -->
                   <circle cx="120" cy="67" r="2.2" fill="#fff9c4" />
@@ -3798,32 +3870,51 @@
       this.addTimeout(() => {
         leaves.forEach(l => l.classList.add('leaf-grown'));
         veins.forEach(v => v.classList.add('vein-drawn'));
-      }, 900);
+      }, 750);
 
-      // 3. A flor completa desabrocha com suas camadas e o miolo dourado brilha
+      // 3. ANIMAÇÃO DA FLOR PÉTALA POR PÉTALA (2D SVG stroke-dasharray + color fill)
+      const totalPetals = 19;
+      for (let i = 1; i <= totalPetals; i++) {
+        this.addTimeout(() => {
+          const outline = this.stageInner.querySelector(`#petal-outline-${i}`);
+          const vein = this.stageInner.querySelector(`#petal-vein-${i}`);
+          const fill = this.stageInner.querySelector(`#petal-fill-${i}`);
+          if (outline) outline.classList.add('petal-stroked');
+          if (vein) vein.classList.add('petal-stroked');
+          if (fill) {
+            setTimeout(() => {
+              if (fill) fill.classList.add('petal-filled');
+            }, 120);
+          }
+        }, 1050 + (i * 115));
+      }
+
+      // 4. O miolo dourado e pólen desabrocham no clímax do desabrochar
       this.addTimeout(() => {
+        const core = this.stageInner.querySelector('#credit-flower-core');
+        if (core) core.classList.add('core-bloomed');
         if (flower) flower.classList.add('flower-bloomed');
-        if (this.sys && this.sys.audioManager) {
+        if (this.sys && this.sys.audioManager && typeof this.sys.audioManager.playSparkleSound === 'function') {
           this.sys.audioManager.playSparkleSound(0.78);
         }
-      }, 1500);
+      }, 3450);
 
-      // 4. "Feito com carinho." aparece suavemente
+      // 5. "Feito com carinho." aparece suavemente
       this.addTimeout(() => {
         if (loveText) {
           loveText.style.opacity = '1';
           loveText.style.transform = 'translateY(0)';
         }
-      }, 2500);
+      }, 4300);
 
-      // 5. Transição suave para o Crédito 05
+      // 6. Transição suave para o Crédito 05
       this.addTimeout(() => {
         if (sc) {
           sc.classList.remove('scene-active');
           sc.classList.add('scene-exit');
         }
         this.renderCredit05();
-      }, 6400);
+      }, 7800);
     }
 
     // 5. O crédito mais pessoal (Silêncio visual e tipografia serena)

@@ -5143,11 +5143,75 @@ body.eagora-fullscreen-active .stage-wrapper {
   stroke-dashoffset: 0;
 }
 
+/* ==========================================================================
+   🌸 ILUSTRAÇÃO 2D DETALHADA DA FLOR DOS CRÉDITOS (PÉTALA POR PÉTALA)
+   ========================================================================== */
 .branch-flower-head {
+  opacity: 1;
+  transform-origin: 120px 80px;
+  animation: branchFlowerSway 5.5s ease-in-out infinite alternate;
+}
+
+.credit-petal-group {
+  position: relative;
+}
+
+/* Traçado individual de contorno da pétala via stroke-dasharray */
+.credit-petal-outline {
+  fill: none;
+  stroke: #ad1457;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 240;
+  stroke-dashoffset: 240;
+  transition: stroke-dashoffset 0.75s cubic-bezier(0.25, 1, 0.5, 1);
+  filter: drop-shadow(0 1px 4px rgba(173, 20, 87, 0.3));
+}
+
+.credit-petal-outline.petal-stroked {
+  stroke-dashoffset: 0;
+}
+
+/* Nervura interior delicada de cada pétala */
+.credit-petal-vein {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.7);
+  stroke-width: 1.2;
+  stroke-linecap: round;
+  stroke-dasharray: 90;
+  stroke-dashoffset: 90;
+  transition: stroke-dashoffset 0.6s ease 0.15s;
+}
+
+.credit-petal-vein.petal-stroked {
+  stroke-dashoffset: 0;
+}
+
+/* Preenchimento aquarelado aveludado que surge logo após o contorno */
+.credit-petal-fill {
   opacity: 0;
-  transform: scale(0.15);
-  transform-origin: 120px 85px;
-  transition: opacity 1.4s ease, transform 1.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transform: scale(0.65);
+  transform-origin: 120px 80px;
+  transition: opacity 0.85s cubic-bezier(0.16, 1, 0.3, 1) 0.12s, transform 0.85s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.credit-petal-fill.petal-filled {
+  opacity: 0.95;
+  transform: scale(1);
+}
+
+/* Miolo Dourado e Pólen */
+.credit-core-element {
+  opacity: 0;
+  transform: scale(0.1);
+  transform-origin: 120px 80px;
+  transition: opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1), transform 1.0s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.credit-core-element.core-bloomed {
+  opacity: 1;
+  transform: scale(1);
 }
 
 .branch-flower-head.flower-bloomed {
