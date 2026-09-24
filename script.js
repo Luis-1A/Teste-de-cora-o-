@@ -590,6 +590,13 @@
     }
 
     /**
+     * Efeito sonoro suave de sino / chime celestial
+     */
+    playChime(intensity = 1.0) {
+      this.playSparkleSound(intensity);
+    }
+
+    /**
      * Efeito sonoro discreto de 'página virando' / capa de livro abrindo via Web Audio API.
      * Sincronizado especificamente com o momento exato em que a capa do livro se abre em 3D.
      */
@@ -1107,6 +1114,13 @@
       } catch (e) {
         // Safe fallback
       }
+    }
+
+    /**
+     * Efeito sonoro suave de chime
+     */
+    playChime() {
+      this.playChimeChord();
     }
 
     /**
@@ -3237,6 +3251,1752 @@
   // 28. "Espero poder te ver novamente."
   // 29. Encerramento do sistema & guardar experiência
   // 30. Baixar os textos em PDF (organizado conforme os 6 tópicos)
+  // ==========================================================================
+  // 🌸 CAPÍTULO EXTRA: CRÉDITOS CINEMATOGRÁFICOS & ENCERRAMENTO DEFINITIVO
+  // ==========================================================================
+  class CinematicCreditsClosureController {
+    constructor(experienceSystem, flowerSourceElement) {
+      this.sys = experienceSystem;
+      this.flowerSource = flowerSourceElement;
+      this.overlay = null;
+      this.timeouts = [];
+      this.animFrame = null;
+      this.isDestroyed = false;
+      this.easterEggCanvas = null;
+      this.easterEggCtx = null;
+      this.trailParticles = [];
+      this.burstParticles = [];
+      this.init();
+    }
+
+    addTimeout(fn, delay) {
+      const id = setTimeout(() => {
+        if (!this.isDestroyed) fn();
+      }, delay);
+      this.timeouts.push(id);
+      return id;
+    }
+
+    destroy() {
+      this.isDestroyed = true;
+      this.timeouts.forEach(clearTimeout);
+      this.timeouts = [];
+      if (this.animFrame) cancelAnimationFrame(this.animFrame);
+      if (this.overlay && this.overlay.parentNode) {
+        this.overlay.parentNode.removeChild(this.overlay);
+      }
+    }
+
+    init() {
+      // Remove overlay anterior se existir
+      const existing = document.getElementById('cinematic-closure-overlay');
+      if (existing && existing.parentNode) {
+        existing.parentNode.removeChild(existing);
+      }
+
+      this.overlay = document.createElement('div');
+      this.overlay.className = 'cinematic-closure-overlay';
+      this.overlay.id = 'cinematic-closure-overlay';
+
+      this.overlay.innerHTML = `
+        <!-- Camada de Iluminação Branca Suave (White Wash) -->
+        <div class="closure-white-wash" id="closure-white-wash"></div>
+
+        <!-- Canvas de Partículas e Easter Egg 18 -->
+        <canvas class="closure-easteregg-canvas" id="closure-easteregg-canvas"></canvas>
+
+        <!-- Ponto de Luz Central (Pétala virando luz) -->
+        <div class="closure-light-point" id="closure-light-point"></div>
+
+        <!-- Pétala Única Desprendida da Flor -->
+        <div class="closure-floating-petal-box" id="closure-floating-petal-box" style="position: absolute; top: 48%; left: 50%; width: 34px; height: 48px; transform: translate(-50%, -50%) scale(1); pointer-events: none; z-index: 65; opacity: 0; transition: all 3.2s cubic-bezier(0.25, 1, 0.5, 1);">
+          <svg viewBox="0 0 40 60" style="width: 100%; height: 100%; filter: drop-shadow(0 2px 8px rgba(233, 30, 99, 0.45));">
+            <defs>
+              <linearGradient id="floatingPetalGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#ffffff" />
+                <stop offset="35%" stop-color="#ff80ab" />
+                <stop offset="70%" stop-color="#f06292" />
+                <stop offset="100%" stop-color="#c2185b" />
+              </linearGradient>
+            </defs>
+            <path d="M20,2 C34,14 38,36 20,58 C2,36 6,14 20,2 Z" fill="url(#floatingPetalGrad)" />
+            <path d="M20,8 Q20,32 20,52" stroke="rgba(255, 255, 255, 0.65)" stroke-width="1.2" fill="none" stroke-linecap="round" />
+          </svg>
+        </div>
+
+        <!-- Container de Cenas dos Créditos & Encerramento -->
+        <div class="closure-stage-inner" id="closure-stage-inner"></div>
+      `;
+
+      document.body.appendChild(this.overlay);
+
+      // Elementos internos
+      this.whiteWash = this.overlay.querySelector('#closure-white-wash');
+      this.lightPoint = this.overlay.querySelector('#closure-light-point');
+      this.petalBox = this.overlay.querySelector('#closure-floating-petal-box');
+      this.stageInner = this.overlay.querySelector('#closure-stage-inner');
+      this.canvas = this.overlay.querySelector('#closure-easteregg-canvas');
+
+      if (this.canvas) {
+        this.easterEggCtx = this.canvas.getContext('2d');
+        const resize = () => {
+          if (!this.canvas) return;
+          this.canvas.width = window.innerWidth;
+          this.canvas.height = window.innerHeight;
+        };
+        resize();
+        window.addEventListener('resize', resize);
+      }
+
+      // Ativa overlay e inicia fluxo cinematográfico
+      requestAnimationFrame(() => {
+        this.overlay.classList.add('active');
+        this.startCinematicFlow();
+      });
+    }
+
+    startCinematicFlow() {
+      // 1. Música diminui suavemente
+      if (this.sys && this.sys.audioManager) {
+        this.sys.audioManager.fadeTo(0.18, 3000);
+      }
+
+      // 2. A última pétala se desprende, sobe e atravessa a tela
+      this.addTimeout(() => {
+        if (!this.petalBox) return;
+        this.petalBox.style.opacity = '1';
+        this.petalBox.style.transform = 'translate(-50%, -130px) rotate(-22deg) scale(1.1)';
+      }, 400);
+
+      this.addTimeout(() => {
+        if (!this.petalBox) return;
+        this.petalBox.style.transform = 'translate(-50%, -50%) rotate(42deg) scale(0.95)';
+      }, 1900);
+
+      // 3. Chega ao centro e vira um ponto de luz
+      this.addTimeout(() => {
+        if (this.petalBox) {
+          this.petalBox.style.opacity = '0';
+          this.petalBox.style.transform = 'translate(-50%, -50%) scale(0.1)';
+        }
+        if (this.lightPoint) {
+          this.lightPoint.style.transform = 'translate(-50%, -50%) scale(1)';
+        }
+        if (this.sys && this.sys.audioManager) {
+          this.sys.audioManager.playSparkleSound(0.85);
+        }
+      }, 3400);
+
+      // 4. O ponto cresce e dá lugar à iluminação branca suave
+      this.addTimeout(() => {
+        if (this.lightPoint) {
+          this.lightPoint.classList.add('light-expanded');
+        }
+        if (this.whiteWash) {
+          this.whiteWash.classList.add('wash-visible');
+        }
+      }, 4400);
+
+      // 5. A tela branca revela o fundo minimalista e inicia as mensagens
+      this.addTimeout(() => {
+        if (this.lightPoint) this.lightPoint.style.display = 'none';
+        if (this.petalBox) this.petalBox.style.display = 'none';
+        if (this.whiteWash) this.whiteWash.classList.remove('wash-visible');
+        this.renderSceneFirstMessage();
+      }, 6200);
+    }
+
+    // 2. Surge a primeira mensagem: "Fim." -> "Mas antes de você ir..." -> "eu preciso deixar uma última coisa aqui."
+    renderSceneFirstMessage() {
+      if (!this.stageInner) return;
+      this.stageInner.innerHTML = `
+        <div class="closure-scene" id="scene-fim">
+          <h1 class="closure-word-fim">Fim.</h1>
+        </div>
+        <div class="closure-scene" id="scene-before-leave">
+          <p class="closure-subtle-hint" id="before-leave-p1" style="opacity: 0; transform: translateY(10px); transition: all 1.2s ease;">
+            Mas antes de você ir...
+          </p>
+          <p class="closure-subtle-line" id="before-leave-p2" style="opacity: 0; transform: translateY(10px); transition: all 1.2s ease;">
+            eu preciso deixar uma última coisa aqui.
+          </p>
+        </div>
+      `;
+
+      const scFim = this.stageInner.querySelector('#scene-fim');
+      const scBefore = this.stageInner.querySelector('#scene-before-leave');
+      const p1 = this.stageInner.querySelector('#before-leave-p1');
+      const p2 = this.stageInner.querySelector('#before-leave-p2');
+
+      this.addTimeout(() => {
+        if (scFim) scFim.classList.add('scene-active');
+      }, 200);
+
+      this.addTimeout(() => {
+        if (scFim) {
+          scFim.classList.remove('scene-active');
+          scFim.classList.add('scene-exit');
+        }
+      }, 2600);
+
+      this.addTimeout(() => {
+        if (scBefore) scBefore.classList.add('scene-active');
+        if (p1) {
+          p1.style.opacity = '1';
+          p1.style.transform = 'translateY(0)';
+        }
+      }, 3400);
+
+      this.addTimeout(() => {
+        if (p2) {
+          p2.style.opacity = '1';
+          p2.style.transform = 'translateY(0)';
+        }
+      }, 4800);
+
+      this.addTimeout(() => {
+        if (scBefore) {
+          scBefore.classList.remove('scene-active');
+          scBefore.classList.add('scene-exit');
+        }
+        this.renderCredit01();
+      }, 7600);
+    }
+
+    // CRÉDITO 01: "Uma pequena experiência." -> "Feita especialmente para uma pessoa especial."
+    renderCredit01() {
+      if (!this.stageInner) return;
+      this.stageInner.innerHTML = `
+        <div class="closure-scene" id="scene-c1">
+          <p class="credit-lead" id="c1-lead" style="opacity: 0; transform: translateY(12px); transition: all 1.2s ease;">
+            Uma pequena experiência.
+          </p>
+          <p class="credit-body" id="c1-body" style="opacity: 0; transform: translateY(12px); transition: all 1.2s ease;">
+            Feita especialmente para uma pessoa especial.
+          </p>
+        </div>
+      `;
+
+      const sc = this.stageInner.querySelector('#scene-c1');
+      const lead = this.stageInner.querySelector('#c1-lead');
+      const body = this.stageInner.querySelector('#c1-body');
+
+      this.addTimeout(() => {
+        if (sc) sc.classList.add('scene-active');
+        if (lead) {
+          lead.style.opacity = '1';
+          lead.style.transform = 'translateY(0)';
+        }
+      }, 200);
+
+      this.addTimeout(() => {
+        if (body) {
+          body.style.opacity = '1';
+          body.style.transform = 'translateY(0)';
+        }
+      }, 1600);
+
+      this.addTimeout(() => {
+        if (sc) {
+          sc.classList.remove('scene-active');
+          sc.classList.add('scene-exit');
+        }
+        this.renderCredit02();
+      }, 4600);
+    }
+
+    // CRÉDITO 02: "Para Issamara." (com brilho e estrela cadente atrás)
+    renderCredit02() {
+      if (!this.stageInner) return;
+      this.stageInner.innerHTML = `
+        <div class="closure-scene" id="scene-c2">
+          <div class="credit-for-wrap">
+            <div class="shooting-star-streak" id="c2-streak"></div>
+            <h2 class="credit-for-name">Para Issamara.</h2>
+          </div>
+        </div>
+      `;
+
+      const sc = this.stageInner.querySelector('#scene-c2');
+      const streak = this.stageInner.querySelector('#c2-streak');
+
+      this.addTimeout(() => {
+        if (sc) sc.classList.add('scene-active');
+      }, 200);
+
+      this.addTimeout(() => {
+        if (streak) streak.classList.add('streak-run');
+        if (this.sys && this.sys.audioManager) {
+          this.sys.audioManager.playSparkleSound(0.7);
+        }
+      }, 700);
+
+      this.addTimeout(() => {
+        if (sc) {
+          sc.classList.remove('scene-active');
+          sc.classList.add('scene-exit');
+        }
+        this.renderCredit03();
+      }, 4200);
+    }
+
+    // CRÉDITO 03: "Criado por" -> "Luis Fernando Santos" -> "com algumas horas de sono a menos..."
+    renderCredit03() {
+      if (!this.stageInner) return;
+      this.stageInner.innerHTML = `
+        <div class="closure-scene" id="scene-c3">
+          <div class="credit-role" id="c3-role" style="opacity: 0; transform: translateY(8px); transition: all 1.1s ease;">
+            Criado por
+          </div>
+          <h2 class="credit-creator-name" id="c3-name" style="opacity: 0; transform: translateY(12px); transition: all 1.2s ease;">
+            Luis Fernando Santos
+          </h2>
+          <p class="credit-humor-note" id="c3-humor" style="opacity: 0; transform: translateY(10px); transition: all 1.2s ease;">
+            com algumas horas de sono a menos do que o recomendado. 😭
+          </p>
+        </div>
+      `;
+
+      const sc = this.stageInner.querySelector('#scene-c3');
+      const role = this.stageInner.querySelector('#c3-role');
+      const name = this.stageInner.querySelector('#c3-name');
+      const humor = this.stageInner.querySelector('#c3-humor');
+
+      this.addTimeout(() => {
+        if (sc) sc.classList.add('scene-active');
+        if (role) {
+          role.style.opacity = '1';
+          role.style.transform = 'translateY(0)';
+        }
+      }, 300);
+
+      this.addTimeout(() => {
+        if (name) {
+          name.style.opacity = '1';
+          name.style.transform = 'translateY(0)';
+        }
+      }, 1300);
+
+      this.addTimeout(() => {
+        if (humor) {
+          humor.style.opacity = '0.9';
+          humor.style.transform = 'translateY(0)';
+        }
+      }, 2300);
+
+      this.addTimeout(() => {
+        if (sc) {
+          sc.classList.remove('scene-active');
+          sc.classList.add('scene-exit');
+        }
+        this.renderCredit04();
+      }, 5400);
+    }
+
+    // 4. A animação começa a brincar com os créditos:
+    // Linha desenhada -> ramo -> flor ilustrada completa e deslumbrante nasce e balança -> "Feito com carinho."
+    renderCredit04() {
+      if (!this.stageInner) return;
+      this.stageInner.innerHTML = `
+        <div class="closure-scene" id="scene-c4">
+          <div class="closure-branch-box">
+            <svg class="closure-branch-svg" viewBox="0 0 240 260">
+              <defs>
+                <!-- Gradiente do Caule -->
+                <linearGradient id="branchStemGrad" x1="0%" y1="100%" x2="0%" y2="0%">
+                  <stop offset="0%" stop-color="#1b5e20" />
+                  <stop offset="35%" stop-color="#2e7d32" />
+                  <stop offset="70%" stop-color="#4caf50" />
+                  <stop offset="100%" stop-color="#8bc34a" />
+                </linearGradient>
+
+                <!-- Gradientes das Folhas -->
+                <linearGradient id="branchLeafGrad1" x1="0%" y1="100%" x2="100%" y2="0%">
+                  <stop offset="0%" stop-color="#1b5e20" />
+                  <stop offset="40%" stop-color="#2e7d32" />
+                  <stop offset="75%" stop-color="#4caf50" />
+                  <stop offset="100%" stop-color="#a5d6a7" />
+                </linearGradient>
+                <linearGradient id="branchLeafGrad2" x1="0%" y1="100%" x2="100%" y2="0%">
+                  <stop offset="0%" stop-color="#2e7d32" />
+                  <stop offset="45%" stop-color="#388e3c" />
+                  <stop offset="80%" stop-color="#66bb6a" />
+                  <stop offset="100%" stop-color="#c8e6c9" />
+                </linearGradient>
+
+                <!-- Halo Luminoso da Flor -->
+                <radialGradient id="flowerHaloGrad" cx="50%" cy="50%" r="50%">
+                  <stop offset="0%" stop-color="rgba(255, 182, 193, 0.55)" />
+                  <stop offset="50%" stop-color="rgba(255, 105, 180, 0.25)" />
+                  <stop offset="100%" stop-color="rgba(255, 255, 255, 0)" />
+                </radialGradient>
+
+                <!-- Gradiente das Pétalas Externas -->
+                <radialGradient id="outerPetalGrad" cx="50%" cy="15%" r="85%">
+                  <stop offset="0%" stop-color="#ffffff" />
+                  <stop offset="30%" stop-color="#ffc1e3" />
+                  <stop offset="65%" stop-color="#ff80ab" />
+                  <stop offset="88%" stop-color="#e91e63" />
+                  <stop offset="100%" stop-color="#ad1457" />
+                </radialGradient>
+
+                <!-- Gradiente das Pétalas Médias -->
+                <radialGradient id="midPetalGrad" cx="50%" cy="20%" r="80%">
+                  <stop offset="0%" stop-color="#ffffff" />
+                  <stop offset="32%" stop-color="#ffb6c1" />
+                  <stop offset="68%" stop-color="#ff4081" />
+                  <stop offset="90%" stop-color="#c2185b" />
+                  <stop offset="100%" stop-color="#880e4f" />
+                </radialGradient>
+
+                <!-- Gradiente das Pétalas Internas -->
+                <radialGradient id="innerPetalGrad" cx="50%" cy="25%" r="75%">
+                  <stop offset="0%" stop-color="#fff5f8" />
+                  <stop offset="35%" stop-color="#ff80ab" />
+                  <stop offset="78%" stop-color="#d81b60" />
+                  <stop offset="100%" stop-color="#ad1457" />
+                </radialGradient>
+
+                <!-- Miolo Dourado e Pólen -->
+                <radialGradient id="centerCoreGrad" cx="45%" cy="38%" r="62%">
+                  <stop offset="0%" stop-color="#ffffff" />
+                  <stop offset="30%" stop-color="#fff9c4" />
+                  <stop offset="62%" stop-color="#ffd54f" />
+                  <stop offset="85%" stop-color="#ffb300" />
+                  <stop offset="100%" stop-color="#ff8f00" />
+                </radialGradient>
+              </defs>
+
+              <!-- 1. Linha Viva que se transforma no caule e ramo orgânico -->
+              <path class="branch-path-stem" id="branch-stem" d="M120,252 C120,210 112,175 120,130 C123,112 120,102 120,95" fill="none" stroke="url(#branchStemGrad)" stroke-width="4.5" stroke-linecap="round" />
+              
+              <!-- Raminho Esquerdo com Folha Completa e Nervuras -->
+              <path class="branch-path-stem" d="M116,192 C102,188 88,182 78,178" fill="none" stroke="url(#branchStemGrad)" stroke-width="2.5" stroke-linecap="round" />
+              <g id="branch-leaf1-group">
+                <path class="branch-leaf-blade" id="branch-leaf1-blade" style="transform-origin: 116px 192px;" d="M116,192 C90,172 50,166 28,158 C46,184 80,206 114,196 Z" fill="url(#branchLeafGrad1)" />
+                <path class="branch-leaf-vein" d="M114,193 C84,181 52,172 30,160" fill="none" stroke="rgba(255,255,255,0.45)" stroke-width="1.6" stroke-linecap="round" />
+                <path class="branch-leaf-vein" d="M84,181 C76,176 70,171 68,168" fill="none" stroke="rgba(255,255,255,0.35)" stroke-width="1.2" />
+                <path class="branch-leaf-vein" d="M66,174 C58,170 54,166 52,163" fill="none" stroke="rgba(255,255,255,0.35)" stroke-width="1.2" />
+              </g>
+
+              <!-- Raminho Direito com Folha Completa e Nervuras -->
+              <path class="branch-path-stem" d="M121,152 C136,146 152,138 162,132" fill="none" stroke="url(#branchStemGrad)" stroke-width="2.5" stroke-linecap="round" />
+              <g id="branch-leaf2-group">
+                <path class="branch-leaf-blade" id="branch-leaf2-blade" style="transform-origin: 121px 152px;" d="M121,152 C148,132 190,125 214,116 C198,144 162,166 123,156 Z" fill="url(#branchLeafGrad2)" />
+                <path class="branch-leaf-vein" d="M123,153 C156,140 188,129 212,118" fill="none" stroke="rgba(255,255,255,0.45)" stroke-width="1.6" stroke-linecap="round" />
+                <path class="branch-leaf-vein" d="M154,142 C162,136 168,132 172,128" fill="none" stroke="rgba(255,255,255,0.35)" stroke-width="1.2" />
+                <path class="branch-leaf-vein" d="M176,134 C184,129 190,125 194,121" fill="none" stroke="rgba(255,255,255,0.35)" stroke-width="1.2" />
+              </g>
+
+              <!-- 2. Cabeça da Flor Deslumbrante e Completa -->
+              <g class="branch-flower-head" id="branch-flower-head">
+                <!-- Aura de Luz / Brilho Suave -->
+                <circle cx="120" cy="80" r="56" fill="url(#flowerHaloGrad)" />
+
+                <!-- Sépalas (Cálice Verdejante que segura a flor) -->
+                <g class="branch-sepal">
+                  <path d="M120,95 C110,108 98,112 94,116 C102,105 112,98 116,94 Z" fill="#2e7d32" />
+                  <path d="M120,95 C130,108 142,112 146,116 C138,105 128,98 124,94 Z" fill="#2e7d32" />
+                  <path d="M120,95 C117,110 119,118 120,120 C121,118 123,110 120,95 Z" fill="#43a047" />
+                </g>
+
+                <!-- CAMADA 1: Pétalas Externas (8 pétalas exuberantes com curvas orgânicas) -->
+                <g class="branch-petal-outer">
+                  <!-- Norte -->
+                  <path d="M120,80 C104,46 92,26 120,16 C148,26 136,46 120,80 Z" fill="url(#outerPetalGrad)" opacity="0.95" />
+                  <!-- Nordeste -->
+                  <path d="M120,80 C140,50 162,40 172,62 C162,84 144,80 120,80 Z" fill="url(#outerPetalGrad)" opacity="0.95" />
+                  <!-- Leste -->
+                  <path d="M120,80 C148,66 178,72 182,92 C170,114 144,102 120,80 Z" fill="url(#outerPetalGrad)" opacity="0.95" />
+                  <!-- Sudeste -->
+                  <path d="M120,80 C140,100 156,124 138,136 C122,132 126,108 120,80 Z" fill="url(#outerPetalGrad)" opacity="0.95" />
+                  <!-- Sul -->
+                  <path d="M120,80 C132,108 126,138 120,140 C114,138 108,108 120,80 Z" fill="url(#outerPetalGrad)" opacity="0.95" />
+                  <!-- Sudoeste -->
+                  <path d="M120,80 C102,110 96,132 82,136 C64,124 80,98 120,80 Z" fill="url(#outerPetalGrad)" opacity="0.95" />
+                  <!-- Oeste -->
+                  <path d="M120,80 C96,102 68,114 58,92 C62,72 92,66 120,80 Z" fill="url(#outerPetalGrad)" opacity="0.95" />
+                  <!-- Noroeste -->
+                  <path d="M120,80 C96,80 78,84 68,62 C78,40 100,50 120,80 Z" fill="url(#outerPetalGrad)" opacity="0.95" />
+                </g>
+
+                <!-- CAMADA 2: Pétalas Médias (6 pétalas aveludadas intermediárias com profundidade) -->
+                <g class="branch-petal-mid">
+                  <path d="M120,80 C108,54 102,38 120,30 C138,38 132,54 120,80 Z" fill="url(#midPetalGrad)" />
+                  <path d="M120,80 C136,58 156,54 160,70 C150,86 136,84 120,80 Z" fill="url(#midPetalGrad)" />
+                  <path d="M120,80 C138,88 150,108 138,118 C124,116 124,96 120,80 Z" fill="url(#midPetalGrad)" />
+                  <path d="M120,80 C128,100 124,122 120,124 C116,122 112,100 120,80 Z" fill="url(#midPetalGrad)" />
+                  <path d="M120,80 C102,96 102,116 90,118 C78,108 90,88 120,80 Z" fill="url(#midPetalGrad)" />
+                  <path d="M120,80 C104,84 88,86 80,70 C84,54 104,58 120,80 Z" fill="url(#midPetalGrad)" />
+                </g>
+
+                <!-- CAMADA 3: Pétalas Internas (5 pétalas centrais em botão desabrochado) -->
+                <g class="branch-petal-inner">
+                  <path d="M120,80 C110,64 108,48 120,44 C132,48 130,64 120,80 Z" fill="url(#innerPetalGrad)" />
+                  <path d="M120,80 C132,66 142,66 144,76 C138,86 130,84 120,80 Z" fill="url(#innerPetalGrad)" />
+                  <path d="M120,80 C132,86 138,100 130,106 C120,104 122,92 120,80 Z" fill="url(#innerPetalGrad)" />
+                  <path d="M120,80 C118,92 120,104 112,106 C104,100 110,88 120,80 Z" fill="url(#innerPetalGrad)" />
+                  <path d="M120,80 C108,86 102,88 96,78 C98,66 110,66 120,80 Z" fill="url(#innerPetalGrad)" />
+                </g>
+
+                <!-- CAMADA 4: Miolo Dourado, Estames e Grãos de Pólen Radiantes -->
+                <g class="branch-flower-core">
+                  <!-- Disco central com brilho quente -->
+                  <circle cx="120" cy="80" r="14" fill="url(#centerCoreGrad)" filter="drop-shadow(0 0 8px rgba(255, 215, 0, 0.75))" />
+
+                  <!-- Filamentos e Anteras de Pólen Dourado -->
+                  <circle cx="120" cy="67" r="2.2" fill="#fff9c4" />
+                  <circle cx="128" cy="69" r="2.2" fill="#fff9c4" />
+                  <circle cx="133" cy="76" r="2.2" fill="#fff9c4" />
+                  <circle cx="132" cy="84" r="2.2" fill="#fff9c4" />
+                  <circle cx="127" cy="91" r="2.2" fill="#fff9c4" />
+                  <circle cx="120" cy="93" r="2.2" fill="#fff9c4" />
+                  <circle cx="113" cy="91" r="2.2" fill="#fff9c4" />
+                  <circle cx="108" cy="84" r="2.2" fill="#fff9c4" />
+                  <circle cx="107" cy="76" r="2.2" fill="#fff9c4" />
+                  <circle cx="112" cy="69" r="2.2" fill="#fff9c4" />
+
+                  <!-- Centelhas centrais do pistilo -->
+                  <circle cx="120" cy="73" r="1.8" fill="#ffffff" />
+                  <circle cx="125" cy="80" r="1.8" fill="#ffffff" />
+                  <circle cx="115" cy="80" r="1.8" fill="#ffffff" />
+                  <circle cx="120" cy="87" r="1.8" fill="#ffffff" />
+                  <circle cx="120" cy="80" r="4.2" fill="#ffd54f" />
+                  <circle cx="120" cy="80" r="2.1" fill="#ffffff" />
+                </g>
+
+                <!-- 3. Micro-centelhas de Estrelas / Stardust que cintilam suavemente -->
+                <g class="branch-sparkles-wrap">
+                  <path class="branch-sparkle" d="M60,40 L62,45 L67,47 L62,49 L60,54 L58,49 L53,47 L58,45 Z" fill="#ffd54f" opacity="0.85" />
+                  <path class="branch-sparkle" style="animation-delay: 0.9s;" d="M185,48 L186.5,51.5 L190,53 L186.5,54.5 L185,58 L183.5,54.5 L180,53 L183.5,51.5 Z" fill="#ff80ab" opacity="0.9" />
+                  <path class="branch-sparkle" style="animation-delay: 1.6s;" d="M198,102 L199.5,105.5 L203,107 L199.5,108.5 L198,112 L196.5,108.5 L193,107 L196.5,105.5 Z" fill="#ffd54f" opacity="0.8" />
+                  <path class="branch-sparkle" style="animation-delay: 2.3s;" d="M46,112 L47.5,115.5 L51,117 L47.5,118.5 L46,122 L44.5,118.5 L41,117 L44.5,115.5 Z" fill="#ff4081" opacity="0.85" />
+                </g>
+              </g>
+            </svg>
+            <p class="credit-made-love" id="c4-love" style="opacity: 0; transform: translateY(8px); transition: all 1.2s ease;">
+              Feito com carinho.
+            </p>
+          </div>
+        </div>
+      `;
+
+      const sc = this.stageInner.querySelector('#scene-c4');
+      const stems = this.stageInner.querySelectorAll('.branch-path-stem');
+      const leaves = this.stageInner.querySelectorAll('.branch-leaf-blade');
+      const veins = this.stageInner.querySelectorAll('.branch-leaf-vein');
+      const flower = this.stageInner.querySelector('#branch-flower-head');
+      const loveText = this.stageInner.querySelector('#c4-love');
+
+      // 1. O traço do caule e ramos desenha-se
+      this.addTimeout(() => {
+        if (sc) sc.classList.add('scene-active');
+        stems.forEach(s => s.classList.add('stem-drawn'));
+      }, 150);
+
+      // 2. As folhas abrem-se com frescor e as nervuras são traçadas
+      this.addTimeout(() => {
+        leaves.forEach(l => l.classList.add('leaf-grown'));
+        veins.forEach(v => v.classList.add('vein-drawn'));
+      }, 900);
+
+      // 3. A flor completa desabrocha com suas camadas e o miolo dourado brilha
+      this.addTimeout(() => {
+        if (flower) flower.classList.add('flower-bloomed');
+        if (this.sys && this.sys.audioManager) {
+          this.sys.audioManager.playSparkleSound(0.78);
+        }
+      }, 1500);
+
+      // 4. "Feito com carinho." aparece suavemente
+      this.addTimeout(() => {
+        if (loveText) {
+          loveText.style.opacity = '1';
+          loveText.style.transform = 'translateY(0)';
+        }
+      }, 2500);
+
+      // 5. Transição suave para o Crédito 05
+      this.addTimeout(() => {
+        if (sc) {
+          sc.classList.remove('scene-active');
+          sc.classList.add('scene-exit');
+        }
+        this.renderCredit05();
+      }, 6400);
+    }
+
+    // 5. O crédito mais pessoal (Silêncio visual e tipografia serena)
+    renderCredit05() {
+      if (!this.stageInner) return;
+      this.stageInner.innerHTML = `
+        <div class="closure-scene" id="scene-c5">
+          <p class="credit-personal-text" id="c5-t1" style="opacity: 0; transform: translateY(10px); transition: all 1.3s ease;">
+            Eu poderia ter feito muita coisa diferente.
+          </p>
+          <p class="credit-personal-text" id="c5-t2" style="display: none; opacity: 0; transform: translateY(10px); transition: all 1.3s ease;">
+            Mas fiz o melhor que consegui com o tempo que tive.
+          </p>
+          <p class="credit-personal-text" id="c5-t3" style="display: none; opacity: 0; transform: translateY(10px); transition: all 1.3s ease;">
+            E espero que isso tenha sido suficiente para fazer você sorrir.
+          </p>
+          <p class="credit-personal-wish" id="c5-wish" style="display: none; opacity: 0; transform: translateY(10px); transition: all 1.3s ease;">
+            “Espero poder te ver novamente.”
+          </p>
+        </div>
+      `;
+
+      const sc = this.stageInner.querySelector('#scene-c5');
+      const t1 = this.stageInner.querySelector('#c5-t1');
+      const t2 = this.stageInner.querySelector('#c5-t2');
+      const t3 = this.stageInner.querySelector('#c5-t3');
+      const wish = this.stageInner.querySelector('#c5-wish');
+
+      this.addTimeout(() => {
+        if (sc) sc.classList.add('scene-active');
+        if (t1) {
+          t1.style.opacity = '1';
+          t1.style.transform = 'translateY(0)';
+        }
+      }, 200);
+
+      // Desaparece frase 1 e surge frase 2
+      this.addTimeout(() => {
+        if (t1) {
+          t1.style.opacity = '0';
+          t1.style.transform = 'translateY(-10px)';
+        }
+      }, 2400);
+
+      this.addTimeout(() => {
+        if (t1) t1.style.display = 'none';
+        if (t2) {
+          t2.style.display = 'block';
+          requestAnimationFrame(() => {
+            t2.style.opacity = '1';
+            t2.style.transform = 'translateY(0)';
+          });
+        }
+      }, 3100);
+
+      // Desaparece frase 2 e surge frase 3
+      this.addTimeout(() => {
+        if (t2) {
+          t2.style.opacity = '0';
+          t2.style.transform = 'translateY(-10px)';
+        }
+      }, 5300);
+
+      this.addTimeout(() => {
+        if (t2) t2.style.display = 'none';
+        if (t3) {
+          t3.style.display = 'block';
+          requestAnimationFrame(() => {
+            t3.style.opacity = '1';
+            t3.style.transform = 'translateY(0)';
+          });
+        }
+      }, 6000);
+
+      // Surge o desejo final "Espero poder te ver novamente."
+      this.addTimeout(() => {
+        if (wish) {
+          wish.style.display = 'block';
+          requestAnimationFrame(() => {
+            wish.style.opacity = '1';
+            wish.style.transform = 'translateY(0)';
+          });
+        }
+      }, 8200);
+
+      // O último crédito permanece no centro por aproximadamente 4 segundos
+      this.addTimeout(() => {
+        // Tudo para: a música termina, silêncio
+        if (this.sys && this.sys.audioManager) {
+          if (typeof this.sys.audioManager.fadeTo === 'function') {
+            this.sys.audioManager.fadeTo(0, 1200);
+          }
+        }
+        if (sc) {
+          sc.classList.remove('scene-active');
+          sc.classList.add('scene-exit');
+        }
+        // Inicia a sequência definitiva: ESTRELA → FIM → DESENHO À MÃO → 18 ANOS → FEITO COM AMOR → BOTÃO
+        this.startGrandStarPhase();
+      }, 12200);
+    }
+
+    // =========================================================================
+    // ✨ 2. A ESTRELA GIGANTE & 3. A ESTRELA COMEÇA A RESPIRAR & 4. PULSO DE LUZ
+    // =========================================================================
+    startGrandStarPhase() {
+      if (!this.stageInner) return;
+      this.stageInner.innerHTML = `
+        <div class="closure-scene scene-active" id="scene-giant-star">
+          <div class="closure-giant-star-container" id="giant-star-container">
+            <div class="giant-star-light-dot" id="giant-star-dot"></div>
+            
+            <svg class="closure-giant-star-svg" id="giant-star-svg" viewBox="0 0 500 500">
+              <defs>
+                <!-- Halo Suave Dourado/Rosa -->
+                <radialGradient id="giantHaloGrad" cx="50%" cy="50%" r="50%">
+                  <stop offset="0%" stop-color="#ffffff" />
+                  <stop offset="25%" stop-color="rgba(255, 235, 140, 0.85)" />
+                  <stop offset="55%" stop-color="rgba(255, 128, 171, 0.45)" />
+                  <stop offset="85%" stop-color="rgba(233, 30, 99, 0.15)" />
+                  <stop offset="100%" stop-color="rgba(255, 255, 255, 0)" />
+                </radialGradient>
+
+                <!-- Núcleo Branco com Brilho Rosa -->
+                <radialGradient id="giantCoreGrad" cx="50%" cy="50%" r="50%">
+                  <stop offset="0%" stop-color="#ffffff" />
+                  <stop offset="40%" stop-color="#fff5f8" />
+                  <stop offset="75%" stop-color="#ff80ab" />
+                  <stop offset="100%" stop-color="#e91e63" />
+                </radialGradient>
+
+                <!-- Gradiente dos Raios Principais -->
+                <linearGradient id="primaryRayGradV" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stop-color="rgba(255,255,255,0)" />
+                  <stop offset="45%" stop-color="#ffffff" />
+                  <stop offset="50%" stop-color="#ffd54f" />
+                  <stop offset="55%" stop-color="#ffffff" />
+                  <stop offset="100%" stop-color="rgba(255,255,255,0)" />
+                </linearGradient>
+
+                <linearGradient id="primaryRayGradH" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stop-color="rgba(255,255,255,0)" />
+                  <stop offset="45%" stop-color="#ffffff" />
+                  <stop offset="50%" stop-color="#ffd54f" />
+                  <stop offset="55%" stop-color="#ffffff" />
+                  <stop offset="100%" stop-color="rgba(255,255,255,0)" />
+                </linearGradient>
+
+                <!-- Raios Diagonais Rosa Suave -->
+                <linearGradient id="diagRayGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="rgba(255,255,255,0)" />
+                  <stop offset="50%" stop-color="#ff80ab" />
+                  <stop offset="100%" stop-color="rgba(255,255,255,0)" />
+                </linearGradient>
+              </defs>
+
+              <!-- Halo Luminoso Gigante -->
+              <circle cx="250" cy="250" r="230" fill="url(#giantHaloGrad)" />
+
+              <!-- 4 Raios Principais Pontiagudos Cinematográficos -->
+              <!-- Raio Vertical (Norte a Sul) -->
+              <path d="M250,15 L258,235 L250,485 L242,235 Z" fill="url(#primaryRayGradV)" filter="drop-shadow(0 0 16px rgba(255, 215, 0, 0.8))" />
+              <!-- Raio Horizontal (Oeste a Leste) -->
+              <path d="M15,250 L235,242 L485,250 L235,258 Z" fill="url(#primaryRayGradH)" filter="drop-shadow(0 0 16px rgba(255, 215, 0, 0.8))" />
+
+              <!-- 4 Raios Secundários Diamante (NW, NE, SE, SW) -->
+              <path d="M85,85 L242,235 L415,415 L258,265 Z" fill="url(#diagRayGrad)" opacity="0.85" />
+              <path d="M415,85 L258,235 L85,415 L242,265 Z" fill="url(#diagRayGrad)" opacity="0.85" />
+
+              <!-- 8 Raios Menores Radiantes -->
+              <g stroke="#ffffff" stroke-width="1.8" opacity="0.75">
+                <line x1="250" y1="110" x2="250" y2="150" />
+                <line x1="250" y1="350" x2="250" y2="390" />
+                <line x1="110" y1="250" x2="150" y2="250" />
+                <line x1="350" y1="250" x2="390" y2="250" />
+                <line x1="150" y1="150" x2="180" y2="180" />
+                <line x1="320" y1="320" x2="350" y2="350" />
+                <line x1="350" y1="150" x2="320" y2="180" />
+                <line x1="180" y1="320" x2="150" y2="350" />
+              </g>
+
+              <!-- Motes de Luz e Poeira Estelar Orbitando -->
+              <circle cx="250" cy="180" r="3.5" fill="#ffd54f" opacity="0.9" />
+              <circle cx="310" cy="220" r="2.8" fill="#ff80ab" opacity="0.85" />
+              <circle cx="290" cy="300" r="3.2" fill="#ffffff" opacity="0.9" />
+              <circle cx="190" cy="280" r="2.6" fill="#ffd54f" opacity="0.8" />
+              <circle cx="180" cy="210" r="3.0" fill="#ffffff" opacity="0.85" />
+
+              <!-- Núcleo Dourado e Branco Deslumbrante -->
+              <circle cx="250" cy="250" r="38" fill="url(#giantCoreGrad)" filter="drop-shadow(0 0 25px rgba(255, 64, 129, 0.95))" />
+              <circle cx="250" cy="250" r="18" fill="#ffffff" filter="drop-shadow(0 0 14px #ffffff)" />
+            </svg>
+          </div>
+          <div class="closure-radial-light-pulse" id="closure-radial-pulse"></div>
+        </div>
+      `;
+
+      const dot = this.stageInner.querySelector('#giant-star-dot');
+      const starSvg = this.stageInner.querySelector('#giant-star-svg');
+      const pulseWave = this.stageInner.querySelector('#closure-radial-pulse');
+
+      // 0,0s: Um ponto minúsculo de luz
+      this.addTimeout(() => {
+        if (dot) dot.classList.add('dot-visible');
+        if (this.sys && this.sys.audioManager && typeof this.sys.audioManager.playSparkleSound === 'function') {
+          this.sys.audioManager.playSparkleSound(0.5);
+        }
+      }, 100);
+
+      // 0,5s: O ponto cresce
+      this.addTimeout(() => {
+        if (dot) dot.classList.add('dot-grown');
+      }, 500);
+
+      // 1,0s: Começa a formar a estrela
+      this.addTimeout(() => {
+        if (starSvg) {
+          starSvg.style.opacity = '0.4';
+          starSvg.style.transform = 'scale(0.3) rotate(15deg)';
+        }
+      }, 1000);
+
+      // 1,8s: A estrela fica enorme e ocupa o centro da tela
+      this.addTimeout(() => {
+        if (dot) dot.style.opacity = '0';
+        if (starSvg) {
+          starSvg.classList.add('star-formed');
+        }
+        if (this.sys && this.sys.soundEffects && typeof this.sys.soundEffects.playChimeChord === 'function') {
+          this.sys.soundEffects.playChimeChord();
+        }
+      }, 1800);
+
+      // 3. A ESTRELA COMEÇA A RESPIRAR
+      // Aumenta e diminui suavemente, liberando partículas sem texto algum por alguns segundos
+      this.addTimeout(() => {
+        if (starSvg) starSvg.classList.add('star-breathing');
+        this.spawnBreathingStardustMotes();
+      }, 2400);
+
+      // 4. A ESTRELA EXPLODE EM LUZ (Implosão + PULSO de onda luminosa)
+      this.addTimeout(() => {
+        if (starSvg) starSvg.classList.add('star-imploding');
+        // Partículas convergem para o centro
+        this.convergeParticlesToCenter();
+      }, 5800);
+
+      // 💫 PULSO: Onda delicada de luz atravessa a tela inteira
+      this.addTimeout(() => {
+        if (pulseWave) pulseWave.classList.add('pulse-triggered');
+        if (this.whiteWash) {
+          this.whiteWash.classList.add('wash-visible');
+        }
+        if (this.sys && this.sys.audioManager && typeof this.sys.audioManager.playSparkleSound === 'function') {
+          this.sys.audioManager.playSparkleSound(0.95);
+        }
+      }, 6600);
+
+      // A estrela desaparece, o branco acalma
+      this.addTimeout(() => {
+        if (this.whiteWash) {
+          this.whiteWash.classList.remove('wash-visible');
+        }
+        const sc = this.stageInner.querySelector('#scene-giant-star');
+        if (sc) sc.style.display = 'none';
+        // 5. Silêncio. Tela vazia por ~1s antes da escrita de "Fim."
+        this.renderHandwrittenFimPhase();
+      }, 7600);
+    }
+
+    spawnBreathingStardustMotes() {
+      if (!this.canvas || !this.easterEggCtx) return;
+      const ctx = this.easterEggCtx;
+      const w = this.canvas.width;
+      const h = this.canvas.height;
+      const cx = w / 2;
+      const cy = h / 2;
+
+      const motes = [];
+      for (let i = 0; i < 35; i++) {
+        const ang = Math.random() * Math.PI * 2;
+        const dist = Math.random() * 80 + 30;
+        motes.push({
+          x: cx + Math.cos(ang) * dist,
+          y: cy + Math.sin(ang) * dist,
+          vx: Math.cos(ang) * (Math.random() * 1.2 + 0.3),
+          vy: Math.sin(ang) * (Math.random() * 1.2 + 0.3),
+          size: Math.random() * 2.8 + 1.2,
+          alpha: 0.9,
+          color: Math.random() > 0.4 ? '#ffd54f' : '#ff80ab'
+        });
+      }
+
+      const loop = () => {
+        if (this.isDestroyed || !this.canvas) return;
+        ctx.clearRect(0, 0, w, h);
+        let alive = 0;
+        motes.forEach(m => {
+          m.x += m.vx;
+          m.y += m.vy;
+          m.alpha -= 0.012;
+          if (m.alpha > 0) {
+            alive++;
+            ctx.save();
+            ctx.globalAlpha = m.alpha;
+            ctx.fillStyle = m.color;
+            ctx.shadowColor = m.color;
+            ctx.shadowBlur = 8;
+            ctx.beginPath();
+            ctx.arc(m.x, m.y, m.size, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+          }
+        });
+        if (alive > 0) {
+          this.animFrame = requestAnimationFrame(loop);
+        } else {
+          ctx.clearRect(0, 0, w, h);
+        }
+      };
+      this.animFrame = requestAnimationFrame(loop);
+    }
+
+    convergeParticlesToCenter() {
+      if (!this.canvas || !this.easterEggCtx) return;
+      const ctx = this.easterEggCtx;
+      const w = this.canvas.width;
+      const h = this.canvas.height;
+      const cx = w / 2;
+      const cy = h / 2;
+
+      const converging = [];
+      for (let i = 0; i < 40; i++) {
+        const ang = Math.random() * Math.PI * 2;
+        const dist = Math.random() * 260 + 90;
+        converging.push({
+          x: cx + Math.cos(ang) * dist,
+          y: cy + Math.sin(ang) * dist,
+          alpha: 0.85,
+          size: Math.random() * 2.5 + 1.2,
+          color: '#ffffff'
+        });
+      }
+
+      const loop = () => {
+        if (this.isDestroyed || !this.canvas) return;
+        ctx.clearRect(0, 0, w, h);
+        let active = 0;
+        converging.forEach(p => {
+          p.x += (cx - p.x) * 0.14;
+          p.y += (cy - p.y) * 0.14;
+          const dist = Math.hypot(cx - p.x, cy - p.y);
+          if (dist > 8) {
+            active++;
+            ctx.save();
+            ctx.globalAlpha = p.alpha;
+            ctx.fillStyle = p.color;
+            ctx.shadowColor = '#ffd54f';
+            ctx.shadowBlur = 10;
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+          }
+        });
+        if (active > 0) {
+          this.animFrame = requestAnimationFrame(loop);
+        } else {
+          ctx.clearRect(0, 0, w, h);
+        }
+      };
+      this.animFrame = requestAnimationFrame(loop);
+    }
+
+    // =========================================================================
+    // 5. Silêncio & "Fim." DESENHADO À MÃO & 6. AS LETRAS VIRAM LINHAS
+    // =========================================================================
+    renderHandwrittenFimPhase() {
+      if (!this.stageInner) return;
+      this.stageInner.innerHTML = `
+        <div class="closure-scene scene-active" id="scene-handwritten-fim">
+          <div class="handwritten-fim-box" id="handwritten-fim-box">
+            <svg class="handwritten-fim-svg" viewBox="0 0 340 170">
+              <!-- Letra F -->
+              <path class="handwritten-stroke" id="stroke-f1" d="M85,38 C83,64 82,98 84,132" />
+              <path class="handwritten-stroke" id="stroke-f2" d="M72,42 C98,38 124,39 146,40" />
+              <path class="handwritten-stroke" id="stroke-f3" d="M81,80 C98,78 116,79 130,80" />
+              
+              <!-- Letra i -->
+              <path class="handwritten-stroke" id="stroke-i" d="M165,72 C165,92 164,112 165,130" />
+              <circle class="handwritten-dot" id="dot-i" cx="165" cy="52" r="3.2" fill="#c2185b" opacity="0" />
+
+              <!-- Letra m -->
+              <path class="handwritten-stroke" id="stroke-m1" d="M195,74 C194,94 195,114 194,130" />
+              <path class="handwritten-stroke" id="stroke-m2" d="M195,90 C204,72 224,71 230,90 C231,105 230,118 230,130" />
+              <path class="handwritten-stroke" id="stroke-m3" d="M230,90 C240,72 260,71 266,90 C267,105 266,118 266,130" />
+
+              <!-- Ponto final . -->
+              <circle class="handwritten-dot" id="dot-final" cx="282" cy="128" r="3.6" fill="#c2185b" opacity="0" />
+
+              <!-- Risco da caneta embaixo -->
+              <path class="handwritten-stroke" id="stroke-underline" d="M72,148 C135,144 215,145 292,149" />
+            </svg>
+            <div class="handwritten-pen-tip" id="fim-pen-tip"></div>
+          </div>
+        </div>
+      `;
+
+      const fimBox = this.stageInner.querySelector('#handwritten-fim-box');
+      const tip = this.stageInner.querySelector('#fim-pen-tip');
+
+      const sF1 = this.stageInner.querySelector('#stroke-f1');
+      const sF2 = this.stageInner.querySelector('#stroke-f2');
+      const sF3 = this.stageInner.querySelector('#stroke-f3');
+      const sI = this.stageInner.querySelector('#stroke-i');
+      const dotI = this.stageInner.querySelector('#dot-i');
+      const sM1 = this.stageInner.querySelector('#stroke-m1');
+      const sM2 = this.stageInner.querySelector('#stroke-m2');
+      const sM3 = this.stageInner.querySelector('#stroke-m3');
+      const dotFinal = this.stageInner.querySelector('#dot-final');
+      const sUnderline = this.stageInner.querySelector('#stroke-underline');
+
+      // Animação de escrita progressiva com brilho na ponta
+      this.addTimeout(() => {
+        if (tip) tip.classList.add('tip-active');
+        if (sF1) sF1.classList.add('drawn');
+        if (this.sys && this.sys.audioManager && typeof this.sys.audioManager.playSparkleSound === 'function') {
+          this.sys.audioManager.playSparkleSound(0.35);
+        }
+      }, 400);
+
+      this.addTimeout(() => {
+        if (sF2) sF2.classList.add('drawn');
+        if (sF3) sF3.classList.add('drawn');
+      }, 900);
+
+      this.addTimeout(() => {
+        if (sI) sI.classList.add('drawn');
+        if (dotI) dotI.style.opacity = '1';
+      }, 1400);
+
+      this.addTimeout(() => {
+        if (sM1) sM1.classList.add('drawn');
+        if (sM2) sM2.classList.add('drawn');
+        if (sM3) sM3.classList.add('drawn');
+      }, 1900);
+
+      this.addTimeout(() => {
+        if (dotFinal) dotFinal.style.opacity = '1';
+        if (sUnderline) sUnderline.classList.add('drawn');
+      }, 2500);
+
+      this.addTimeout(() => {
+        if (tip) tip.classList.remove('tip-active');
+      }, 3100);
+
+      // 6. O texto fica alguns segundos... depois a tinta se desfaz em linhas que começam a se mover
+      this.addTimeout(() => {
+        if (fimBox) fimBox.classList.add('morphing-into-lines');
+      }, 5400);
+
+      // Transição para a criação do desenho
+      this.addTimeout(() => {
+        const sc = this.stageInner.querySelector('#scene-handwritten-fim');
+        if (sc) sc.style.display = 'none';
+        this.renderHandDrawnArtworkPhase();
+      }, 6900);
+    }
+
+    // =========================================================================
+    // 7. O DESENHO SENDO CRIADO (18 À MÃO + CORAÇÃO + FLOR + 18 ANOS + AMOR)
+    // =========================================================================
+    renderHandDrawnArtworkPhase() {
+      if (!this.stageInner) return;
+      this.stageInner.innerHTML = `
+        <div class="closure-scene scene-active" id="scene-handdrawn-art">
+          <div class="handdrawn-artwork-stage" id="handdrawn-stage">
+            <svg class="handdrawn-art-svg" viewBox="0 0 460 620">
+              <defs>
+                <!-- Gradiente Rosado Suave para Pétalas da Flor -->
+                <radialGradient id="drawnPetalGrad" cx="50%" cy="30%" r="70%">
+                  <stop offset="0%" stop-color="#ffffff" />
+                  <stop offset="45%" stop-color="#ff80ab" />
+                  <stop offset="90%" stop-color="#e91e63" />
+                  <stop offset="100%" stop-color="#c2185b" />
+                </radialGradient>
+
+                <!-- Miolo Dourado Luminoso -->
+                <radialGradient id="drawnCoreGrad" cx="50%" cy="50%" r="50%">
+                  <stop offset="0%" stop-color="#ffffff" />
+                  <stop offset="50%" stop-color="#ffd54f" />
+                  <stop offset="100%" stop-color="#ffb300" />
+                </radialGradient>
+
+                <!-- Folha Verde Suave -->
+                <linearGradient id="drawnLeafGrad" x1="0%" y1="100%" x2="100%" y2="0%">
+                  <stop offset="0%" stop-color="#2e7d32" />
+                  <stop offset="70%" stop-color="#4caf50" />
+                  <stop offset="100%" stop-color="#a5d6a7" />
+                </linearGradient>
+              </defs>
+
+              <!-- 14. A CONSTELAÇÃO AO REDOR DO DESENHO -->
+              <g class="drawn-constellation-group" id="drawn-constellation">
+                <path d="M95,85 L180,45 L280,45 L365,85 L395,185 L365,285 L320,380 L230,420 L140,380 L95,285 L65,185 Z" fill="none" stroke="rgba(255, 128, 171, 0.45)" stroke-width="1.1" stroke-dasharray="3,4" />
+                <circle class="constellation-dot" cx="95" cy="85" r="3.2" fill="#ffd54f" />
+                <circle class="constellation-dot" cx="180" cy="45" r="3.6" fill="#ffffff" />
+                <circle class="constellation-dot" cx="280" cy="45" r="3.6" fill="#ffd54f" />
+                <circle class="constellation-dot" cx="365" cy="85" r="3.2" fill="#ff80ab" />
+                <circle class="constellation-dot" cx="395" cy="185" r="3.4" fill="#ffffff" />
+                <circle class="constellation-dot" cx="365" cy="285" r="3.2" fill="#ffd54f" />
+                <circle class="constellation-dot" cx="320" cy="380" r="3.5" fill="#ff80ab" />
+                <circle class="constellation-dot" cx="230" cy="420" r="3.8" fill="#ffd54f" />
+                <circle class="constellation-dot" cx="140" cy="380" r="3.5" fill="#ffffff" />
+                <circle class="constellation-dot" cx="95" cy="285" r="3.2" fill="#ff80ab" />
+                <circle class="constellation-dot" cx="65" cy="185" r="3.4" fill="#ffd54f" />
+              </g>
+
+              <!-- 8. O NÚMERO 18 DESENHADO À MÃO -->
+              <!-- Dígito 1 -->
+              <path class="art-draw-path" id="draw-path-1" d="M174,75 C188,60 202,46 208,40 C208,66 207,106 206,146" />
+              <!-- Dígito 8 -->
+              <path class="art-draw-path" id="draw-path-8" d="M260,56 C242,38 216,48 220,74 C224,96 266,108 268,132 C270,156 236,164 222,144 C212,130 234,106 246,92 C258,78 255,62 240,56" />
+              <!-- Pequeno Coração no final do 8 -->
+              <path class="art-draw-path" id="draw-path-heart" d="M268,132 C280,120 296,120 304,132 C312,144 302,158 286,170 C270,158 262,144 270,132 C278,120 294,120 302,132" />
+
+              <!-- 9. Elementos ao Redor: Estrelas, Floreios e Curvas -->
+              <g id="draw-surroundings">
+                <!-- Estrela 1 -->
+                <path class="art-draw-path" id="draw-star-1" d="M142,56 L144,61 L149,63 L144,65 L142,70 L140,65 L135,63 L140,61 Z" />
+                <!-- Estrela 2 -->
+                <path class="art-draw-path" id="draw-star-2" d="M325,62 L327,67 L332,69 L327,71 L325,76 L323,71 L318,69 L323,67 Z" />
+                <!-- Curvas Decorativas -->
+                <path class="art-draw-path" id="draw-flourish-left" d="M152,132 C162,142 180,146 195,145" />
+                <path class="art-draw-path" id="draw-flourish-right" d="M280,152 C295,150 312,142 322,130" />
+              </g>
+
+              <!-- 11. "18 ANOS" ESCRITO À MÃO -->
+              <g id="draw-group-18anos">
+                <path class="art-draw-path" id="draw-text-18anos" d="M175,178 C184,170 192,162 195,158 V180 M210,165 C205,156 215,154 220,165 C224,174 212,182 222,182 M236,180 C236,172 242,168 248,172 V180 M258,170 C258,176 264,180 270,178 M280,172 C276,170 276,180 282,180 C288,180 288,170 282,170 M294,172 C290,170 290,176 295,176 C300,176 300,182 294,182" />
+                <path class="art-draw-path" id="draw-underline-18" d="M165,190 C195,188 265,188 295,190" />
+              </g>
+
+              <!-- 12. "feito com amor" (Caligrafia delicada) -->
+              <path class="art-draw-path" id="draw-text-amor" d="M138,225 C146,215 152,210 148,225 C146,234 148,242 154,236 M142,224 H154 M162,230 C158,226 166,222 170,228 C166,236 172,236 174,230 M182,218 V234 M190,222 V234 M186,227 H194 M202,230 C198,224 208,224 210,230 C210,236 200,236 202,230 M226,230 C222,224 232,224 234,230 M244,230 C240,224 250,224 252,230 C252,236 242,236 244,230 M262,234 V226 C264,222 274,222 274,234 M274,226 C276,222 286,222 286,234 M304,230 C300,224 310,224 312,230 M312,236 302,236 304,230 M322,234 V226 C324,222 334,222 334,234 M344,230 C340,224 350,224 352,230 C352,236 342,236 344,230 M362,234 V226 C364,222 372,224 374,226 C376,230 384,234 394,232" />
+
+              <!-- 13. A FLOR SE DESENHA (Caule, Folhas, 5 Pétalas, Preenchimento e Brilho) -->
+              <g id="draw-group-flower">
+                <!-- Caule -->
+                <path class="art-draw-path" id="draw-flower-stem" d="M230,265 C230,305 228,340 230,380" stroke="#2e7d32" />
+                
+                <!-- Folha 1 (Esquerda) -->
+                <path class="art-draw-path" id="draw-flower-leaf1" d="M229,315 C208,300 188,306 176,318 C194,328 216,324 229,318 Z" />
+                <path class="drawn-flower-petal-fill" id="fill-leaf1" d="M229,315 C208,300 188,306 176,318 C194,328 216,324 229,318 Z" fill="url(#drawnLeafGrad)" />
+
+                <!-- Folha 2 (Direita) -->
+                <path class="art-draw-path" id="draw-flower-leaf2" d="M231,332 C252,318 272,322 284,334 C266,344 244,340 231,334 Z" />
+                <path class="drawn-flower-petal-fill" id="fill-leaf2" d="M231,332 C252,318 272,322 284,334 C266,344 244,340 231,334 Z" fill="url(#drawnLeafGrad)" />
+
+                <!-- Pétala 1 (Norte) -->
+                <path class="art-draw-path" id="draw-petal-1" d="M230,265 C215,225 245,225 230,265 Z" />
+                <path class="drawn-flower-petal-fill" id="fill-petal-1" d="M230,265 C215,225 245,225 230,265 Z" fill="url(#drawnPetalGrad)" />
+
+                <!-- Pétala 2 (Nordeste) -->
+                <path class="art-draw-path" id="draw-petal-2" d="M230,265 C265,238 278,260 230,265 Z" />
+                <path class="drawn-flower-petal-fill" id="fill-petal-2" d="M230,265 C265,238 278,260 230,265 Z" fill="url(#drawnPetalGrad)" />
+
+                <!-- Pétala 3 (Sudeste) -->
+                <path class="art-draw-path" id="draw-petal-3" d="M230,265 C268,288 250,308 230,265 Z" />
+                <path class="drawn-flower-petal-fill" id="fill-petal-3" d="M230,265 C268,288 250,308 230,265 Z" fill="url(#drawnPetalGrad)" />
+
+                <!-- Pétala 4 (Sudoeste) -->
+                <path class="art-draw-path" id="draw-petal-4" d="M230,265 C210,308 192,288 230,265 Z" />
+                <path class="drawn-flower-petal-fill" id="fill-petal-4" d="M230,265 C210,308 192,288 230,265 Z" fill="url(#drawnPetalGrad)" />
+
+                <!-- Pétala 5 (Noroeste) -->
+                <path class="art-draw-path" id="draw-petal-5" d="M230,265 C182,260 195,238 230,265 Z" />
+                <path class="drawn-flower-petal-fill" id="fill-petal-5" d="M230,265 C182,260 195,238 230,265 Z" fill="url(#drawnPetalGrad)" />
+
+                <!-- Miolo Dourado Radiante -->
+                <circle class="drawn-flower-petal-fill" id="fill-flower-core" cx="230" cy="265" r="8" fill="url(#drawnCoreGrad)" filter="drop-shadow(0 0 8px rgba(255, 215, 0, 0.8))" />
+              </g>
+            </svg>
+
+            <!-- 16. A Frase: "Feliz aniversário, Issamara." -->
+            <p class="handdrawn-iss-greeting" id="iss-final-greeting">
+              Feliz aniversário, Issamara. ❤️
+            </p>
+          </div>
+
+          <!-- Estrela Solitária do Fechamento -->
+          <div class="lone-star-ascender" id="lone-star-ascender">✦</div>
+        </div>
+      `;
+
+      const stage = this.stageInner.querySelector('#handdrawn-stage');
+      const p1 = this.stageInner.querySelector('#draw-path-1');
+      const p8 = this.stageInner.querySelector('#draw-path-8');
+      const pHeart = this.stageInner.querySelector('#draw-path-heart');
+      const pStar1 = this.stageInner.querySelector('#draw-star-1');
+      const pStar2 = this.stageInner.querySelector('#draw-star-2');
+      const pFlourishL = this.stageInner.querySelector('#draw-flourish-left');
+      const pFlourishR = this.stageInner.querySelector('#draw-flourish-right');
+
+      const p18Anos = this.stageInner.querySelector('#draw-text-18anos');
+      const pUnderline18 = this.stageInner.querySelector('#draw-underline-18');
+      const pAmor = this.stageInner.querySelector('#draw-text-amor');
+
+      const fStem = this.stageInner.querySelector('#draw-flower-stem');
+      const fLeaf1 = this.stageInner.querySelector('#draw-flower-leaf1');
+      const fLeaf2 = this.stageInner.querySelector('#draw-flower-leaf2');
+      const fPetal1 = this.stageInner.querySelector('#draw-petal-1');
+      const fPetal2 = this.stageInner.querySelector('#draw-petal-2');
+      const fPetal3 = this.stageInner.querySelector('#draw-petal-3');
+      const fPetal4 = this.stageInner.querySelector('#draw-petal-4');
+      const fPetal5 = this.stageInner.querySelector('#draw-petal-5');
+      const flowerFills = this.stageInner.querySelectorAll('.drawn-flower-petal-fill');
+
+      const constellation = this.stageInner.querySelector('#drawn-constellation');
+      const greeting = this.stageInner.querySelector('#iss-final-greeting');
+      const loneStar = this.stageInner.querySelector('#lone-star-ascender');
+
+      // 8. O NÚMERO 18: Desenha o "1"
+      this.addTimeout(() => {
+        if (p1) p1.classList.add('path-drawn');
+        if (this.sys && this.sys.audioManager && typeof this.sys.audioManager.playSparkleSound === 'function') {
+          this.sys.audioManager.playSparkleSound(0.4);
+        }
+      }, 400);
+
+      // Pausa e desenha o "8"
+      this.addTimeout(() => {
+        if (p8) p8.classList.add('path-drawn');
+      }, 1800);
+
+      // No final do 8, desenha o coração
+      this.addTimeout(() => {
+        if (pHeart) pHeart.classList.add('path-drawn');
+      }, 3200);
+
+      // 9. O desenho continua: estrelas e floreios ao redor
+      this.addTimeout(() => {
+        if (pStar1) pStar1.classList.add('path-drawn');
+        if (pStar2) pStar2.classList.add('path-drawn');
+        if (pFlourishL) pFlourishL.classList.add('path-drawn');
+        if (pFlourishR) pFlourishR.classList.add('path-drawn');
+      }, 4200);
+
+      // 10. O DESENHO GANHA VIDA: Brilho percorre todo o desenho (1 -> 8 -> coração -> estrelas)
+      this.addTimeout(() => {
+        const pathsToGlow = [p1, p8, pHeart, pStar1, pStar2, pFlourishL, pFlourishR];
+        pathsToGlow.forEach(p => {
+          if (p) p.classList.add('path-activated');
+        });
+        if (this.sys && this.sys.soundEffects && typeof this.sys.soundEffects.playChimeChord === 'function') {
+          this.sys.soundEffects.playChimeChord();
+        }
+      }, 5400);
+
+      // 11. "18 ANOS": Escrito pela mesma linha
+      this.addTimeout(() => {
+        if (p18Anos) p18Anos.classList.add('path-drawn');
+        if (pUnderline18) pUnderline18.classList.add('path-drawn');
+      }, 7600);
+
+      // 12. "feito com amor": Caligrafia delicada
+      this.addTimeout(() => {
+        if (pAmor) pAmor.classList.add('path-drawn');
+      }, 9200);
+
+      // 13. A FLOR SE DESENHA: Caule, Folhas e Pétala por pétala
+      this.addTimeout(() => {
+        if (fStem) fStem.classList.add('path-drawn');
+      }, 11200);
+
+      this.addTimeout(() => {
+        if (fLeaf1) fLeaf1.classList.add('path-drawn');
+        if (fLeaf2) fLeaf2.classList.add('path-drawn');
+      }, 12000);
+
+      this.addTimeout(() => {
+        if (fPetal1) fPetal1.classList.add('path-drawn');
+      }, 12800);
+
+      this.addTimeout(() => {
+        if (fPetal2) fPetal2.classList.add('path-drawn');
+      }, 13300);
+
+      this.addTimeout(() => {
+        if (fPetal3) fPetal3.classList.add('path-drawn');
+      }, 13800);
+
+      this.addTimeout(() => {
+        if (fPetal4) fPetal4.classList.add('path-drawn');
+      }, 14300);
+
+      this.addTimeout(() => {
+        if (fPetal5) fPetal5.classList.add('path-drawn');
+      }, 14800);
+
+      // A flor ganha cor suave, segunda camada e brilho
+      this.addTimeout(() => {
+        flowerFills.forEach(fill => fill.classList.add('fill-active'));
+        if (this.sys && this.sys.audioManager && typeof this.sys.audioManager.playSparkleSound === 'function') {
+          this.sys.audioManager.playSparkleSound(0.7);
+        }
+      }, 15500);
+
+      // 14. A CONSTELAÇÃO APARECE
+      this.addTimeout(() => {
+        if (constellation) constellation.classList.add('constellation-active');
+      }, 16600);
+
+      // 15. A ANIMAÇÃO FINAL DO DESENHO:
+      // Zoom lento da câmera, estrelas brilham, flor balança, pulsa 3x e onda luminosa
+      this.addTimeout(() => {
+        if (stage) {
+          stage.classList.add('camera-zooming');
+          stage.classList.add('stage-triple-pulsing');
+        }
+      }, 17600);
+
+      // Na 3ª pulsação: onda luminosa
+      this.addTimeout(() => {
+        if (this.sys && this.sys.soundEffects && typeof this.sys.soundEffects.playChimeChord === 'function') {
+          this.sys.soundEffects.playChimeChord();
+        }
+      }, 21000);
+
+      // 16. A FRASE APARECE: "Feliz aniversário, Issamara."
+      this.addTimeout(() => {
+        if (greeting) greeting.classList.add('greeting-visible');
+      }, 22200);
+
+      // 17. TUDO COMEÇA A DESAPARECER (DESPEDIDA)
+      // O desenho é desfeito ao contrário em ordem reversa
+      this.addTimeout(() => {
+        if (greeting) greeting.classList.add('greeting-erased');
+        if (constellation) constellation.classList.add('constellation-erased');
+        flowerFills.forEach(fill => fill.classList.add('fill-erased'));
+
+        const allDrawnPaths = this.stageInner.querySelectorAll('.art-draw-path');
+        allDrawnPaths.forEach(p => p.classList.add('path-erased'));
+      }, 27000);
+
+      // 18. ÚLTIMA ESTRELA: Fica no centro, pisca 1x, sobe e desaparece
+      this.addTimeout(() => {
+        if (loneStar) {
+          loneStar.classList.add('star-appeared');
+        }
+      }, 29600);
+
+      this.addTimeout(() => {
+        if (loneStar) {
+          loneStar.classList.add('star-ascend-away');
+        }
+      }, 31200);
+
+      // 19. AGORA SIM: FIM & 20. O BOTÃO
+      this.addTimeout(() => {
+        const sc = this.stageInner.querySelector('#scene-handdrawn-art');
+        if (sc) sc.style.display = 'none';
+        this.renderSceneFinalQuietFimAndButton();
+      }, 34200);
+    }
+
+    // =========================================================================
+    // 19. AGORA SIM: FIM & 20. O BOTÃO DEFINITIVO
+    // =========================================================================
+    renderSceneFinalQuietFimAndButton() {
+      if (!this.stageInner) return;
+      this.stageInner.innerHTML = `
+        <div class="closure-scene scene-active" id="scene-peace-final">
+          <div class="final-peace-card">
+            <!-- 19. "Fim." quieto e sereno -->
+            <h1 class="final-peace-fim" id="final-quiet-fim">Fim.</h1>
+            <p class="final-peace-thanks" id="final-quiet-thanks">Obrigado por chegar até aqui.</p>
+
+            <!-- 20. O BOTÃO: desenhado pela linha de luz -->
+            <div class="closure-btn-section">
+              <div class="btn-trace-container">
+                <svg class="btn-trace-svg" viewBox="0 0 280 64">
+                  <rect class="btn-trace-rect" id="btn-trace-rect" x="3" y="3" width="274" height="58" rx="29" fill="none" stroke="#ffd54f" stroke-width="2.5" />
+                </svg>
+                <button id="btn-encerrar-exp-final" class="btn-cinematic-encerrar">
+                  <span class="btn-sparkle">✦</span> Encerrar experiência
+                </button>
+              </div>
+
+              <!-- Ações Secundárias Sutis -->
+              <div class="closure-sub-actions" id="closure-sub-actions">
+                <button id="btn-cinematic-restart" class="btn-cinematic-subtle">
+                  <i class="fas fa-redo mr-1"></i> Recomeçar experiência
+                </button>
+                <button id="btn-cinematic-pdf" class="btn-cinematic-subtle">
+                  <i class="fas fa-file-pdf mr-1"></i> Baixar a Carta em PDF
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      const fimText = this.stageInner.querySelector('#final-quiet-fim');
+      const thanksText = this.stageInner.querySelector('#final-quiet-thanks');
+      const traceRect = this.stageInner.querySelector('#btn-trace-rect');
+      const btnEncerrar = this.stageInner.querySelector('#btn-encerrar-exp-final');
+      const subActions = this.stageInner.querySelector('#closure-sub-actions');
+
+      // "Fim." aparece calmo
+      this.addTimeout(() => {
+        if (fimText) fimText.classList.add('revealed');
+      }, 400);
+
+      // "Obrigado por chegar até aqui."
+      this.addTimeout(() => {
+        if (thanksText) thanksText.classList.add('revealed');
+      }, 1600);
+
+      // Borda do botão desenhada pela linha
+      this.addTimeout(() => {
+        if (traceRect) traceRect.classList.add('traced');
+      }, 2600);
+
+      // Revela o botão em repouso
+      this.addTimeout(() => {
+        if (btnEncerrar) btnEncerrar.classList.add('btn-revealed');
+        if (subActions) subActions.classList.add('actions-revealed');
+      }, 3800);
+
+      // Eventos
+      if (btnEncerrar) {
+        btnEncerrar.addEventListener('click', () => {
+          this.handleFinalClosureClick();
+        });
+      }
+
+      const btnRestart = this.stageInner.querySelector('#btn-cinematic-restart');
+      if (btnRestart) {
+        btnRestart.addEventListener('click', () => {
+          this.destroy();
+          if (this.sys && typeof this.sys.restartExperience === 'function') {
+            this.sys.restartExperience();
+          } else {
+            window.location.reload();
+          }
+        });
+      }
+
+      const btnPdf = this.stageInner.querySelector('#btn-cinematic-pdf');
+      if (btnPdf) {
+        btnPdf.addEventListener('click', () => {
+          if (this.sys && typeof this.sys.downloadPdf === 'function') {
+            this.sys.downloadPdf();
+          }
+        });
+      }
+    }
+
+    // 9. Ao tocar em "Encerrar experiência"
+    // Botão é pressionado -> site começa a desaparecer -> flor se desfaz em partículas que sobem
+    // -> "Obrigado por chegar até aqui." -> "Feliz aniversário, Issamara. ❤️" -> fade branco
+    handleFinalClosureClick() {
+      if (this.sys) {
+        if (this.sys.audioManager) {
+          if (typeof this.sys.audioManager.playChime === 'function') {
+            this.sys.audioManager.playChime();
+          } else if (typeof this.sys.audioManager.playSparkleSound === 'function') {
+            this.sys.audioManager.playSparkleSound(1.0);
+          }
+          if (typeof this.sys.audioManager.fadeTo === 'function') {
+            this.sys.audioManager.fadeTo(0, 2400);
+          }
+        }
+        if (this.sys.soundEffects && typeof this.sys.soundEffects.playChimeChord === 'function') {
+          this.sys.soundEffects.playChimeChord();
+        }
+      }
+
+      // Desaparece botão e ações
+      const btnSection = this.stageInner.querySelector('.closure-btn-section');
+      if (btnSection) {
+        btnSection.style.opacity = '0';
+        btnSection.style.transform = 'scale(0.9)';
+        btnSection.style.transition = 'all 1.0s ease';
+      }
+
+      // A florzinha dos créditos se desfaz em partículas que sobem
+      this.animateFlowerDissolvingStardust();
+
+      // Tela começa a ficar suavemente branca
+      this.addTimeout(() => {
+        if (this.whiteWash) {
+          this.whiteWash.classList.add('wash-visible');
+        }
+      }, 1400);
+
+      // Antes de desaparecer completamente, uma última frase aparece
+      this.addTimeout(() => {
+        if (!this.stageInner) return;
+        this.stageInner.innerHTML = `
+          <div class="closure-scene scene-active" id="scene-farewell-words">
+            <p class="farewell-final-p1" id="farewell-p1" style="opacity: 0; transform: translateY(10px); transition: all 1.2s ease;">
+              Obrigado por chegar até aqui.
+            </p>
+            <h2 class="farewell-final-p2" id="farewell-p2" style="opacity: 0; transform: translateY(12px); transition: all 1.2s ease;">
+              Feliz aniversário, Issamara. ❤️
+            </h2>
+          </div>
+        `;
+        const p1 = this.stageInner.querySelector('#farewell-p1');
+        const p2 = this.stageInner.querySelector('#farewell-p2');
+
+        requestAnimationFrame(() => {
+          if (p1) {
+            p1.style.opacity = '1';
+            p1.style.transform = 'translateY(0)';
+          }
+        });
+
+        setTimeout(() => {
+          if (p2) {
+            p2.style.opacity = '1';
+            p2.style.transform = 'translateY(0)';
+          }
+        }, 1600);
+      }, 2600);
+
+      // Fade completo para branco e em seguida transição para a tela final + Easter Egg
+      this.addTimeout(() => {
+        this.renderFinalLoneStarAndEasterEgg();
+      }, 7200);
+    }
+
+    animateFlowerDissolvingStardust() {
+      if (!this.canvas || !this.easterEggCtx) return;
+      const ctx = this.easterEggCtx;
+      const cx = this.canvas.width / 2;
+      const cy = this.canvas.height / 2;
+
+      const particles = [];
+      for (let i = 0; i < 45; i++) {
+        const ang = Math.random() * Math.PI * 2;
+        const dist = Math.random() * 25;
+        particles.push({
+          x: cx + Math.cos(ang) * dist,
+          y: cy + Math.sin(ang) * dist,
+          vx: (Math.random() - 0.5) * 1.5,
+          vy: -(Math.random() * 2.5 + 1.0),
+          alpha: 1.0,
+          size: Math.random() * 3.5 + 1.5,
+          color: Math.random() > 0.4 ? '#ffd54f' : '#ff80ab'
+        });
+      }
+
+      const loop = () => {
+        if (this.isDestroyed || !this.canvas) return;
+        ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+        let activeCount = 0;
+        particles.forEach(p => {
+          p.x += p.vx;
+          p.y += p.vy;
+          p.alpha -= 0.016;
+          if (p.alpha > 0) {
+            activeCount++;
+            ctx.save();
+            ctx.globalAlpha = p.alpha;
+            ctx.fillStyle = p.color;
+            ctx.shadowColor = p.color;
+            ctx.shadowBlur = 8;
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+          }
+        });
+
+        if (activeCount > 0) {
+          this.animFrame = requestAnimationFrame(loop);
+        } else {
+          ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        }
+      };
+
+      this.animFrame = requestAnimationFrame(loop);
+    }
+
+    // 10. A tela final & 🌌 EASTER EGG VISUAL DO ENCERRAMENTO (Estrela desenha o numeral 18)
+    renderFinalLoneStarAndEasterEgg() {
+      if (!this.stageInner) return;
+      this.stageInner.innerHTML = `
+        <div class="closure-scene scene-active" id="scene-final-star">
+          <div class="final-lone-star star-pulse" id="final-lone-star"></div>
+          <h1 class="final-word-fim" id="final-word-fim">Fim.</h1>
+          <button class="btn-final-replay" id="btn-final-replay">↻ Recomeçar experiência</button>
+          <button class="btn-final-pdf-link" id="btn-final-pdf-link"><i class="fas fa-file-pdf mr-1"></i> Baixar Carta em PDF</button>
+        </div>
+      `;
+
+      const starEl = this.stageInner.querySelector('#final-lone-star');
+      const fimEl = this.stageInner.querySelector('#final-word-fim');
+      const btnReplay = this.stageInner.querySelector('#btn-final-replay');
+      const btnPdf = this.stageInner.querySelector('#btn-final-pdf-link');
+
+      // Suaviza o fundo branco para o tom ultra sereno
+      if (this.whiteWash) {
+        this.whiteWash.classList.remove('wash-visible');
+      }
+
+      // Estrela pulsa: 1... 2... e no 3º pulso ativa o Easter Egg
+      this.addTimeout(() => {
+        if (starEl) starEl.style.opacity = '0';
+        this.runEasterEggDrawEighteen(() => {
+          // Após desenhar o 18 e apagar:
+          if (fimEl) fimEl.classList.add('fim-revealed');
+          // Silêncio durante alguns segundos, então surge o botão de recomeçar
+          this.addTimeout(() => {
+            if (btnReplay) btnReplay.classList.add('replay-revealed');
+            if (btnPdf) btnPdf.classList.add('pdf-revealed');
+          }, 3200);
+        });
+      }, 3400);
+
+      if (btnReplay) {
+        btnReplay.addEventListener('click', () => {
+          this.destroy();
+          if (this.sys && typeof this.sys.restartExperience === 'function') {
+            this.sys.restartExperience();
+          } else {
+            window.location.reload();
+          }
+        });
+      }
+
+      if (btnPdf) {
+        btnPdf.addEventListener('click', () => {
+          if (this.sys && typeof this.sys.downloadPdf === 'function') {
+            this.sys.downloadPdf();
+          }
+        });
+      }
+    }
+
+    /**
+     * 🌌 EASTER EGG VISUAL DO ENCERRAMENTO
+     * Uma estrelinha atravessa lentamente a tela, deixando um rastro luminoso que escreve "18".
+     * O número permanece por 2 segundos e desaparece. Fim definitivo.
+     */
+    runEasterEggDrawEighteen(onComplete) {
+      if (!this.canvas || !this.easterEggCtx) {
+        if (onComplete) onComplete();
+        return;
+      }
+
+      const ctx = this.easterEggCtx;
+      const w = this.canvas.width;
+      const h = this.canvas.height;
+      const cx = w / 2;
+      const cy = h / 2 - 25;
+
+      // Gera os pontos paramétricos do número "18"
+      const path18 = [];
+
+      // Numeral "1"
+      const x1 = cx - 35;
+      // Gancho do topo
+      for (let s = 0; s <= 12; s++) {
+        const t = s / 12;
+        path18.push({ x: (x1 - 18) + t * 18, y: (cy - 16) - t * 24 });
+      }
+      // Haste vertical
+      for (let s = 0; s <= 25; s++) {
+        const t = s / 25;
+        path18.push({ x: x1, y: (cy - 40) + t * 80 });
+      }
+      // Base serif
+      for (let s = 0; s <= 12; s++) {
+        const t = s / 12;
+        path18.push({ x: (x1 - 15) + t * 30, y: cy + 40 });
+      }
+
+      // Numeral "8" via Lemniscata Paramétrica Suave
+      const x8 = cx + 32;
+      const totalSteps8 = 65;
+      for (let s = 0; s <= totalSteps8; s++) {
+        const angle = (s / totalSteps8) * Math.PI * 2;
+        const px = x8 + 22 * Math.sin(angle);
+        const py = cy - 38 * Math.sin(angle * 2);
+        path18.push({ x: px, y: py });
+      }
+
+      let stepIndex = 0;
+      const drawnRibbon = [];
+      let phase = 'drawing'; // 'drawing' | 'holding' | 'dissolving'
+      let holdTimer = 0;
+      let dissolveAlpha = 1.0;
+
+      const loop = () => {
+        if (this.isDestroyed || !this.canvas) return;
+        ctx.clearRect(0, 0, w, h);
+
+        if (phase === 'drawing') {
+          // Adiciona pontos
+          for (let k = 0; k < 2 && stepIndex < path18.length; k++) {
+            const pt = path18[stepIndex];
+            drawnRibbon.push(pt);
+            stepIndex++;
+          }
+
+          if (stepIndex >= path18.length) {
+            phase = 'holding';
+            holdTimer = performance.now();
+          }
+        } else if (phase === 'holding') {
+          if (performance.now() - holdTimer > 2100) {
+            phase = 'dissolving';
+          }
+        } else if (phase === 'dissolving') {
+          dissolveAlpha -= 0.024;
+          if (dissolveAlpha <= 0) {
+            ctx.clearRect(0, 0, w, h);
+            if (onComplete) onComplete();
+            return;
+          }
+        }
+
+        // Renderiza a fita de luz do numeral 18
+        if (drawnRibbon.length > 1) {
+          ctx.save();
+          ctx.globalAlpha = dissolveAlpha;
+          ctx.strokeStyle = '#ffd54f';
+          ctx.shadowColor = '#ffd54f';
+          ctx.shadowBlur = 14;
+          ctx.lineWidth = 3.5;
+          ctx.lineCap = 'round';
+          ctx.lineJoin = 'round';
+
+          ctx.beginPath();
+          ctx.moveTo(drawnRibbon[0].x, drawnRibbon[0].y);
+          for (let i = 1; i < drawnRibbon.length; i++) {
+            ctx.lineTo(drawnRibbon[i].x, drawnRibbon[i].y);
+          }
+          ctx.stroke();
+
+          // Brilho central branco
+          ctx.strokeStyle = '#ffffff';
+          ctx.shadowBlur = 4;
+          ctx.lineWidth = 1.4;
+          ctx.stroke();
+
+          // Estrela desenhadora na ponta
+          if (phase === 'drawing' && drawnRibbon.length > 0) {
+            const tip = drawnRibbon[drawnRibbon.length - 1];
+            ctx.fillStyle = '#ffffff';
+            ctx.shadowColor = '#ffd54f';
+            ctx.shadowBlur = 18;
+            ctx.beginPath();
+            ctx.arc(tip.x, tip.y, 4.5, 0, Math.PI * 2);
+            ctx.fill();
+          }
+
+          ctx.restore();
+        }
+
+        this.animFrame = requestAnimationFrame(loop);
+      };
+
+      this.animFrame = requestAnimationFrame(loop);
+    }
+  }
+
+  // ==========================================================================
   // 31. Estado final para reconexões futuras
   // ==========================================================================
   class EAgoraFinaleController {
@@ -3571,6 +5331,12 @@
             <span class="eagora-sig-label">Com carinho,</span>
             <span class="eagora-sig-name" id="eagora-sig-name">Luis</span>
           </div>
+          <!-- Botão para Iniciar os Créditos Cinematográficos & Encerramento -->
+          <div class="eagora-farewell-action-box" id="eagora-farewell-action-box" style="margin-top: 18px; opacity: 0; transform: translateY(10px); transition: all 1.2s ease;">
+            <button class="btn-open-closure-exp" id="btn-farewell-closure">
+              <span>🌸</span> Ver Créditos Finais & Encerramento
+            </button>
+          </div>
         </div>
 
         <!-- A Pequena Estrela Solitária do Fechamento -->
@@ -3599,6 +5365,9 @@
 
             <!-- Ações Conclusivas Aprovadas -->
             <div class="eagora-actions-row" style="margin-top: 20px; display: flex; flex-direction: column; align-items: center; gap: 12px; width: 100%;">
+              <button class="btn-open-closure-exp" id="btn-start-cinematic-closure" style="width: 100%; max-width: 320px;">
+                <span>🌸</span> Ver Créditos Finais & Encerramento
+              </button>
               <button class="eagora-btn btn-pdf" id="btn-eagora-pdf" style="width: 100%; max-width: 320px; font-weight: 700; font-size: 15px; padding: 13px 24px; background: linear-gradient(135deg, #e91e63, #c2185b); color: #fff; border: none; border-radius: 50px; box-shadow: 0 6px 20px rgba(233, 30, 99, 0.35); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: transform 0.2s ease, box-shadow 0.2s ease;">
                 <i class="fas fa-file-pdf"></i> Baixar a Carta em PDF
               </button>
@@ -4008,6 +5777,38 @@
             window.location.reload();
           }
         });
+      }
+
+      // Inicia Créditos Cinematográficos & Encerramento
+      const btnFarewellClosure = this.stage.querySelector('#btn-farewell-closure');
+      if (btnFarewellClosure) {
+        btnFarewellClosure.addEventListener('click', () => {
+          this.startCinematicCreditsClosure();
+        });
+      }
+
+      const btnStartClosure = this.stage.querySelector('#btn-start-cinematic-closure');
+      if (btnStartClosure) {
+        btnStartClosure.addEventListener('click', () => {
+          this.startCinematicCreditsClosure();
+        });
+      }
+    }
+
+    startCinematicCreditsClosure() {
+      if (this.cinematicCreditsStarted) return;
+      this.cinematicCreditsStarted = true;
+
+      // Se a tela estática anterior estiver visível, oculta para dar lugar ao cinema
+      if (this.creditsScreen) {
+        this.creditsScreen.style.display = 'none';
+      }
+
+      if (this.sys) {
+        if (this.sys.activeCinematicClosure) {
+          this.sys.activeCinematicClosure.destroy();
+        }
+        this.sys.activeCinematicClosure = new CinematicCreditsClosureController(this.sys, this.flowerWrap);
       }
     }
 
@@ -4541,95 +6342,28 @@ Luis Fernando Santos
         this.animateSignaturePlay();
       }, 40500);
 
-      // ========================================================
-      // 24. ÚLTIMA PAUSA CONTEMPLATIVA
-      // 25. ENCERRAMENTO VISUAL: Flor perde luminosidade, resta 1 estrela
-      // ========================================================
+      // Revela o convite para os Créditos Cinematográficos & Encerramento
       this.addTimeout(() => {
-        if (this.flowerWrap) {
-          this.flowerWrap.classList.add('flower-fade-dim');
+        const farewellActionBox = this.stage.querySelector('#eagora-farewell-action-box');
+        if (farewellActionBox) {
+          farewellActionBox.style.opacity = '1';
+          farewellActionBox.style.transform = 'translateY(0)';
         }
-        if (this.farewellWrap) {
-          this.farewellWrap.classList.add('farewell-fade-out');
-        }
-      }, 47200);
-
-      this.addTimeout(() => {
-        if (this.loneStar) {
-          this.loneStar.classList.add('star-visible');
-        }
-      }, 49500);
-
-      this.addTimeout(() => {
-        if (this.loneStar) {
-          this.loneStar.classList.remove('star-visible');
-          this.loneStar.classList.add('star-fade');
-        }
-      }, 51500);
+      }, 42200);
 
       // ========================================================
-      // 26. “Fim.”
+      // 24. PAUSA CONTEMPLATIVA & ENTRADA NOS CRÉDITOS CINEMATOGRÁFICOS
+      // (Se a pessoa não apertar o botão antes, inicia de forma fluida e natural)
       // ========================================================
       this.addTimeout(() => {
-        if (this.simpleEnd) {
-          this.simpleEnd.classList.add('end-visible');
+        if (!this.cinematicCreditsStarted) {
+          this.startCinematicCreditsClosure();
         }
-      }, 52500);
-
-      this.addTimeout(() => {
-        if (this.simpleEnd) {
-          this.simpleEnd.classList.remove('end-visible');
-          this.simpleEnd.classList.add('end-fade');
-        }
-      }, 55000);
-
-      // ========================================================
-      // 27 & 28. CRÉDITOS ÚNICOS APROVADOS & “Espero poder te ver novamente.”
-      // ========================================================
-      this.addTimeout(() => {
-        if (this.creditsScreen) {
-          this.creditsScreen.classList.add('credits-visible');
-        }
-      }, 56200);
-
-      // ========================================================
-      // 29 & 30. NOVO ENCERRAMENTO SUAVE
-      // ========================================================
-      // Frase 1: "Bom, terminamos por aqui." + Pétalas suaves caindo
-      this.addTimeout(() => {
-        if (this.finalClosingSection) {
-          this.finalClosingSection.classList.add('closing-visible');
-        }
-        if (this.closingPhrase1) {
-          this.closingPhrase1.classList.add('phrase-visible');
-        }
-        this.fallingPetalsActive = true;
-        this.pollenActive = true;
-      }, 60000);
-
-      // Frase 2 (após pausa suave): "Mas o dia continua sendo uma maravilha. 🌸"
-      this.addTimeout(() => {
-        if (this.closingPhrase2) {
-          this.closingPhrase2.classList.add('phrase-visible');
-        }
-      }, 63200);
+      }, 48800);
     }
 
     triggerCreditsNow() {
-      if (this.creditsScreen) {
-        this.creditsScreen.classList.add('credits-visible');
-      }
-      if (this.finalClosingSection) {
-        this.finalClosingSection.classList.add('closing-visible');
-      }
-      if (this.closingPhrase1) {
-        this.closingPhrase1.classList.add('phrase-visible');
-      }
-      if (this.closingPhrase2) {
-        this.closingPhrase2.classList.add('phrase-visible');
-      }
-      this.fallingPetalsActive = true;
-      this.pollenActive = true;
+      this.startCinematicCreditsClosure();
     }
 
     /**
@@ -4714,7 +6448,198 @@ Luis Fernando Santos
   window.EAgoraFinaleController = EAgoraFinaleController;
   const DefinitiveFinaleController = EAgoraFinaleController;
 
-    // ==========================================================================
+  // ==========================================================================
+  // 4.4. BOTANICAL HEART PARTICLE SYSTEM (Corações Rosa Flutuantes e Desvanecentes)
+  // ==========================================================================
+  class BotanicalHeartParticleSystem {
+    constructor(canvas) {
+      this.canvas = canvas || document.getElementById('botanical-hearts-canvas');
+      this.ctx = this.canvas ? this.canvas.getContext('2d') : null;
+      this.particles = [];
+      this.rafId = null;
+      this.width = 0;
+      this.height = 0;
+      this.colors = [
+        '#ff4081', // Rosa vibrante romântico
+        '#ff80ab', // Rosa pétala acetinado
+        '#f06292', // Rosa coral romântico
+        '#e91e63', // Rosa profundo aveludado
+        '#f48fb1', // Rosa suave blush
+        '#ffb6c1', // Flor de cerejeira luminoso
+        '#ff69b4', // Rosa amoroso radiante
+        '#ffd1dc'  // Rosa pastel iluminado
+      ];
+      this.glowColors = [
+        'rgba(255, 64, 129, 0.65)',
+        'rgba(255, 128, 171, 0.65)',
+        'rgba(240, 98, 146, 0.65)',
+        'rgba(233, 30, 99, 0.65)',
+        'rgba(244, 143, 177, 0.65)'
+      ];
+
+      if (this.canvas) {
+        this.resize();
+        window.addEventListener('resize', () => this.resize(), { passive: true });
+        window.addEventListener('orientationchange', () => this.resize(), { passive: true });
+      }
+    }
+
+    resize() {
+      if (!this.canvas) return;
+      const rect = this.canvas.getBoundingClientRect();
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      this.width = rect && rect.width > 0 ? Math.round(rect.width) : (window.innerWidth || document.documentElement.clientWidth);
+      this.height = rect && rect.height > 0 ? Math.round(rect.height) : (window.innerHeight || document.documentElement.clientHeight);
+      this.canvas.width = Math.round(this.width * dpr);
+      this.canvas.height = Math.round(this.height * dpr);
+      if (this.ctx) {
+        this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      }
+    }
+
+    spawn(x, y, count = 1, options = {}) {
+      if (!this.canvas) {
+        this.canvas = document.getElementById('botanical-hearts-canvas');
+        if (this.canvas) {
+          this.ctx = this.canvas.getContext('2d');
+          this.resize();
+        }
+      }
+      if (!this.ctx) return;
+      if (this.width === 0 || this.height === 0) {
+        this.resize();
+      }
+
+      const startX = (typeof x === 'number' && !isNaN(x)) ? x : (this.width / 2);
+      const startY = (typeof y === 'number' && !isNaN(y)) ? y : (this.height * 0.45);
+
+      for (let i = 0; i < count; i++) {
+        const colorIdx = Math.floor(Math.random() * this.colors.length);
+        const glowIdx = Math.floor(Math.random() * this.glowColors.length);
+        const spreadX = options.spreadX || 28;
+        const spreadY = options.spreadY || 24;
+
+        this.particles.push({
+          x: startX + (Math.random() - 0.5) * spreadX,
+          y: startY + (Math.random() - 0.5) * spreadY,
+          vx: (Math.random() - 0.5) * (options.speedX || 2.0),
+          vy: -(1.4 + Math.random() * (options.speedY || 2.6)),
+          size: options.size || (14 + Math.random() * 16),
+          color: this.colors[colorIdx],
+          glowColor: this.glowColors[glowIdx],
+          alpha: 0.96,
+          fadeSpeed: options.fadeSpeed || (0.0052 + Math.random() * 0.005),
+          rotation: (Math.random() - 0.5) * 0.65,
+          vRot: (Math.random() - 0.5) * 0.028,
+          swayFreq: 0.0022 + Math.random() * 0.0028,
+          swayAmp: 0.9 + Math.random() * 1.6,
+          swayPhase: Math.random() * Math.PI * 2,
+          scale: 0.25,
+          targetScale: options.scale || (0.95 + Math.random() * 0.35),
+          createdAt: performance.now()
+        });
+      }
+
+      if (!this.rafId) {
+        this.startLoop();
+      }
+    }
+
+    spawnBurst(x, y, count = 16, options = {}) {
+      this.spawn(x, y, count, {
+        speedX: 3.4,
+        speedY: 3.6,
+        spreadX: 48,
+        spreadY: 38,
+        fadeSpeed: 0.006,
+        ...options
+      });
+    }
+
+    startLoop() {
+      const render = (time) => {
+        if (!this.ctx) return;
+        this.ctx.clearRect(0, 0, this.width, this.height);
+
+        for (let i = this.particles.length - 1; i >= 0; i--) {
+          const p = this.particles[i];
+
+          // Física orgânica de subida e oscilação
+          p.scale += (p.targetScale - p.scale) * 0.1;
+          p.x += p.vx + Math.sin(time * p.swayFreq + p.swayPhase) * p.swayAmp;
+          p.y += p.vy;
+          p.vy *= 0.994; // suave amortecimento na ascensão
+          p.rotation += p.vRot;
+          p.alpha -= p.fadeSpeed;
+
+          // Remove partículas expiradas ou fora de tela
+          if (p.alpha <= 0 || p.y < -70 || p.x < -70 || p.x > this.width + 70) {
+            this.particles.splice(i, 1);
+            continue;
+          }
+
+          // Renderização do coração estético
+          this.drawHeart(p);
+        }
+
+        if (this.particles.length > 0) {
+          this.rafId = requestAnimationFrame(render);
+        } else {
+          this.rafId = null;
+        }
+      };
+
+      this.rafId = requestAnimationFrame(render);
+    }
+
+    drawHeart(p) {
+      const ctx = this.ctx;
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.rotation);
+      ctx.scale(p.scale, p.scale);
+      ctx.globalAlpha = Math.max(0, Math.min(1, p.alpha));
+
+      const s = p.size / 24;
+
+      // Forma suave e poética do coração usando curvas de Bézier
+      ctx.beginPath();
+      ctx.moveTo(0, -6 * s);
+      ctx.bezierCurveTo(6 * s, -18 * s, 22 * s, -10 * s, 22 * s, 6 * s);
+      ctx.bezierCurveTo(22 * s, 16 * s, 12 * s, 24 * s, 0, 32 * s);
+      ctx.bezierCurveTo(-12 * s, 24 * s, -22 * s, 16 * s, -22 * s, 6 * s);
+      ctx.bezierCurveTo(-22 * s, -10 * s, -6 * s, -18 * s, 0, -6 * s);
+      ctx.closePath();
+
+      // Brilho romântico envolvente
+      ctx.shadowColor = p.glowColor;
+      ctx.shadowBlur = 14 * s;
+      ctx.fillStyle = p.color;
+      ctx.fill();
+
+      // Reflexo especular suave no canto superior (efeito vitrificado / cristalino)
+      ctx.shadowBlur = 0;
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.62)';
+      ctx.beginPath();
+      ctx.arc(-7 * s, -2 * s, 3.2 * s, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.restore();
+    }
+
+    clear() {
+      this.particles = [];
+      if (this.ctx) {
+        this.ctx.clearRect(0, 0, this.width, this.height);
+      }
+      if (this.rafId) {
+        cancelAnimationFrame(this.rafId);
+        this.rafId = null;
+      }
+    }
+  }
+
+  // ==========================================================================
   // 4.5. CINEMATIC ENTRY CONTROLLER (Prólogo Cinematográfico: 2008 a 2026)
   // ==========================================================================
   class CinematicEntryController {
@@ -4728,6 +6653,11 @@ Luis Fernando Santos
       this.canvasEl = document.getElementById('cinematic-canvas');
       this.startPromptBtn = document.getElementById('cinematic-start-prompt');
       this.fallingPetal = document.getElementById('cinematic-falling-petal');
+
+      // Sistema Secundário de Partículas: Corações Rosa Flutuantes (Interação Botânica)
+      this.heartCanvas = document.getElementById('botanical-hearts-canvas');
+      this.heartParticlesSystem = new BotanicalHeartParticleSystem(this.heartCanvas);
+      window.botanicalHearts = this.heartParticlesSystem;
 
       // Elementos do Palco Botânico (SVG)
       this.plantStage = document.getElementById('cinematic-plant-stage');
@@ -4992,6 +6922,14 @@ Luis Fernando Santos
           this.botanicalSvg.classList.add('plant-holding');
         }
 
+        // Emite corações rosa no início do clique/toque no palco botânico
+        if (this.heartParticlesSystem && this.botanicalSvg) {
+          const rect = this.botanicalSvg.getBoundingClientRect();
+          const pX = (e && typeof e.clientX === 'number') ? e.clientX : (rect.left + rect.width / 2);
+          const pY = (e && typeof e.clientY === 'number') ? e.clientY : (rect.top + rect.height * 0.42);
+          this.heartParticlesSystem.spawnBurst(pX, pY, 6, { speedY: 2.6 });
+        }
+
         // Toca tom introdutório sutil se o áudio ainda não foi desbloqueado
         if (this.sys && this.sys.audioManager && !this.sys.audioManager.isPlaying) {
           this.sys.audioManager.startExperienceAudio();
@@ -5020,9 +6958,15 @@ Luis Fernando Santos
             }
           }
 
-          // Emissão suave de microfagulhas de luz enquanto mantido
-          if (elapsed > 250 && (now - lastParticleTime) > 130) {
+          // Emissão contínua de corações rosa flutuantes e fagulhas enquanto mantido
+          if (elapsed > 180 && (now - lastParticleTime) > 115) {
             lastParticleTime = now;
+            if (this.heartParticlesSystem && this.botanicalSvg) {
+              const rect = this.botanicalSvg.getBoundingClientRect();
+              const pX = rect.left + rect.width / 2 + (Math.random() - 0.5) * 44;
+              const pY = rect.top + rect.height * 0.42 + (Math.random() - 0.5) * 36;
+              this.heartParticlesSystem.spawn(pX, pY, 2, { speedY: 3.2, spreadX: 28 });
+            }
             if (window.confetti && this.botanicalSvg) {
               try {
                 const rect = this.botanicalSvg.getBoundingClientRect();
@@ -5078,6 +7022,15 @@ Luis Fernando Santos
             this.sys.soundEffects.playChimeChord();
           }
 
+          // Explosão romântica de corações rosa flutuantes ao soltar
+          if (this.heartParticlesSystem && this.botanicalSvg) {
+            const rect = this.botanicalSvg.getBoundingClientRect();
+            const pX = rect.left + rect.width / 2;
+            const pY = rect.top + rect.height * 0.42;
+            const count = Math.min(28, Math.floor(16 + (elapsed / 65)));
+            this.heartParticlesSystem.spawnBurst(pX, pY, count, { speedY: 3.8, spreadX: 52 });
+          }
+
           if (window.confetti && this.botanicalSvg) {
             try {
               const rect = this.botanicalSvg.getBoundingClientRect();
@@ -5127,6 +7080,29 @@ Luis Fernando Santos
         });
       }
 
+      // Rastreamento sutil de movimento e toque no palco botânico (.cinematic-plant-stage)
+      if (this.plantStage) {
+        let lastMoveHeart = 0;
+        this.plantStage.addEventListener('pointermove', (e) => {
+          const now = performance.now();
+          if (now - lastMoveHeart > 120 && this.heartParticlesSystem) {
+            lastMoveHeart = now;
+            this.heartParticlesSystem.spawn(e.clientX, e.clientY, 1, {
+              size: 13 + Math.random() * 9,
+              speedY: 2.0,
+              spreadX: 12
+            });
+          }
+        }, { passive: true });
+
+        this.plantStage.addEventListener('pointerdown', (e) => {
+          if (e.target.closest('#botanical-svg')) return;
+          if (this.heartParticlesSystem) {
+            this.heartParticlesSystem.spawnBurst(e.clientX, e.clientY, 8);
+          }
+        });
+      }
+
       // Toque em qualquer ponto da tela
       if (this.entryEl) {
         this.entryEl.addEventListener('click', (e) => {
@@ -5170,6 +7146,14 @@ Luis Fernando Santos
       // Toca efeito sonoro suave se disponível
       if (this.sys && this.sys.soundEffects && typeof this.sys.soundEffects.playChimeChord === 'function') {
         this.sys.soundEffects.playChimeChord();
+      }
+
+      // Sistema Secundário: Spawna corações rosa flutuantes e desvanecentes a partir do centro da flor
+      if (this.heartParticlesSystem && this.botanicalSvg) {
+        const rect = this.botanicalSvg.getBoundingClientRect();
+        const pX = rect.left + rect.width / 2;
+        const pY = rect.top + rect.height * 0.42;
+        this.heartParticlesSystem.spawnBurst(pX, pY, 18, { speedY: 3.4, spreadX: 45 });
       }
 
       // Dispara confetes delicados e pétalas leves a partir do coração da flor
@@ -5820,6 +7804,10 @@ Luis Fernando Santos
         this.animationFrameId = null;
       }
 
+      if (this.heartParticlesSystem) {
+        this.heartParticlesSystem.clear();
+      }
+
       if (this.sys && this.sys.audioManager) {
         this.sys.audioManager.fadeTo(0.50, 800);
       }
@@ -6297,11 +8285,16 @@ Luis Fernando Santos
       // Se não estiver no Capítulo 20 (Grande Encerramento), navega diretamente para ele
       if (this.currentChapterIndex !== 19) {
         this.goToChapter(20);
+        setTimeout(() => {
+          if (this.activeFinaleController && typeof this.activeFinaleController.startCinematicCreditsClosure === 'function') {
+            this.activeFinaleController.startCinematicCreditsClosure();
+          }
+        }, 350);
         return;
       }
-      // Se já estiver no Capítulo 20, aciona a exibição imediata dos créditos aprovados
-      if (this.activeFinaleController && typeof this.activeFinaleController.triggerCreditsNow === 'function') {
-        this.activeFinaleController.triggerCreditsNow();
+      // Se já estiver no Capítulo 20, aciona a exibição imediata dos créditos cinematográficos
+      if (this.activeFinaleController && typeof this.activeFinaleController.startCinematicCreditsClosure === 'function') {
+        this.activeFinaleController.startCinematicCreditsClosure();
       }
     }
 
@@ -6891,6 +8884,10 @@ Luis Fernando Santos
         plantSvg.classList.remove('plant-grow-active');
         void plantSvg.offsetWidth;
         plantSvg.classList.add('plant-grow-active');
+
+        if (window.botanicalHearts) {
+          window.botanicalHearts.spawnBurst(e.clientX, e.clientY, 16);
+        }
 
         if (window.appExperience && window.appExperience.soundEffects && typeof window.appExperience.soundEffects.playChimeChord === 'function') {
           window.appExperience.soundEffects.playChimeChord();

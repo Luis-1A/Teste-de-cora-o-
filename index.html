@@ -120,13 +120,14 @@
       background: radial-gradient(circle at 50% 30%, #fffbfd 0%, #fff2f6 40%, #fce4ee 75%, #f7d2e2 100%);
       pointer-events: none;
     }
-    .cinematic-canvas {
+    .cinematic-canvas,
+    .botanical-hearts-canvas {
       position: absolute;
       inset: 0;
       width: 100%;
       height: 100%;
       pointer-events: none;
-      z-index: 2;
+      z-index: 4;
     }
     .cinematic-plant-stage {
       position: absolute;
@@ -576,6 +577,9 @@
 
         <!-- 2. Canvas de Partículas Solares, Esporos e Pétalas Suaves -->
         <canvas id="cinematic-canvas" class="cinematic-canvas" aria-hidden="true"></canvas>
+
+        <!-- 2.1. Sistema Secundário de Partículas: Corações Flutuantes e Desvanecentes (Interação Romântica) -->
+        <canvas id="botanical-hearts-canvas" class="botanical-hearts-canvas" aria-hidden="true"></canvas>
 
         <!-- 3. Iluminação Central Evolutiva (Luz que respira) -->
         <div class="cinematic-central-light" id="cinematic-central-light" aria-hidden="true">

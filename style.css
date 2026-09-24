@@ -4888,3 +4888,1033 @@ body.eagora-fullscreen-active .stage-wrapper {
   }
 }
 
+/* ==========================================================================
+   🌸 CAPÍTULO EXTRA: CRÉDITOS CINEMATOGRÁFICOS & ENCERRAMENTO DEFINITIVO
+   ========================================================================== */
+.cinematic-closure-overlay {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  z-index: 99999;
+  background: radial-gradient(circle at 50% 50%, #ffffff 0%, #fff7f9 55%, #ffeef2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  opacity: 0;
+  transition: opacity 1.8s ease;
+  pointer-events: auto;
+  font-family: 'Quicksand', sans-serif;
+  user-select: none;
+}
+
+.cinematic-closure-overlay.active {
+  opacity: 1;
+}
+
+/* Camada de Iluminação Branca Suave (White Wash) */
+.closure-white-wash {
+  position: absolute;
+  inset: 0;
+  background: #ffffff;
+  z-index: 90;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 1.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.closure-white-wash.wash-visible {
+  opacity: 1;
+}
+
+/* Ponto de Luz Central (Pétala virando luz) */
+.closure-light-point {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #ffffff 20%, #ffd54f 60%, rgba(255, 128, 171, 0.9) 100%);
+  box-shadow: 0 0 50px 30px rgba(255, 235, 140, 0.95), 0 0 100px 50px rgba(255, 182, 193, 0.7);
+  z-index: 70;
+  transition: transform 1.8s cubic-bezier(0.16, 1, 0.3, 1), opacity 1.2s ease;
+}
+
+.closure-light-point.light-expanded {
+  transform: translate(-50%, -50%) scale(35);
+  opacity: 0.95;
+}
+
+/* Container de Cenas */
+.closure-stage-inner {
+  position: relative;
+  z-index: 30;
+  width: 100%;
+  max-width: 680px;
+  min-height: 420px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 24px 20px;
+}
+
+.closure-scene {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity 1.4s ease, transform 1.4s cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: none;
+}
+
+.closure-scene.scene-active {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.closure-scene.scene-exit {
+  opacity: 0;
+  transform: translateY(-16px);
+  pointer-events: none;
+}
+
+/* Tipografia e Elementos das Cenas */
+.closure-word-fim {
+  font-family: 'Handlee', 'Quicksand', cursive;
+  font-size: clamp(38px, 8vw, 56px);
+  color: #c2185b;
+  letter-spacing: 3px;
+  margin: 0;
+}
+
+.closure-subtle-hint {
+  font-size: clamp(18px, 4.5vw, 24px);
+  font-weight: 500;
+  color: #6a1b9a;
+  margin: 0 0 12px;
+  font-style: italic;
+}
+
+.closure-subtle-line {
+  font-size: clamp(16px, 4vw, 21px);
+  font-weight: 600;
+  color: #ad1457;
+  margin: 0;
+}
+
+.credit-lead {
+  font-size: clamp(20px, 5vw, 28px);
+  font-weight: 500;
+  color: #555;
+  margin: 0 0 12px;
+}
+
+.credit-body {
+  font-size: clamp(17px, 4.2vw, 23px);
+  font-weight: 700;
+  color: #c2185b;
+  margin: 0;
+  font-family: 'Handlee', 'Quicksand', cursive;
+}
+
+.credit-for-wrap {
+  position: relative;
+  display: inline-block;
+  padding: 10px 24px;
+}
+
+.credit-for-name {
+  font-size: clamp(32px, 8.5vw, 54px);
+  font-weight: 800;
+  letter-spacing: 2px;
+  margin: 0;
+  background: linear-gradient(90deg, #880e4f 0%, #e91e63 25%, #ffd54f 50%, #e91e63 75%, #880e4f 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: creditShimmer 3.2s linear infinite;
+}
+
+@keyframes creditShimmer {
+  0% { background-position: 0% center; }
+  100% { background-position: 200% center; }
+}
+
+.shooting-star-streak {
+  position: absolute;
+  top: 45%;
+  left: -20%;
+  width: 140%;
+  height: 2px;
+  background: linear-gradient(90deg, rgba(255,255,255,0) 0%, #ffd54f 50%, #ffffff 80%, rgba(255,255,255,0) 100%);
+  transform: rotate(-12deg);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.shooting-star-streak.streak-run {
+  animation: shootingStarAnim 1.6s ease-out forwards;
+}
+
+@keyframes shootingStarAnim {
+  0% { opacity: 0; transform: translate(-40px, 15px) rotate(-12deg); }
+  35% { opacity: 0.95; }
+  100% { opacity: 0; transform: translate(60px, -20px) rotate(-12deg); }
+}
+
+.credit-role {
+  font-size: 15px;
+  text-transform: uppercase;
+  letter-spacing: 4px;
+  color: #888;
+  margin-bottom: 8px;
+}
+
+.credit-creator-name {
+  font-size: clamp(26px, 6.5vw, 36px);
+  font-weight: 700;
+  color: #ad1457;
+  margin: 0 0 10px;
+}
+
+.credit-humor-note {
+  font-size: clamp(13px, 3.2vw, 15px);
+  color: #888;
+  font-style: italic;
+  margin: 0;
+  opacity: 0.88;
+}
+
+/* Cena 4: Ramo Botânico Ilustrado Completo e Flor Deslumbrante */
+.closure-branch-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+  position: relative;
+}
+
+.closure-branch-svg {
+  width: clamp(170px, 38vw, 240px);
+  height: clamp(190px, 42vw, 270px);
+  overflow: visible;
+  filter: drop-shadow(0 10px 28px rgba(233, 30, 99, 0.22));
+}
+
+.branch-path-stem {
+  stroke-dasharray: 320;
+  stroke-dashoffset: 320;
+  transition: stroke-dashoffset 2.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.branch-path-stem.stem-drawn {
+  stroke-dashoffset: 0;
+}
+
+.branch-leaf-blade {
+  opacity: 0;
+  transform: scale(0.1);
+  transition: opacity 1.3s ease, transform 1.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.branch-leaf-blade.leaf-grown {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.branch-leaf-vein {
+  stroke-dasharray: 80;
+  stroke-dashoffset: 80;
+  transition: stroke-dashoffset 1.4s ease 0.4s;
+}
+
+.branch-leaf-vein.vein-drawn {
+  stroke-dashoffset: 0;
+}
+
+.branch-flower-head {
+  opacity: 0;
+  transform: scale(0.15);
+  transform-origin: 120px 85px;
+  transition: opacity 1.4s ease, transform 1.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.branch-flower-head.flower-bloomed {
+  opacity: 1;
+  transform: scale(1);
+  animation: branchFlowerSway 4.2s ease-in-out infinite alternate;
+}
+
+@keyframes branchFlowerSway {
+  0% { transform: scale(1) rotate(-3.5deg) translateY(0); }
+  50% { transform: scale(1.02) rotate(1.5deg) translateY(-2px); }
+  100% { transform: scale(1) rotate(4.2deg) translateY(0); }
+}
+
+.branch-sepal {
+  opacity: 0;
+  transform: scale(0.3);
+  transform-origin: 120px 96px;
+  transition: all 1.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.flower-bloomed .branch-sepal {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.branch-petal-outer {
+  opacity: 0;
+  transform: scale(0.2);
+  transform-origin: 120px 80px;
+  transition: all 1.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.flower-bloomed .branch-petal-outer {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.branch-petal-mid {
+  opacity: 0;
+  transform: scale(0.15);
+  transform-origin: 120px 80px;
+  transition: all 1.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) 0.15s;
+}
+
+.flower-bloomed .branch-petal-mid {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.branch-petal-inner {
+  opacity: 0;
+  transform: scale(0.1);
+  transform-origin: 120px 80px;
+  transition: all 1.2s cubic-bezier(0.175, 0.885, 0.32, 1.275) 0.3s;
+}
+
+.flower-bloomed .branch-petal-inner {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.branch-flower-core {
+  opacity: 0;
+  transform: scale(0.2);
+  transform-origin: 120px 80px;
+  transition: all 1.2s cubic-bezier(0.34, 1.56, 0.64, 1) 0.45s;
+}
+
+.flower-bloomed .branch-flower-core {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.branch-sparkle {
+  animation: branchSparkleGleam 2.8s ease-in-out infinite alternate;
+}
+
+@keyframes branchSparkleGleam {
+  0% { opacity: 0.25; transform: scale(0.7) translateY(0); }
+  50% { opacity: 0.95; transform: scale(1.15) translateY(-3px); }
+  100% { opacity: 0.35; transform: scale(0.8) translateY(1px); }
+}
+
+.credit-made-love {
+  font-family: 'Handlee', 'Quicksand', cursive;
+  font-size: clamp(20px, 4.5vw, 25px);
+  color: #c2185b;
+  margin: 14px 0 0;
+  text-shadow: 0 2px 10px rgba(233, 30, 99, 0.18);
+}
+
+/* Cena 5: Crédito Pessoal */
+.credit-personal-text {
+  font-size: clamp(17px, 4.2vw, 22px);
+  line-height: 1.6;
+  color: #3b0f2a;
+  margin: 0;
+  font-weight: 500;
+  max-width: 540px;
+}
+
+.credit-personal-wish {
+  font-size: clamp(18px, 4.5vw, 24px);
+  color: #880e4f;
+  font-style: italic;
+  font-weight: 700;
+  margin-top: 14px;
+}
+
+/* Cena 6: Constelação */
+.constellation-center-card {
+  z-index: 10;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 204, 215, 0.7);
+  border-radius: 20px;
+  padding: 18px 28px;
+  box-shadow: 0 10px 30px rgba(233, 30, 99, 0.1);
+}
+
+.constellation-date {
+  font-size: clamp(22px, 5.5vw, 30px);
+  font-weight: 700;
+  color: #ad1457;
+  letter-spacing: 4px;
+  margin-bottom: 6px;
+}
+
+.constellation-sub {
+  font-size: 15px;
+  color: #666;
+  letter-spacing: 1.5px;
+}
+
+/* Cena 7: Frases de Encerramento */
+.closure-line {
+  font-size: clamp(19px, 4.8vw, 25px);
+  margin: 8px 0;
+  color: #4a154b;
+  font-weight: 500;
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 1.4s ease, transform 1.4s ease;
+}
+
+.closure-line.line-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.closure-line.line-3 {
+  font-weight: 700;
+  color: #c2185b;
+  margin-top: 14px;
+}
+
+/* Cena 8: O Botão Especial com Traço de Luz Luminoso */
+.closure-btn-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+
+.btn-trace-container {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 18px;
+}
+
+.btn-trace-svg {
+  position: absolute;
+  inset: -3px;
+  width: calc(100% + 6px);
+  height: calc(100% + 6px);
+  pointer-events: none;
+  overflow: visible;
+}
+
+.btn-trace-rect {
+  stroke-dasharray: 450;
+  stroke-dashoffset: 450;
+  transition: stroke-dashoffset 2.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn-trace-rect.traced {
+  stroke-dashoffset: 0;
+}
+
+.btn-cinematic-encerrar {
+  position: relative;
+  z-index: 5;
+  background: linear-gradient(135deg, #ffffff 0%, #fff0f4 100%);
+  border: 1.5px solid #ff80ab;
+  color: #c2185b;
+  font-family: 'Quicksand', sans-serif;
+  font-size: 16.5px;
+  font-weight: 700;
+  padding: 14px 34px;
+  border-radius: 50px;
+  cursor: pointer;
+  box-shadow: 0 8px 25px rgba(233, 30, 99, 0.2), 0 0 15px rgba(255, 213, 79, 0.3);
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  opacity: 0;
+  transform: scale(0.92);
+}
+
+.btn-cinematic-encerrar.btn-revealed {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.btn-cinematic-encerrar:hover {
+  transform: scale(1.05);
+  background: linear-gradient(135deg, #c2185b 0%, #ad1457 100%);
+  color: #ffffff;
+  border-color: #ffd54f;
+  box-shadow: 0 12px 35px rgba(233, 30, 99, 0.38), 0 0 22px rgba(255, 213, 79, 0.6);
+}
+
+.btn-cinematic-encerrar:active {
+  transform: scale(0.97);
+}
+
+.btn-sparkle {
+  color: #ffd54f;
+  font-size: 18px;
+  animation: sparkleTwinkle 1.8s infinite ease-in-out;
+}
+
+@keyframes sparkleTwinkle {
+  0%, 100% { transform: scale(1) rotate(0deg); opacity: 0.9; }
+  50% { transform: scale(1.3) rotate(45deg); opacity: 1; }
+}
+
+.closure-sub-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 1.2s ease 0.6s;
+}
+
+.closure-sub-actions.actions-revealed {
+  opacity: 1;
+}
+
+.btn-cinematic-subtle {
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(194, 24, 91, 0.25);
+  color: #880e4f;
+  border-radius: 50px;
+  padding: 7px 18px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-cinematic-subtle:hover {
+  background: #ffffff;
+  border-color: #c2185b;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(233, 30, 99, 0.15);
+}
+
+/* Cena 9: Desaparecimento e Mensagem Final */
+.farewell-final-p1 {
+  font-size: clamp(18px, 4.5vw, 24px);
+  color: #555;
+  font-weight: 500;
+  margin: 0 0 10px;
+}
+
+.farewell-final-p2 {
+  font-size: clamp(24px, 6vw, 36px);
+  color: #c2185b;
+  font-weight: 800;
+  margin: 0;
+  font-family: 'Handlee', 'Quicksand', cursive;
+}
+
+/* Cena 10: Tela Final com Estrela Central e Easter Egg 18 */
+.closure-easteregg-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 40;
+}
+
+.final-lone-star {
+  width: 14px;
+  height: 14px;
+  background: #ffd54f;
+  clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+  box-shadow: 0 0 20px 8px rgba(255, 213, 79, 0.8);
+  margin-bottom: 20px;
+  opacity: 0;
+  transition: opacity 1.2s ease, transform 1.2s ease;
+}
+
+.final-lone-star.star-pulse {
+  opacity: 1;
+  animation: finalStarPulsing 1.8s ease-in-out infinite;
+}
+
+@keyframes finalStarPulsing {
+  0%, 100% { transform: scale(1); opacity: 0.9; }
+  50% { transform: scale(1.4); opacity: 1; filter: drop-shadow(0 0 12px #ffd54f); }
+}
+
+.final-word-fim {
+  font-family: 'Handlee', 'Quicksand', cursive;
+  font-size: clamp(34px, 7vw, 48px);
+  color: #ad1457;
+  letter-spacing: 2px;
+  margin: 0 0 20px;
+  opacity: 0;
+  transition: opacity 1.8s ease;
+}
+
+.final-word-fim.fim-revealed {
+  opacity: 1;
+}
+
+.btn-final-replay {
+  background: transparent;
+  border: none;
+  color: #999;
+  font-size: 13px;
+  cursor: pointer;
+  padding: 6px 14px;
+  border-radius: 20px;
+  transition: all 0.25s ease;
+  opacity: 0;
+}
+
+.btn-final-replay.replay-revealed {
+  opacity: 0.75;
+}
+
+.btn-final-replay:hover {
+  opacity: 1;
+  color: #c2185b;
+  background: rgba(255, 255, 255, 0.6);
+}
+
+.btn-final-pdf-link {
+  background: transparent;
+  border: none;
+  color: #c2185b;
+  font-size: 12.5px;
+  cursor: pointer;
+  padding: 4px 10px;
+  opacity: 0;
+  margin-top: 4px;
+  transition: opacity 0.3s ease;
+}
+
+.btn-final-pdf-link.pdf-revealed {
+  opacity: 0.65;
+}
+
+.btn-final-pdf-link:hover {
+  opacity: 1;
+  text-decoration: underline;
+}
+
+/* ==========================================================================
+   🌌 A ÚLTIMA ANIMAÇÃO ANTES DO BOTÃO: SEQUÊNCIA DEFINITIVA DE ENCERRAMENTO
+   CRÉDITOS → ESTRELA → FIM → DESENHO À MÃO → “18 ANOS” → “FEITO COM AMOR” → BOTÃO
+   ========================================================================== */
+
+/* 1. A ESTRELA GIGANTE */
+.closure-giant-star-container {
+  position: relative;
+  width: min(480px, 86vw);
+  height: min(480px, 86vw);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.giant-star-light-dot {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 0 25px 12px #ffffff, 0 0 60px 25px rgba(255, 128, 171, 0.85);
+  transform: scale(0);
+  transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+  z-index: 10;
+}
+
+.giant-star-light-dot.dot-visible {
+  transform: scale(1);
+}
+
+.giant-star-light-dot.dot-grown {
+  transform: scale(2.6);
+  box-shadow: 0 0 45px 22px #ffffff, 0 0 90px 45px rgba(255, 128, 171, 0.95), 0 0 140px 70px rgba(255, 213, 79, 0.7);
+}
+
+.closure-giant-star-svg {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  opacity: 0;
+  transform: scale(0.1) rotate(0deg);
+  transform-origin: center center;
+  transition: opacity 1.2s ease, transform 1.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.closure-giant-star-svg.star-formed {
+  opacity: 1;
+  transform: scale(1) rotate(0deg);
+  animation: giantStarSlowSpin 32s linear infinite;
+}
+
+.closure-giant-star-svg.star-breathing {
+  animation: giantStarSlowSpin 32s linear infinite, giantStarBreathePulse 3.4s ease-in-out infinite;
+}
+
+.closure-giant-star-svg.star-imploding {
+  transition: all 0.9s cubic-bezier(0.55, 0.055, 0.675, 0.19);
+  transform: scale(0.04) rotate(180deg) !important;
+  opacity: 0.95;
+  filter: brightness(3.5) drop-shadow(0 0 50px #ffffff);
+}
+
+@keyframes giantStarSlowSpin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes giantStarBreathePulse {
+  0%, 100% { transform: scale(1); filter: drop-shadow(0 0 40px rgba(255, 128, 171, 0.6)); }
+  50% { transform: scale(1.09); filter: drop-shadow(0 0 75px rgba(255, 215, 0, 0.85)) drop-shadow(0 0 110px rgba(233, 30, 99, 0.5)); }
+}
+
+/* Onda de Luz Expansiva (PULSO) */
+.closure-radial-light-pulse {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #ffffff 0%, rgba(255, 255, 255, 0.9) 35%, rgba(255, 182, 193, 0.5) 70%, rgba(255, 255, 255, 0) 100%);
+  transform: translate(-50%, -50%) scale(0);
+  pointer-events: none;
+  z-index: 85;
+}
+
+.closure-radial-light-pulse.pulse-triggered {
+  animation: closureLightWaveAnim 1.8s cubic-bezier(0.1, 0.9, 0.2, 1) forwards;
+}
+
+@keyframes closureLightWaveAnim {
+  0% { transform: translate(-50%, -50%) scale(0.5); opacity: 1; }
+  50% { opacity: 0.85; }
+  100% { transform: translate(-50%, -50%) scale(45); opacity: 0; }
+}
+
+/* 2. "Fim." DESENHADO À MÃO */
+.handwritten-fim-box {
+  position: relative;
+  width: min(360px, 88vw);
+  height: 160px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.handwritten-fim-svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  filter: drop-shadow(0 4px 14px rgba(194, 24, 91, 0.28));
+}
+
+.handwritten-stroke {
+  fill: none;
+  stroke: #c2185b;
+  stroke-width: 4.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 400;
+  stroke-dashoffset: 400;
+  transition: stroke-dashoffset 1.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.handwritten-stroke.drawn {
+  stroke-dashoffset: 0;
+}
+
+.handwritten-pen-tip {
+  position: absolute;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 0 12px 5px #ffd54f, 0 0 20px 8px #ff4081;
+  pointer-events: none;
+  z-index: 20;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  transform: translate(-50%, -50%);
+}
+
+.handwritten-pen-tip.tip-active {
+  opacity: 1;
+}
+
+/* Transição de tinta se desfazendo em linhas */
+.handwritten-fim-box.morphing-into-lines {
+  animation: fimDisperseToLines 1.6s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+}
+
+@keyframes fimDisperseToLines {
+  0% { opacity: 1; transform: scale(1); filter: blur(0px); }
+  60% { opacity: 0.7; transform: scale(1.06) rotate(1deg); filter: blur(1.5px); }
+  100% { opacity: 0; transform: scale(1.18) translateY(-10px); filter: blur(6px); }
+}
+
+/* 3. O DESENHO SENDO CRIADO À MÃO: 18 + CORAÇÃO + FLOR + ESTRELAS */
+.handdrawn-artwork-stage {
+  position: relative;
+  width: min(460px, 94vw);
+  max-width: 480px;
+  height: min(600px, 80vh);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: transform 7.5s cubic-bezier(0.2, 0.8, 0.3, 1);
+}
+
+.handdrawn-artwork-stage.camera-zooming {
+  transform: scale(1.055);
+}
+
+.handdrawn-artwork-stage.stage-triple-pulsing {
+  animation: handdrawnTriplePulseAnim 4.2s ease-in-out;
+}
+
+@keyframes handdrawnTriplePulseAnim {
+  0%, 100% { transform: scale(1.055); }
+  22% { transform: scale(1.095); }
+  38% { transform: scale(1.055); }
+  58% { transform: scale(1.108); }
+  72% { transform: scale(1.055); }
+  88% { transform: scale(1.125); filter: drop-shadow(0 0 35px rgba(255, 128, 171, 0.8)); }
+}
+
+.handdrawn-art-svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  filter: drop-shadow(0 6px 20px rgba(194, 24, 91, 0.16));
+}
+
+.art-draw-path {
+  fill: none;
+  stroke: #c2185b;
+  stroke-width: 4.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 600;
+  stroke-dashoffset: 600;
+  transition: stroke-dashoffset 2.0s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.art-draw-path.path-drawn {
+  stroke-dashoffset: 0;
+}
+
+/* Linha com brilho luminoso percorrendo o desenho (O desenho ganha vida) */
+.art-draw-path.path-activated {
+  stroke: #e91e63;
+  filter: drop-shadow(0 0 10px rgba(255, 64, 129, 0.9)) drop-shadow(0 0 20px rgba(255, 213, 79, 0.75));
+  animation: pathLightWaveTrace 2.4s ease-in-out forwards;
+}
+
+@keyframes pathLightWaveTrace {
+  0% { stroke: #c2185b; filter: drop-shadow(0 0 2px rgba(233, 30, 99, 0.4)); }
+  35% { stroke: #ffffff; filter: drop-shadow(0 0 16px #ffffff) drop-shadow(0 0 28px #ff4081); }
+  70% { stroke: #ffd54f; filter: drop-shadow(0 0 14px #ffd54f) drop-shadow(0 0 22px #ff80ab); }
+  100% { stroke: #c2185b; filter: drop-shadow(0 0 8px rgba(233, 30, 99, 0.45)); }
+}
+
+/* Desfazer o desenho ao contrário (Reverse Erase) */
+.art-draw-path.path-erased {
+  stroke-dashoffset: 600 !important;
+  transition: stroke-dashoffset 2.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+/* Aquarela e preenchimento da flor desenhada */
+.drawn-flower-petal-fill {
+  opacity: 0;
+  transition: opacity 1.6s ease, transform 1.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.drawn-flower-petal-fill.fill-active {
+  opacity: 0.88;
+}
+
+.drawn-flower-petal-fill.fill-erased {
+  opacity: 0;
+  transition: opacity 1.2s ease;
+}
+
+/* Constelação que cerca o desenho */
+.drawn-constellation-group {
+  opacity: 0;
+  transition: opacity 1.6s ease;
+}
+
+.drawn-constellation-group.constellation-active {
+  opacity: 1;
+}
+
+.drawn-constellation-group.constellation-erased {
+  opacity: 0;
+  transition: opacity 1.2s ease;
+}
+
+.constellation-dot {
+  animation: constelDotPulse 2.8s ease-in-out infinite alternate;
+}
+
+@keyframes constelDotPulse {
+  0% { transform: scale(0.85); opacity: 0.65; }
+  100% { transform: scale(1.3); opacity: 1; filter: drop-shadow(0 0 8px #ffd54f); }
+}
+
+/* Frase final carinhosa: "Feliz aniversário, Issamara." */
+.handdrawn-iss-greeting {
+  font-family: 'Handlee', 'Quicksand', cursive;
+  font-size: clamp(20px, 4.8vw, 27px);
+  color: #c2185b;
+  margin: 14px 0 0;
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 1.5s ease, transform 1.5s cubic-bezier(0.16, 1, 0.3, 1);
+  text-shadow: 0 2px 12px rgba(233, 30, 99, 0.2);
+}
+
+.handdrawn-iss-greeting.greeting-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.handdrawn-iss-greeting.greeting-erased {
+  opacity: 0;
+  transform: translateY(-8px);
+  transition: opacity 1.2s ease, transform 1.2s ease;
+}
+
+/* Estrela Solitária que Sobe e Desaparece */
+.lone-star-ascender {
+  position: absolute;
+  top: 48%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  font-size: 26px;
+  color: #ffd54f;
+  text-shadow: 0 0 16px #ffd54f, 0 0 32px #ff80ab;
+  pointer-events: none;
+  z-index: 50;
+  transition: transform 0.8s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.8s ease;
+}
+
+.lone-star-ascender.star-appeared {
+  transform: translate(-50%, -50%) scale(1);
+  opacity: 1;
+}
+
+.lone-star-ascender.star-ascend-away {
+  animation: starAscendToSky 3.0s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+}
+
+@keyframes starAscendToSky {
+  0% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+  30% { transform: translate(-50%, -100px) scale(1.15); opacity: 0.95; }
+  75% { transform: translate(-50%, -280px) scale(0.5); opacity: 0.6; }
+  100% { transform: translate(-50%, -420px) scale(0.1); opacity: 0; }
+}
+
+/* 4. TELA SERENA DO FIM DEFINITIVO & BOTÃO */
+.final-peace-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 20px;
+}
+
+.final-peace-fim {
+  font-family: 'Handlee', 'Quicksand', cursive;
+  font-size: clamp(38px, 8.5vw, 54px);
+  color: #c2185b;
+  margin: 0 0 10px;
+  letter-spacing: 2px;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 1.6s ease, transform 1.6s ease;
+}
+
+.final-peace-fim.revealed {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.final-peace-thanks {
+  font-size: clamp(16.5px, 4.2vw, 21px);
+  font-weight: 500;
+  color: #6a1b9a;
+  margin: 0 0 28px;
+  font-style: italic;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 1.6s ease 0.6s, transform 1.6s ease 0.6s;
+}
+
+.final-peace-thanks.revealed {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Botão de convite nos créditos da tela final */
+.btn-open-closure-exp {
+  background: linear-gradient(135deg, #e91e63 0%, #c2185b 100%);
+  color: #ffffff;
+  border: none;
+  font-size: 14.5px;
+  font-weight: 700;
+  padding: 12px 28px;
+  border-radius: 50px;
+  cursor: pointer;
+  box-shadow: 0 6px 22px rgba(233, 30, 99, 0.35);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  margin-top: 14px;
+}
+
+.btn-open-closure-exp:hover {
+  transform: translateY(-2px) scale(1.03);
+  box-shadow: 0 10px 28px rgba(233, 30, 99, 0.45);
+}
+
+
