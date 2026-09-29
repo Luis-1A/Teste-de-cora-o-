@@ -8043,6 +8043,1055 @@ Luis Fernando Santos
   }
 
   // ==========================================
+  // 4.9. LIFECYCLE & COUNTDOWN MANAGER
+  // ==========================================
+  class LifecycleManager {
+    constructor(sys) {
+      this.sys = sys;
+      // Fixed lifecycle dates (no local cheating via localStorage)
+      this.BIRTHDAY_TIMESTAMP = new Date(2026, 8, 24, 0, 0, 0).getTime(); // 24/09/2026 00:00:00
+      this.SUSPENSION_TIMESTAMP = new Date(2026, 9, 9, 0, 0, 0).getTime(); // 09/10/2026 00:00:00 (15 days later)
+      
+      this.simulationOffset = null;
+      this.timerId = null;
+      this.hasTriggeredSuspension = false;
+      this.archiveModeBypass = false;
+
+      // Elements
+      this.barEl = document.getElementById('site-lifecycle-bar');
+      this.labelEl = document.getElementById('lifecycle-label');
+      this.countdownEl = document.getElementById('lifecycle-countdown');
+      this.iconEl = document.getElementById('lifecycle-icon');
+      this.infoBtn = document.getElementById('lifecycle-info-btn');
+      this.modalEl = document.getElementById('modal-lifecycle-info');
+    }
+
+    init() {
+      // Check query params for simulation mode
+      const urlParams = new URLSearchParams(window.location.search);
+      const modeParam = (urlParams.get('mode') || urlParams.get('preview') || urlParams.get('status') || '').toLowerCase();
+      if (modeParam === 'pre') {
+        this.simulationOffset = new Date(2026, 8, 20, 10, 0, 0).getTime() - Date.now();
+      } else if (modeParam === 'post') {
+        this.simulationOffset = new Date(2026, 8, 28, 14, 0, 0).getTime() - Date.now();
+      } else if (modeParam === 'expired' || modeParam === '404' || modeParam === 'epilogue') {
+        this.simulationOffset = new Date(2026, 9, 10, 10, 0, 0).getTime() - Date.now();
+      }
+
+      this.bindEvents();
+      this.update();
+      this.timerId = setInterval(() => this.update(), 1000);
+    }
+
+    bindEvents() {
+      if (this.infoBtn) {
+        this.infoBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          this.openModal();
+        });
+      }
+
+      const btnCloseModal = document.getElementById('btn-close-lifecycle-modal');
+      const btnCloseFooter = document.getElementById('btn-close-lifecycle-footer');
+      if (btnCloseModal) btnCloseModal.addEventListener('click', () => this.closeModal());
+      if (btnCloseFooter) btnCloseFooter.addEventListener('click', () => this.closeModal());
+
+      const btnSimPre = document.getElementById('btn-simulate-pre');
+      const btnSimPost = document.getElementById('btn-simulate-post');
+      const btnSimExpired = document.getElementById('btn-simulate-expired');
+      const btnSimReal = document.getElementById('btn-simulate-real');
+      const btnViewEpilogue = document.getElementById('btn-view-epilogue-now');
+      const btnResetEpilogueSeen = document.getElementById('btn-reset-epilogue-seen');
+      const btnOpen404Direct = document.getElementById('btn-open-404-direct');
+
+      if (btnResetEpilogueSeen) {
+        btnResetEpilogueSeen.addEventListener('click', () => {
+          localStorage.removeItem('issamara_epilogue_seen_v1');
+          if (this.sys && this.sys.toastManager) {
+            this.sys.toastManager.show('Histórico resetado! A próxima suspensão reproduzirá o epílogo completo.');
+          }
+          this.closeModal();
+        });
+      }
+
+      if (btnOpen404Direct) {
+        btnOpen404Direct.addEventListener('click', () => {
+          this.closeModal();
+          if (this.sys && this.sys.epilogueController) {
+            this.sys.epilogueController.openDirectTo404();
+          }
+        });
+      }
+
+      if (btnSimPre) {
+        btnSimPre.addEventListener('click', () => {
+          this.simulationOffset = new Date(2026, 8, 20, 10, 0, 0).getTime() - Date.now();
+          this.archiveModeBypass = false;
+          this.hasTriggeredSuspension = false;
+          this.update();
+          this.closeModal();
+        });
+      }
+
+      if (btnSimPost) {
+        btnSimPost.addEventListener('click', () => {
+          this.simulationOffset = new Date(2026, 8, 28, 14, 0, 0).getTime() - Date.now();
+          this.archiveModeBypass = false;
+          this.hasTriggeredSuspension = false;
+          this.update();
+          this.closeModal();
+        });
+      }
+
+      if (btnSimExpired) {
+        btnSimExpired.addEventListener('click', () => {
+          this.simulationOffset = new Date(2026, 9, 10, 10, 0, 0).getTime() - Date.now();
+          this.archiveModeBypass = false;
+          this.hasTriggeredSuspension = false;
+          this.update();
+          this.closeModal();
+        });
+      }
+
+      if (btnSimReal) {
+        btnSimReal.addEventListener('click', () => {
+          this.simulationOffset = null;
+          this.archiveModeBypass = false;
+          this.hasTriggeredSuspension = false;
+          this.update();
+          this.closeModal();
+        });
+      }
+
+      if (btnViewEpilogue) {
+        btnViewEpilogue.addEventListener('click', () => {
+          this.closeModal();
+          if (this.sys && this.sys.epilogueController) {
+            this.sys.epilogueController.openEpilogue();
+          }
+        });
+      }
+    }
+
+    openModal() {
+      if (this.modalEl) this.modalEl.classList.remove('d-none');
+    }
+
+    closeModal() {
+      if (this.modalEl) this.modalEl.classList.add('d-none');
+    }
+
+    getCurrentTimestamp() {
+      if (this.simulationOffset !== null) {
+        return Date.now() + this.simulationOffset;
+      }
+      return Date.now();
+    }
+
+    triggerSuspensionTest() {
+      // Simula o momento exato de chegada do dia da suspensão (09/10/2026 às 00:00:01)
+      this.simulationOffset = new Date(2026, 9, 9, 0, 0, 1).getTime() - Date.now();
+      this.archiveModeBypass = false;
+      this.hasTriggeredSuspension = true;
+      this.update();
+      if (this.sys && this.sys.epilogueController) {
+        const hasSeen = localStorage.getItem('issamara_epilogue_seen_v1') === 'true';
+        if (hasSeen) {
+          this.sys.epilogueController.openDirectTo404();
+        } else {
+          this.sys.epilogueController.openEpilogue();
+        }
+      }
+    }
+
+    bypassArchiveMode() {
+      this.archiveModeBypass = true;
+      if (this.sys && this.sys.epilogueController) {
+        this.sys.epilogueController.closeEpilogue();
+      }
+    }
+
+    update() {
+      const now = this.getCurrentTimestamp();
+      const diffBirthday = this.BIRTHDAY_TIMESTAMP - now;
+      const diffSuspension = this.SUSPENSION_TIMESTAMP - now;
+
+      if (now < this.BIRTHDAY_TIMESTAMP) {
+        // Fase 1: Antes do aniversário (sem exibição de segundos)
+        const days = Math.floor(diffBirthday / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((diffBirthday % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+
+        if (this.iconEl) this.iconEl.textContent = '🎂';
+        if (this.labelEl) this.labelEl.textContent = 'Faltam para o aniversário:';
+        if (this.countdownEl) {
+          this.countdownEl.textContent = days > 0 ? `${days} dias e ${hours}h` : `${hours} horas restantes`;
+        }
+      } else if (now >= this.BIRTHDAY_TIMESTAMP && now < this.SUSPENSION_TIMESTAMP) {
+        // Fase 2: Pós-aniversário com contador de 15 dias (sem segundos para visual limpo e elegante)
+        const days = Math.floor(diffSuspension / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((diffSuspension % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+
+        if (this.iconEl) this.iconEl.textContent = '⏳';
+        if (this.labelEl) this.labelEl.textContent = 'O site será suspenso em';
+        if (this.countdownEl) {
+          this.countdownEl.textContent = days > 0 ? `${days} dias e ${hours} horas` : `${hours} horas restantes`;
+        }
+      } else {
+        // Fase 3: Pós-encerramento (>= 09/10/2026)
+        if (this.iconEl) this.iconEl.textContent = '🥀';
+        if (this.labelEl) this.labelEl.textContent = 'Disponibilidade encerrada';
+        if (this.countdownEl) this.countdownEl.textContent = 'Site suspenso • 404 Ativo';
+
+        if (!this.hasTriggeredSuspension && !this.archiveModeBypass) {
+          this.hasTriggeredSuspension = true;
+          if (this.sys && this.sys.epilogueController) {
+            const hasSeen = localStorage.getItem('issamara_epilogue_seen_v1') === 'true';
+            if (hasSeen) {
+              this.sys.epilogueController.openDirectTo404();
+            } else {
+              this.sys.epilogueController.openEpilogue();
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // ==========================================
+  // 4.10. EPILOGUE & 404 CONTROLLER ("Antes de desaparecer")
+  // ==========================================
+  class EpilogueController {
+    constructor(sys) {
+      this.sys = sys;
+      this.duration = 75; // Meio termo confortável e natural (~1m15s no total)
+      this.STORAGE_KEY = 'issamara_epilogue_seen_v1';
+      this.currentTime = 0;
+      this.isPlaying = false;
+      this.lastTick = null;
+      this.animIntervalId = null;
+      this.canvasRafId = null;
+      this.activeSceneId = -1;
+
+      // DOM Elements
+      this.container = document.getElementById('epilogue-cinema');
+      this.canvas = document.getElementById('epilogue-canvas');
+      this.stage = document.getElementById('epilogue-stage');
+      this.btnQuickSkip = document.getElementById('btn-epilogue-quick-skip');
+
+      this.particles = [];
+      this.ctx = null;
+      this.initParticles();
+      this.bindEvents();
+    }
+
+    initParticles() {
+      if (!this.canvas) return;
+      this.ctx = this.canvas.getContext('2d');
+      this.particles = [];
+      const count = 40;
+      for (let i = 0; i < count; i++) {
+        this.particles.push({
+          x: Math.random() * window.innerWidth,
+          y: Math.random() * window.innerHeight,
+          radius: 2 + Math.random() * 5,
+          speedY: 0.35 + Math.random() * 0.65, // Movimento natural e equilibrado
+          speedX: (Math.random() - 0.5) * 0.4,
+          angle: Math.random() * Math.PI * 2,
+          angularSpeed: (Math.random() - 0.5) * 0.02,
+          opacity: 0.25 + Math.random() * 0.65,
+          isPetal: i % 2 === 0,
+          color: i % 3 === 0 ? 'rgba(233, 30, 99, ' : (i % 3 === 1 ? 'rgba(255, 182, 193, ' : 'rgba(255, 215, 0, ')
+        });
+      }
+    }
+
+    bindEvents() {
+      if (this.btnQuickSkip) {
+        this.btnQuickSkip.addEventListener('click', (e) => {
+          e.stopPropagation();
+          // Marca no dispositivo que a pessoa já conhece e vai direto para a tela 404
+          localStorage.setItem(this.STORAGE_KEY, 'true');
+          this.seekTo(66.0); // Pula suavemente direto para a cena do 404
+        });
+      }
+
+      window.addEventListener('resize', () => {
+        if (this.canvas) {
+          this.canvas.width = window.innerWidth;
+          this.canvas.height = window.innerHeight;
+        }
+      });
+    }
+
+    openEpilogue() {
+      if (!this.container) return;
+      this.container.classList.remove('d-none');
+      this.container.classList.remove('fade-out');
+
+      // Dismiss cinematic intro if visible
+      const cinematicEntry = document.getElementById('cinematic-entry');
+      if (cinematicEntry) {
+        cinematicEntry.classList.add('fade-out');
+      }
+
+      // Hide floating lifecycle bar during epilogue cinema
+      const lifecycleBar = document.getElementById('site-lifecycle-bar');
+      if (lifecycleBar) lifecycleBar.classList.add('hidden');
+
+      if (this.btnQuickSkip) this.btnQuickSkip.classList.remove('d-none');
+
+      if (this.canvas) {
+        this.canvas.width = window.innerWidth;
+        this.canvas.height = window.innerHeight;
+      }
+
+      this.currentTime = 0;
+      this.isPlaying = true;
+      this.lastTick = performance.now();
+
+      // Lower and adapt background music softly
+      const bgAudio = document.getElementById('background-music');
+      if (bgAudio) {
+        try {
+          bgAudio.volume = 0.35;
+          bgAudio.play().catch(() => {});
+        } catch (e) {}
+      }
+
+      if (this.sys && this.sys.soundEffects && typeof this.sys.soundEffects.playChimeChord === 'function') {
+        this.sys.soundEffects.playChimeChord();
+      }
+
+      this.startLoop();
+      this.renderCurrentSecond();
+    }
+
+    openDirectTo404() {
+      if (!this.container) return;
+      this.container.classList.remove('d-none');
+      this.container.classList.remove('fade-out');
+
+      // Dismiss cinematic intro if visible
+      const cinematicEntry = document.getElementById('cinematic-entry');
+      if (cinematicEntry) {
+        cinematicEntry.classList.add('fade-out');
+      }
+
+      // Hide floating lifecycle bar
+      const lifecycleBar = document.getElementById('site-lifecycle-bar');
+      if (lifecycleBar) lifecycleBar.classList.add('hidden');
+
+      // Oculta botão de pular pois já está no 404
+      if (this.btnQuickSkip) this.btnQuickSkip.classList.add('d-none');
+
+      if (this.canvas) {
+        this.canvas.width = window.innerWidth;
+        this.canvas.height = window.innerHeight;
+      }
+
+      this.pause();
+      this.currentTime = 66.0;
+      this.activeSceneId = 6;
+      this.buildSceneDOM(6);
+      this.updateSceneState(6, 66.0);
+
+      // Inicia suave flutuação de pétalas de fundo
+      const renderCanvas = () => {
+        if (!this.container || this.container.classList.contains('d-none')) return;
+        this.drawCanvas();
+        this.canvasRafId = requestAnimationFrame(renderCanvas);
+      };
+      if (this.canvasRafId) cancelAnimationFrame(this.canvasRafId);
+      this.canvasRafId = requestAnimationFrame(renderCanvas);
+
+      // Garante que o status no dispositivo permaneça marcado
+      localStorage.setItem(this.STORAGE_KEY, 'true');
+    }
+
+    closeEpilogue() {
+      if (!this.container) return;
+      this.pause();
+      this.container.classList.add('fade-out');
+      setTimeout(() => {
+        this.container.classList.add('d-none');
+      }, 1200);
+
+      // Restore floating lifecycle bar
+      const lifecycleBar = document.getElementById('site-lifecycle-bar');
+      if (lifecycleBar) lifecycleBar.classList.remove('hidden');
+
+      const bgAudio = document.getElementById('background-music');
+      if (bgAudio) {
+        try { bgAudio.volume = 0.7; } catch (e) {}
+      }
+    }
+
+    play() {
+      this.isPlaying = true;
+      this.lastTick = performance.now();
+      this.startLoop();
+    }
+
+    pause() {
+      this.isPlaying = false;
+      if (this.animIntervalId) {
+        clearInterval(this.animIntervalId);
+        this.animIntervalId = null;
+      }
+      if (this.canvasRafId) {
+        cancelAnimationFrame(this.canvasRafId);
+        this.canvasRafId = null;
+      }
+    }
+
+    seekTo(seconds) {
+      this.currentTime = Math.max(0, Math.min(this.duration, seconds));
+      this.updateTimeUI();
+      this.renderCurrentSecond(true);
+      if (!this.isPlaying) {
+        this.play();
+      }
+    }
+
+    startLoop() {
+      if (this.animIntervalId) clearInterval(this.animIntervalId);
+      this.animIntervalId = setInterval(() => {
+        if (!this.isPlaying) return;
+        const now = performance.now();
+        const delta = (now - this.lastTick) / 1000;
+        this.lastTick = now;
+
+        this.currentTime += delta;
+        if (this.currentTime >= this.duration) {
+          this.currentTime = this.duration;
+          this.pause();
+        }
+
+        this.updateTimeUI();
+        this.renderCurrentSecond();
+      }, 100);
+
+      const renderCanvas = () => {
+        if (!this.isPlaying || !this.ctx) return;
+        this.drawCanvas();
+        this.canvasRafId = requestAnimationFrame(renderCanvas);
+      };
+      if (!this.canvasRafId) {
+        this.canvasRafId = requestAnimationFrame(renderCanvas);
+      }
+    }
+
+    drawCanvas() {
+      const ctx = this.ctx;
+      if (!ctx || !this.canvas) return;
+      ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+      const w = this.canvas.width;
+      const h = this.canvas.height;
+
+      for (let i = 0; i < this.particles.length; i++) {
+        const p = this.particles[i];
+        p.y += p.speedY;
+        p.x += Math.sin(p.angle) * 0.7 + p.speedX;
+        p.angle += p.angularSpeed;
+
+        if (p.y > h + 20) {
+          p.y = -20;
+          p.x = Math.random() * w;
+        }
+        if (p.x > w + 20) p.x = -20;
+        if (p.x < -20) p.x = w + 20;
+
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate(p.angle);
+        ctx.fillStyle = p.color + p.opacity + ')';
+
+        if (p.isPetal) {
+          ctx.beginPath();
+          ctx.ellipse(0, 0, p.radius * 1.5, p.radius * 0.75, 0, 0, Math.PI * 2);
+          ctx.fill();
+        } else {
+          ctx.beginPath();
+          ctx.arc(0, 0, p.radius * 0.6, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.restore();
+      }
+    }
+
+    updateTimeUI() {
+      // Modula o volume da música suavemente no ritmo confortável
+      const bgAudio = document.getElementById('background-music');
+      if (bgAudio) {
+        try {
+          if (this.currentTime < 56) {
+            bgAudio.volume = Math.max(0.12, 0.35 - (this.currentTime / 56) * 0.2);
+          } else if (this.currentTime < 66) {
+            bgAudio.volume = Math.max(0.01, 0.12 - ((this.currentTime - 56) / 10) * 0.11);
+          } else {
+            bgAudio.volume = 0;
+          }
+        } catch (e) {}
+      }
+    }
+
+    renderCurrentSecond(forceRerender = false) {
+      const t = this.currentTime;
+      let sceneId = 1;
+
+      if (t < 12.0) sceneId = 1;
+      else if (t < 26.0) sceneId = 2;
+      else if (t < 40.0) sceneId = 3;
+      else if (t < 56.0) sceneId = 4;
+      else if (t < 66.0) sceneId = 5;
+      else sceneId = 6;
+
+      if (sceneId !== this.activeSceneId || forceRerender) {
+        this.activeSceneId = sceneId;
+        this.buildSceneDOM(sceneId);
+
+        if (sceneId === 6) {
+          // Marca no dispositivo que o epílogo foi concluído, para que nas próximas visitas vá direto ao 404
+          localStorage.setItem(this.STORAGE_KEY, 'true');
+          if (this.btnQuickSkip) this.btnQuickSkip.classList.add('d-none');
+        } else {
+          if (this.btnQuickSkip) this.btnQuickSkip.classList.remove('d-none');
+        }
+      }
+
+      this.updateSceneState(sceneId, t);
+    }
+
+    buildSceneDOM(sceneId) {
+      if (!this.stage) return;
+      this.stage.innerHTML = '';
+
+      switch (sceneId) {
+        case 1:
+          this.buildScene1();
+          break;
+        case 2:
+          this.buildScene2();
+          break;
+        case 3:
+          this.buildScene3();
+          break;
+        case 4:
+          this.buildScene4();
+          break;
+        case 5:
+          this.buildScene5();
+          break;
+        case 6:
+          this.buildScene6();
+          break;
+      }
+    }
+
+    // Retorna a flor botânica 2D realista com 19 pétalas em camadas e miolo radiante
+    getRealisticFlowerSvg() {
+      return `
+        <svg class="ep-realistic-flower-svg" viewBox="0 0 240 280">
+          <defs>
+            <linearGradient id="epBranchStemGrad" x1="0" y1="1" x2="0" y2="0">
+              <stop offset="0%" stop-color="#1b5e20" />
+              <stop offset="40%" stop-color="#2e7d32" />
+              <stop offset="85%" stop-color="#43a047" />
+              <stop offset="100%" stop-color="#66bb6a" />
+            </linearGradient>
+            <radialGradient id="epLeafGrad1" cx="30%" cy="30%" r="80%">
+              <stop offset="0%" stop-color="#81c784" />
+              <stop offset="45%" stop-color="#388e3c" />
+              <stop offset="100%" stop-color="#1b5e20" />
+            </radialGradient>
+            <radialGradient id="epLeafGrad2" cx="30%" cy="30%" r="80%">
+              <stop offset="0%" stop-color="#a5d6a7" />
+              <stop offset="50%" stop-color="#43a047" />
+              <stop offset="100%" stop-color="#2e7d32" />
+            </radialGradient>
+            <radialGradient id="epFlowerHalo" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stop-color="rgba(255, 182, 193, 0.45)" />
+              <stop offset="50%" stop-color="rgba(255, 105, 180, 0.22)" />
+              <stop offset="100%" stop-color="rgba(255, 255, 255, 0)" />
+            </radialGradient>
+            <radialGradient id="epOuterPetalGrad" cx="50%" cy="15%" r="85%">
+              <stop offset="0%" stop-color="#ffffff" />
+              <stop offset="28%" stop-color="#ffc1e3" />
+              <stop offset="62%" stop-color="#ff80ab" />
+              <stop offset="88%" stop-color="#e91e63" />
+              <stop offset="100%" stop-color="#ad1457" />
+            </radialGradient>
+            <radialGradient id="epMidPetalGrad" cx="50%" cy="20%" r="80%">
+              <stop offset="0%" stop-color="#ffffff" />
+              <stop offset="30%" stop-color="#ffb6c1" />
+              <stop offset="65%" stop-color="#ff4081" />
+              <stop offset="90%" stop-color="#c2185b" />
+              <stop offset="100%" stop-color="#880e4f" />
+            </radialGradient>
+            <radialGradient id="epInnerPetalGrad" cx="50%" cy="25%" r="75%">
+              <stop offset="0%" stop-color="#fff5f8" />
+              <stop offset="35%" stop-color="#ff80ab" />
+              <stop offset="78%" stop-color="#d81b60" />
+              <stop offset="100%" stop-color="#ad1457" />
+            </radialGradient>
+            <radialGradient id="epCenterCoreGrad" cx="45%" cy="38%" r="62%">
+              <stop offset="0%" stop-color="#ffffff" />
+              <stop offset="30%" stop-color="#fff9c4" />
+              <stop offset="62%" stop-color="#ffd54f" />
+              <stop offset="85%" stop-color="#ffb300" />
+              <stop offset="100%" stop-color="#ff8f00" />
+            </radialGradient>
+          </defs>
+
+          <!-- Caule e ramos botânicos -->
+          <path d="M120,270 C120,225 112,185 120,135 C123,114 120,102 120,95" fill="none" stroke="url(#epBranchStemGrad)" stroke-width="4.5" stroke-linecap="round" />
+          
+          <!-- Folha Esquerda com nervuras -->
+          <path d="M116,202 C102,198 88,192 78,188" fill="none" stroke="url(#epBranchStemGrad)" stroke-width="2.5" stroke-linecap="round" />
+          <g>
+            <path d="M116,202 C90,182 50,176 28,168 C46,194 80,216 114,206 Z" fill="url(#epLeafGrad1)" />
+            <path d="M114,203 C84,191 52,182 30,170" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="1.6" stroke-linecap="round" />
+            <path d="M84,191 C76,186 70,181 68,178" fill="none" stroke="rgba(255,255,255,0.35)" stroke-width="1.2" />
+          </g>
+
+          <!-- Folha Direita com nervuras -->
+          <path d="M121,162 C136,156 152,148 162,142" fill="none" stroke="url(#epBranchStemGrad)" stroke-width="2.5" stroke-linecap="round" />
+          <g>
+            <path d="M121,162 C148,142 190,135 214,126 C198,154 162,176 123,166 Z" fill="url(#epLeafGrad2)" />
+            <path d="M123,163 C156,150 188,139 212,128" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="1.6" stroke-linecap="round" />
+            <path d="M154,152 C162,146 168,142 172,138" fill="none" stroke="rgba(255,255,255,0.35)" stroke-width="1.2" />
+          </g>
+
+          <!-- Flor Botânica Realista com 19 pétalas em camadas -->
+          <g class="ep-flower-head" id="ep-flower-head">
+            <circle cx="120" cy="80" r="64" fill="url(#epFlowerHalo)" />
+
+            <!-- Sépalas / Cálice -->
+            <path d="M120,95 C110,108 98,112 94,116 C102,105 112,98 116,94 Z" fill="#2e7d32" />
+            <path d="M120,95 C130,108 142,112 146,116 C138,105 128,98 124,94 Z" fill="#2e7d32" />
+            <path d="M120,95 C117,110 119,118 120,120 C121,118 123,110 120,95 Z" fill="#43a047" />
+
+            <!-- Camada 1: 8 Pétalas Externas com dégradé e contorno fino -->
+            <g><path d="M120,80 C104,46 92,26 120,16 C148,26 136,46 120,80 Z" fill="url(#epOuterPetalGrad)" stroke="#c2185b" stroke-width="1.2" /><path d="M120,80 C120,55 120,35 120,18" stroke="rgba(255,255,255,0.4)" stroke-width="1" /></g>
+            <g><path d="M120,80 C140,50 162,40 172,62 C162,84 144,80 120,80 Z" fill="url(#epOuterPetalGrad)" stroke="#c2185b" stroke-width="1.2" /><path d="M120,80 C136,70 152,62 170,62" stroke="rgba(255,255,255,0.4)" stroke-width="1" /></g>
+            <g><path d="M120,80 C148,66 178,72 182,92 C170,114 144,102 120,80 Z" fill="url(#epOuterPetalGrad)" stroke="#c2185b" stroke-width="1.2" /><path d="M120,80 C145,82 165,85 180,92" stroke="rgba(255,255,255,0.4)" stroke-width="1" /></g>
+            <g><path d="M120,80 C140,100 156,124 138,136 C122,132 126,108 120,80 Z" fill="url(#epOuterPetalGrad)" stroke="#c2185b" stroke-width="1.2" /><path d="M120,80 C128,96 138,118 138,134" stroke="rgba(255,255,255,0.4)" stroke-width="1" /></g>
+            <g><path d="M120,80 C132,108 126,138 120,140 C114,138 108,108 120,80 Z" fill="url(#epOuterPetalGrad)" stroke="#c2185b" stroke-width="1.2" /><path d="M120,80 C120,100 120,122 120,138" stroke="rgba(255,255,255,0.4)" stroke-width="1" /></g>
+            <g><path d="M120,80 C102,110 96,132 82,136 C64,124 80,98 120,80 Z" fill="url(#epOuterPetalGrad)" stroke="#c2185b" stroke-width="1.2" /><path d="M120,80 C112,96 102,118 83,134" stroke="rgba(255,255,255,0.4)" stroke-width="1" /></g>
+            <g><path d="M120,80 C96,102 68,114 58,92 C62,72 92,66 120,80 Z" fill="url(#epOuterPetalGrad)" stroke="#c2185b" stroke-width="1.2" /><path d="M120,80 C95,82 75,85 60,92" stroke="rgba(255,255,255,0.4)" stroke-width="1" /></g>
+            <g><path d="M120,80 C96,80 78,84 68,62 C78,40 100,50 120,80 Z" fill="url(#epOuterPetalGrad)" stroke="#c2185b" stroke-width="1.2" /><path d="M120,80 C104,70 88,62 70,62" stroke="rgba(255,255,255,0.4)" stroke-width="1" /></g>
+
+            <!-- Camada 2: 6 Pétalas Médias -->
+            <g><path d="M120,80 C108,54 102,38 120,30 C138,38 132,54 120,80 Z" fill="url(#epMidPetalGrad)" stroke="#c2185b" stroke-width="1" /><path d="M120,80 C120,60 120,45 120,32" stroke="rgba(255,255,255,0.4)" stroke-width="0.8" /></g>
+            <g><path d="M120,80 C136,58 156,54 160,70 C150,86 136,84 120,80 Z" fill="url(#epMidPetalGrad)" stroke="#c2185b" stroke-width="1" /><path d="M120,80 C134,74 146,70 158,70" stroke="rgba(255,255,255,0.4)" stroke-width="0.8" /></g>
+            <g><path d="M120,80 C138,88 150,108 138,118 C124,116 124,96 120,80 Z" fill="url(#epMidPetalGrad)" stroke="#c2185b" stroke-width="1" /><path d="M120,80 C128,94 134,106 136,116" stroke="rgba(255,255,255,0.4)" stroke-width="0.8" /></g>
+            <g><path d="M120,80 C128,100 124,122 120,124 C116,122 112,100 120,80 Z" fill="url(#epMidPetalGrad)" stroke="#c2185b" stroke-width="1" /><path d="M120,80 C120,95 120,110 120,122" stroke="rgba(255,255,255,0.4)" stroke-width="0.8" /></g>
+            <g><path d="M120,80 C102,96 102,116 90,118 C78,108 90,88 120,80 Z" fill="url(#epMidPetalGrad)" stroke="#c2185b" stroke-width="1" /><path d="M120,80 C110,94 100,106 92,116" stroke="rgba(255,255,255,0.4)" stroke-width="0.8" /></g>
+            <g><path d="M120,80 C104,84 88,86 80,70 C84,54 104,58 120,80 Z" fill="url(#epMidPetalGrad)" stroke="#c2185b" stroke-width="1" /><path d="M120,80 C106,75 95,72 82,71" stroke="rgba(255,255,255,0.4)" stroke-width="0.8" /></g>
+
+            <!-- Camada 3: 5 Pétalas Internas -->
+            <g><path d="M120,80 C110,64 108,48 120,44 C132,48 130,64 120,80 Z" fill="url(#epInnerPetalGrad)" stroke="#d81b60" stroke-width="1" /></g>
+            <g><path d="M120,80 C132,66 142,66 144,76 C138,86 130,84 120,80 Z" fill="url(#epInnerPetalGrad)" stroke="#d81b60" stroke-width="1" /></g>
+            <g><path d="M120,80 C132,86 138,100 130,106 C120,104 122,92 120,80 Z" fill="url(#epInnerPetalGrad)" stroke="#d81b60" stroke-width="1" /></g>
+            <g><path d="M120,80 C118,92 120,104 112,106 C104,100 110,88 120,80 Z" fill="url(#epInnerPetalGrad)" stroke="#d81b60" stroke-width="1" /></g>
+            <g><path d="M120,80 C108,86 102,88 96,78 C98,66 110,66 120,80 Z" fill="url(#epInnerPetalGrad)" stroke="#d81b60" stroke-width="1" /></g>
+
+            <!-- Miolo Dourado com Grãos de Pólen Radiantes -->
+            <circle cx="120" cy="80" r="14" fill="url(#epCenterCoreGrad)" filter="drop-shadow(0 0 10px rgba(255, 215, 0, 0.85))" />
+            <circle cx="120" cy="67" r="2.2" fill="#fff9c4" />
+            <circle cx="128" cy="69" r="2.2" fill="#fff9c4" />
+            <circle cx="133" cy="76" r="2.2" fill="#fff9c4" />
+            <circle cx="132" cy="84" r="2.2" fill="#fff9c4" />
+            <circle cx="127" cy="91" r="2.2" fill="#fff9c4" />
+            <circle cx="120" cy="93" r="2.2" fill="#fff9c4" />
+            <circle cx="113" cy="91" r="2.2" fill="#fff9c4" />
+            <circle cx="108" cy="84" r="2.2" fill="#fff9c4" />
+            <circle cx="107" cy="76" r="2.2" fill="#fff9c4" />
+            <circle cx="112" cy="69" r="2.2" fill="#fff9c4" />
+            <circle cx="120" cy="80" r="4.2" fill="#ffd54f" />
+            <circle cx="120" cy="80" r="2" fill="#ffffff" />
+          </g>
+        </svg>
+
+        <!-- Pétala Realista que cai -->
+        <div class="ep-realistic-falling-petal" id="ep-s1-petal">
+          <svg viewBox="0 0 40 50">
+            <path d="M20,5 C7,15 2,35 20,47 C38,35 33,15 20,5 Z" fill="url(#epOuterPetalGrad)" stroke="#c2185b" stroke-width="1.2" />
+            <path d="M20,6 C20,20 20,35 20,45" stroke="rgba(255,255,255,0.6)" stroke-width="1.2" />
+            <path d="M20,20 C14,24 10,27 8,30" stroke="rgba(255,255,255,0.4)" stroke-width="0.8" />
+            <path d="M20,26 C26,30 30,33 32,36" stroke="rgba(255,255,255,0.4)" stroke-width="0.8" />
+          </svg>
+        </div>
+      `;
+    }
+
+    // Retorna a animação real e deslumbrante do 404 com dígitos desmontados que se aproximam
+    getReal404Svg() {
+      return `
+        <div class="ep-real-404-hero">
+          <svg class="ep-real-404-svg" viewBox="0 0 440 160">
+            <defs>
+              <linearGradient id="real404Grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#ff4081" />
+                <stop offset="40%" stop-color="#e91e63" />
+                <stop offset="75%" stop-color="#c2185b" />
+                <stop offset="100%" stop-color="#880e4f" />
+              </linearGradient>
+              <filter id="real404Neon" x="-25%" y="-25%" width="150%" height="150%">
+                <feGaussianBlur stdDeviation="7" result="blur" />
+                <feMerge>
+                  <feMergeNode in="blur" />
+                  <feMergeNode in="SourceGraphic" />
+                </feMerge>
+              </filter>
+            </defs>
+
+            <!-- Dígito 4 Esquerdo (Desmontado que flutua e se aproxima suavemente) -->
+            <g class="ep-digit-group ep-digit-group-left">
+              <path d="M 95 30 L 45 100 L 125 100 M 95 30 L 95 130" fill="none" stroke="rgba(233, 30, 99, 0.45)" stroke-width="14" stroke-linecap="round" stroke-linejoin="round" filter="url(#real404Neon)" />
+              <path class="ep-draw-digit d4-1" d="M 95 30 L 45 100 L 125 100" fill="none" stroke="url(#real404Grad)" stroke-width="7.5" stroke-linecap="round" stroke-linejoin="round" />
+              <path class="ep-draw-digit d4-stem1" d="M 95 30 L 95 130" fill="none" stroke="url(#real404Grad)" stroke-width="7.5" stroke-linecap="round" />
+            </g>
+
+            <!-- Dígito 0 Central com Órbitas Estelares e Centelha Viva -->
+            <g class="ep-digit-group ep-digit-group-center">
+              <ellipse cx="220" cy="80" rx="44" ry="52" fill="none" stroke="rgba(233, 30, 99, 0.45)" stroke-width="14" filter="url(#real404Neon)" />
+              <ellipse class="ep-draw-digit d0" cx="220" cy="80" rx="44" ry="52" fill="none" stroke="url(#real404Grad)" stroke-width="7.5" />
+              
+              <!-- Órbita estelar exterior -->
+              <g class="ep-orbit-ring-outer">
+                <circle cx="220" cy="22" r="3.2" fill="#ffd54f" filter="drop-shadow(0 0 6px #ffd54f)" />
+                <circle cx="270" cy="80" r="2.8" fill="#ffffff" filter="drop-shadow(0 0 5px #ffffff)" />
+                <circle cx="220" cy="138" r="3.2" fill="#ffd54f" filter="drop-shadow(0 0 6px #ffd54f)" />
+                <circle cx="170" cy="80" r="2.8" fill="#ff80ab" filter="drop-shadow(0 0 5px #ff80ab)" />
+              </g>
+
+              <!-- Órbita estelar interior -->
+              <g class="ep-orbit-ring-inner">
+                <circle cx="250" cy="55" r="2.4" fill="#ffffff" filter="drop-shadow(0 0 4px #ffffff)" />
+                <circle cx="190" cy="105" r="2.4" fill="#ff4081" filter="drop-shadow(0 0 4px #ff4081)" />
+              </g>
+
+              <!-- Coração/Centelha viva no centro do zero -->
+              <path class="ep-center-zero-heart" d="M 220 74 C 220 70 215 67 211 70 C 206 74 211 81 220 86 C 229 81 234 74 229 70 C 225 67 220 70 220 74 Z" fill="#e91e63" />
+            </g>
+
+            <!-- Dígito 4 Direito (Desmontado que flutua e se aproxima suavemente) -->
+            <g class="ep-digit-group ep-digit-group-right">
+              <path d="M 345 30 L 295 100 L 375 100 M 345 30 L 345 130" fill="none" stroke="rgba(233, 30, 99, 0.45)" stroke-width="14" stroke-linecap="round" stroke-linejoin="round" filter="url(#real404Neon)" />
+              <path class="ep-draw-digit d4-2" d="M 345 30 L 295 100 L 375 100" fill="none" stroke="url(#real404Grad)" stroke-width="7.5" stroke-linecap="round" stroke-linejoin="round" />
+              <path class="ep-draw-digit d4-stem2" d="M 345 30 L 345 130" fill="none" stroke="url(#real404Grad)" stroke-width="7.5" stroke-linecap="round" />
+            </g>
+          </svg>
+        </div>
+      `;
+    }
+
+    // 00:00 — Cena 1: A Flor Botânica Realista & Pétala que cai
+    buildScene1() {
+      const card = document.createElement('div');
+      card.className = 'ep-scene-card active';
+      card.id = 'ep-scene-1';
+      card.innerHTML = `
+        <div class="ep-realistic-flower-wrap" id="ep-s1-flower">
+          ${this.getRealisticFlowerSvg()}
+        </div>
+        <p class="ep-sub-quote" id="ep-s1-quote">“Algumas coisas foram feitas para durar pouco.”</p>
+      `;
+      this.stage.appendChild(card);
+    }
+
+    // Cena 2: O contador volta em ritmo suave
+    buildScene2() {
+      const card = document.createElement('div');
+      card.className = 'ep-scene-card active';
+      card.id = 'ep-scene-2';
+      card.innerHTML = `
+        <div class="ep-rewind-clock-box">
+          <div class="ep-rewind-badge" id="ep-rewind-badge">Fragmentos de tempo</div>
+          <div class="ep-rewind-digits" id="ep-rewind-digits">24</div>
+          <div class="ep-rewind-sub" id="ep-rewind-sub">dias restantes</div>
+          <div class="ep-final-date-lock mt-3" id="ep-final-date-lock">24 • 09 • 2026</div>
+        </div>
+      `;
+      this.stage.appendChild(card);
+    }
+
+    // Cena 3: A memória do site acorda
+    buildScene3() {
+      const card = document.createElement('div');
+      card.className = 'ep-scene-card active';
+      card.id = 'ep-scene-3';
+      card.innerHTML = `
+        <div class="ep-memories-ambient">
+          <span class="ep-floating-memory-item" style="top: 20%; left: 15%; animation-delay: 0s;">🌸</span>
+          <span class="ep-floating-memory-item" style="top: 60%; left: 25%; animation-delay: 1.2s;">✨</span>
+          <span class="ep-floating-memory-item" style="top: 30%; right: 20%; animation-delay: 0.8s;">🌿</span>
+          <span class="ep-floating-memory-item" style="top: 75%; right: 15%; animation-delay: 2.1s;">⭐</span>
+          <span class="ep-floating-memory-item" style="top: 15%; right: 40%; animation-delay: 1.5s;">📖</span>
+          <span class="ep-floating-memory-item" style="top: 45%; left: 45%; animation-delay: 2.5s;">💗</span>
+        </div>
+        <div class="text-center" style="position: relative; z-index: 2;">
+          <h2 class="ep-whisper-text" id="ep-whisper-1">Você se lembra?</h2>
+          <h2 class="ep-whisper-text" id="ep-whisper-2">Era aqui que tudo começava.</h2>
+        </div>
+      `;
+      this.stage.appendChild(card);
+    }
+
+    // Cena 4: O aniversário inteiro passa diante da pessoa
+    buildScene4() {
+      const card = document.createElement('div');
+      card.className = 'ep-scene-card active';
+      card.id = 'ep-scene-4';
+      card.innerHTML = `
+        <div class="ep-retro-carousel">
+          <div class="ep-retro-slide active" id="ep-slide-cake">
+            <div class="ep-retro-icon">🎂🕯️</div>
+            <h3 class="ep-retro-title">O Desejo dos 18 Anos</h3>
+            <p class="ep-retro-quote">“Que nunca falte paz, saúde e gentileza nos seus dias.”</p>
+          </div>
+
+          <div class="ep-retro-slide" id="ep-slide-balloons">
+            <div class="ep-retro-icon">🎈✨</div>
+            <h3 class="ep-retro-title">A Celebração</h3>
+            <p class="ep-retro-quote">“Algumas coisas a gente não consegue prever. Só consegue viver.”</p>
+          </div>
+
+          <div class="ep-retro-slide" id="ep-slide-letter">
+            <div class="ep-retro-icon">💌</div>
+            <h3 class="ep-retro-title">Carta para Issamara</h3>
+            <p class="ep-retro-quote">
+              “Você foi uma daquelas pessoas que conseguiram realmente ganhar um espaço na minha consideração.”
+            </p>
+          </div>
+
+          <div class="ep-retro-slide" id="ep-slide-artwork">
+            <svg class="ep-drawn-18-svg" viewBox="0 0 160 120">
+              <path class="ep-drawn-path draw-active" d="M 40 90 L 40 30 L 25 45" />
+              <path class="ep-drawn-path draw-active" d="M 90 40 C 90 25 120 25 120 45 C 120 60 90 65 90 80 C 90 100 125 100 125 80 C 125 65 90 60 90 45 Z" />
+              <path class="ep-drawn-path draw-active" d="M 132 80 C 132 75 140 75 142 80 C 144 75 152 75 152 80 C 152 87 142 95 142 95 C 142 95 132 87 132 80 Z" />
+            </svg>
+            <h3 class="ep-retro-title">18 Anos</h3>
+            <p class="ep-retro-quote">“Feito com amor, memória e carinho.”</p>
+          </div>
+        </div>
+      `;
+      this.stage.appendChild(card);
+    }
+
+    // Cena 5: A Despedida e o Silêncio
+    buildScene5() {
+      const card = document.createElement('div');
+      card.className = 'ep-scene-card active';
+      card.id = 'ep-scene-5';
+      card.innerHTML = `
+        <div class="ep-farewell-card">
+          <h2 class="ep-farewell-lead" id="ep-farewell-lead">Mas todo aniversário acaba.</h2>
+          <p class="ep-farewell-text" id="ep-farewell-text">
+            E algumas lembranças também precisam encontrar um fim.
+          </p>
+          <p class="ep-farewell-sub" id="ep-farewell-sub">24 de setembro de 2026 • Issamara</p>
+        </div>
+      `;
+      this.stage.appendChild(card);
+    }
+
+    // Cena 6: TELA 404 POÉTICA COM ANIMAÇÃO REAL & FLOR BOTÂNICA REALISTA
+    buildScene6() {
+      const card = document.createElement('div');
+      card.className = 'ep-scene-card active';
+      card.id = 'ep-scene-6';
+      card.innerHTML = `
+        <div class="ep-404-container">
+          <!-- 404 Vetorial Animado em Tempo Real com Dígitos que se Unem Suavemente -->
+          ${this.getReal404Svg()}
+
+          <!-- Flor Botânica Realista como Símbolo Central da Identidade Visual -->
+          <div class="ep-404-flower-showcase">
+            ${this.getRealisticFlowerSvg()}
+          </div>
+
+          <h2 class="ep-404-thanks" id="ep-404-thanks">Obrigado por ter voltado. 🌸</h2>
+          <h4 class="ep-404-status-title" id="ep-404-status-title">Infelizmente, este sistema está indisponível no momento.</h4>
+          <p class="ep-404-message" id="ep-404-message">
+            O período de disponibilidade deste site chegou ao fim.<br>
+            Obrigado por ter feito parte dessa pequena experiência.
+          </p>
+          <div class="ep-404-badge-clean" id="ep-404-badge">
+            404 • Sistema indisponível • 24 de setembro de 2026
+          </div>
+
+          <div class="ep-404-actions" id="ep-404-actions">
+            <button type="button" class="ep-btn-action ep-btn-pdf" id="btn-ep-download-pdf">
+              <i class="fas fa-file-pdf"></i> Baixar a Carta em PDF
+            </button>
+            <button type="button" class="ep-btn-action ep-btn-replay" id="btn-ep-replay">
+              <i class="fas fa-redo"></i> Rever Epílogo Completo
+            </button>
+            <button type="button" class="ep-btn-action ep-btn-archive" id="btn-ep-archive">
+              <i class="fas fa-box-archive"></i> Acessar Modo Arquivo
+            </button>
+          </div>
+        </div>
+      `;
+      this.stage.appendChild(card);
+
+      // Efeito sonoro suave de sino ao entrar no 404
+      if (this.sys && this.sys.soundEffects && typeof this.sys.soundEffects.playChimeChord === 'function') {
+        this.sys.soundEffects.playChimeChord();
+      }
+
+      // Bind actions in 404
+      const btnPdf = card.querySelector('#btn-ep-download-pdf');
+      const btnReplay = card.querySelector('#btn-ep-replay');
+      const btnArchive = card.querySelector('#btn-ep-archive');
+
+      if (btnPdf) {
+        btnPdf.addEventListener('click', () => {
+          if (this.sys && typeof this.sys.openPdfModal === 'function') {
+            this.sys.openPdfModal();
+          }
+        });
+      }
+
+      if (btnReplay) {
+        btnReplay.addEventListener('click', () => {
+          if (this.btnQuickSkip) this.btnQuickSkip.classList.remove('d-none');
+          this.seekTo(0);
+        });
+      }
+
+      if (btnArchive) {
+        btnArchive.addEventListener('click', () => {
+          if (this.sys && this.sys.lifecycleManager) {
+            this.sys.lifecycleManager.bypassArchiveMode();
+          } else {
+            this.closeEpilogue();
+          }
+        });
+      }
+    }
+
+    updateSceneState(sceneId, t) {
+      if (sceneId === 1) {
+        const petal = document.getElementById('ep-s1-petal');
+        const quote = document.getElementById('ep-s1-quote');
+        const card = document.getElementById('ep-scene-1');
+
+        if (petal) {
+          if (t >= 3.5) petal.classList.add('fall-active');
+          else petal.classList.remove('fall-active');
+        }
+
+        if (card) {
+          if (t >= 4.5) card.classList.add('zoom-out');
+          else card.classList.remove('zoom-out');
+        }
+
+        if (quote) {
+          if (t >= 5.0 && t < 10.5) quote.classList.add('visible');
+          else quote.classList.remove('visible');
+        }
+      } else if (sceneId === 2) {
+        const digits = document.getElementById('ep-rewind-digits');
+        const badge = document.getElementById('ep-rewind-badge');
+        const sub = document.getElementById('ep-rewind-sub');
+        const lock = document.getElementById('ep-final-date-lock');
+
+        if (t < 17.5) {
+          const progress = Math.max(0, Math.min(1, (t - 12.0) / 5.5));
+          const dayVal = Math.max(1, Math.floor(24 - progress * 23));
+          if (badge) badge.textContent = 'Fragmentos de tempo';
+          if (digits) digits.textContent = String(dayVal).padStart(2, '0');
+          if (sub) sub.textContent = 'dias restantes';
+          if (lock) lock.classList.remove('locked');
+        } else if (t < 21.5) {
+          const progress = Math.max(0, Math.min(1, (t - 17.5) / 4.0));
+          const ageVal = Math.max(0, Math.floor(18 - progress * 18));
+          if (badge) badge.textContent = 'Rebobinando a história';
+          if (digits) digits.textContent = `${ageVal}`;
+          if (sub) sub.textContent = 'anos';
+          if (lock) lock.classList.remove('locked');
+        } else if (t < 24.5) {
+          const progress = Math.max(0, Math.min(1, (t - 21.5) / 3.0));
+          const yearVal = Math.floor(2008 + progress * 18);
+          if (badge) badge.textContent = 'Memória do calendário';
+          if (digits) digits.textContent = `${yearVal}`;
+          if (sub) sub.textContent = 'ano';
+          if (lock) lock.classList.remove('locked');
+        } else {
+          if (badge) badge.textContent = 'O Momento';
+          if (digits) digits.textContent = '24';
+          if (sub) sub.textContent = 'Setembro de 2026';
+          if (lock) lock.classList.add('locked');
+        }
+      } else if (sceneId === 3) {
+        const w1 = document.getElementById('ep-whisper-1');
+        const w2 = document.getElementById('ep-whisper-2');
+
+        if (w1) {
+          if (t >= 27.5 && t < 33.0) w1.classList.add('show');
+          else w1.classList.remove('show');
+        }
+
+        if (w2) {
+          if (t >= 34.0 && t < 39.5) w2.classList.add('show');
+          else w2.classList.remove('show');
+        }
+      } else if (sceneId === 4) {
+        const slideCake = document.getElementById('ep-slide-cake');
+        const slideBalloons = document.getElementById('ep-slide-balloons');
+        const slideLetter = document.getElementById('ep-slide-letter');
+        const slideArtwork = document.getElementById('ep-slide-artwork');
+
+        const slides = [slideCake, slideBalloons, slideLetter, slideArtwork];
+        slides.forEach(s => s && s.classList.remove('active'));
+
+        if (t < 44.0) {
+          if (slideCake) slideCake.classList.add('active');
+        } else if (t < 48.0) {
+          if (slideBalloons) slideBalloons.classList.add('active');
+        } else if (t < 52.0) {
+          if (slideLetter) slideLetter.classList.add('active');
+        } else {
+          if (slideArtwork) slideArtwork.classList.add('active');
+        }
+      } else if (sceneId === 5) {
+        const lead = document.getElementById('ep-farewell-lead');
+        const text = document.getElementById('ep-farewell-text');
+        const sub = document.getElementById('ep-farewell-sub');
+
+        if (lead) {
+          if (t >= 56.5) lead.classList.add('show');
+          else lead.classList.remove('show');
+        }
+        if (text) {
+          if (t >= 59.5) text.classList.add('show');
+          else text.classList.remove('show');
+        }
+        if (sub) {
+          if (t >= 62.5) sub.classList.add('show');
+          else sub.classList.remove('show');
+        }
+      } else if (sceneId === 6) {
+        const thanks = document.getElementById('ep-404-thanks');
+        const title = document.getElementById('ep-404-status-title');
+        const msg = document.getElementById('ep-404-message');
+        const badge = document.getElementById('ep-404-badge');
+        const actions = document.getElementById('ep-404-actions');
+
+        if (thanks) thanks.classList.add('show');
+        if (title) title.classList.add('show');
+        if (msg) msg.classList.add('show');
+        if (badge) badge.classList.add('show');
+        if (actions) actions.classList.add('show');
+      }
+    }
+  }
+
+  // ==========================================
   // 5. CORE SYSTEM CONTROLLER
   // ==========================================
   class ExperienceSystem {
@@ -8062,6 +9111,10 @@ Luis Fernando Santos
       this.stage = document.getElementById('stage-wrapper');
       this.tapBar = null;
 
+      // Orquestrador do Epílogo & 404 e Guardião do Ciclo de Vida
+      this.epilogueController = new EpilogueController(this);
+      this.lifecycleManager = new LifecycleManager(this);
+
       this.init();
       // Inicializa o orquestrador da abertura cinematográfica
       this.cinematicIntro = new CinematicEntryController(this);
@@ -8079,6 +9132,11 @@ Luis Fernando Santos
       this.bindGlobalEvents();
       this.renderChapterListModal();
       this.goToChapter(1, false);
+
+      // Inicializa o sistema de ciclo de vida e contagem regressiva
+      if (this.lifecycleManager && typeof this.lifecycleManager.init === 'function') {
+        this.lifecycleManager.init();
+      }
 
       // Passo 31: Verificação de conclusão prévia no dispositivo
       if (localStorage.getItem('issamara_exp_concluded') === 'true') {

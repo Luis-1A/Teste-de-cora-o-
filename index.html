@@ -536,6 +536,93 @@
   <canvas id="global-viewport-petals-canvas" class="global-viewport-petals-canvas" aria-hidden="true"></canvas>
 
   <!-- ======================================================== -->
+  <!-- BARRA FLUTUANTE DE CICLO DE VIDA & CONTAGEM REGRESSIVA -->
+  <!-- ======================================================== -->
+  <aside id="site-lifecycle-bar" class="site-lifecycle-bar" aria-label="Contagem regressiva de disponibilidade do site">
+    <div class="lifecycle-inner" id="lifecycle-inner">
+      <span class="lifecycle-beacon" id="lifecycle-beacon" aria-hidden="true"></span>
+      <span class="lifecycle-icon" id="lifecycle-icon">⏳</span>
+      <div class="lifecycle-text-col">
+        <span class="lifecycle-label" id="lifecycle-label">O site será suspenso em</span>
+        <span class="lifecycle-countdown" id="lifecycle-countdown">Calculando...</span>
+      </div>
+      <button type="button" class="lifecycle-info-btn" id="lifecycle-info-btn" title="Informações e testes do ciclo de vida">
+        <i class="fas fa-info-circle"></i>
+      </button>
+    </div>
+  </aside>
+
+  <!-- ======================================================== -->
+  <!-- EPÍLOGO: "Antes de desaparecer" (Experiência Final & 404) -->
+  <!-- ======================================================== -->
+  <div id="epilogue-cinema" class="epilogue-cinema d-none" aria-label="Epílogo da experiência de aniversário">
+    <canvas id="epilogue-canvas" class="epilogue-canvas" aria-hidden="true"></canvas>
+
+    <div class="epilogue-stage" id="epilogue-stage">
+      <!-- Cenas gerenciadas e renderizadas pelo EpilogueController com flor realista e animação real de 404 -->
+    </div>
+
+    <!-- Botão minimalista e discreto para pular direto para o 404 (sem barras mecânicas de segundos) -->
+    <button type="button" class="epilogue-quick-skip-btn" id="btn-epilogue-quick-skip" title="Ir direto para a tela 404">
+      <span>Ir para 404</span> <i class="fas fa-forward ml-1"></i>
+    </button>
+  </div>
+
+  <!-- Modal Informativo & Testador de Fases do Ciclo de Vida -->
+  <div id="modal-lifecycle-info" class="custom-modal-backdrop d-none">
+    <div class="custom-modal" style="max-width: 520px;">
+      <div class="custom-modal-header">
+        <h5><i class="fas fa-hourglass-half text-danger mr-2"></i> Ciclo de Vida do Site</h5>
+        <button type="button" class="close" id="btn-close-lifecycle-modal">&times;</button>
+      </div>
+      <div class="custom-modal-body text-left">
+        <div class="lifecycle-modal-desc mb-3">
+          <p style="font-size: 14.5px; color: #3b0728; line-height: 1.5; font-weight: 600; margin-bottom: 6px;">
+            Cronograma de Disponibilidade:
+          </p>
+          <ul style="font-size: 13.5px; color: #555; line-height: 1.6; padding-left: 20px; margin-bottom: 12px;">
+            <li><strong>Até 24/09/2026:</strong> Contagem regressiva até o aniversário de 18 anos da Issamara.</li>
+            <li><strong>De 24/09/2026 a 09/10/2026 (15 dias):</strong> O site permanece ativo com contador decrescente em tempo real para a suspensão programada.</li>
+            <li><strong>A partir de 09/10/2026:</strong> O site é suspenso e abre o <em>Epílogo de ~4 minutos («Antes de desaparecer»)</em>, culminando na tela 404 especial da identidade visual.</li>
+          </ul>
+        </div>
+
+        <div class="p-3" style="background: rgba(255, 240, 245, 0.85); border-radius: 12px; border: 1px solid #ffccd7;">
+          <div style="font-size: 12.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: #c2185b; margin-bottom: 8px;">
+            🧪 Simular Fases (para testes e demonstração):
+          </div>
+          <div class="d-flex flex-wrap" style="gap: 6px;">
+            <button type="button" class="btn btn-sm btn-outline-info" id="btn-simulate-pre">
+              🎂 Antes de 24/09
+            </button>
+            <button type="button" class="btn btn-sm btn-outline-warning" id="btn-simulate-post">
+              ⏳ Pós-Aniversário (15 dias)
+            </button>
+            <button type="button" class="btn btn-sm btn-outline-danger" id="btn-simulate-expired">
+              🌸 Epílogo & 404
+            </button>
+            <button type="button" class="btn btn-sm btn-outline-secondary" id="btn-simulate-real">
+              ↺ Horário Real
+            </button>
+            <button type="button" class="btn btn-sm btn-outline-dark" id="btn-reset-epilogue-seen" title="Resetar histórico para simular primeira visita">
+              <i class="fas fa-history mr-1"></i> Resetar 1ª Visita
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="custom-modal-footer">
+        <button type="button" class="btn btn-sm btn-outline-danger" id="btn-open-404-direct">
+          <i class="fas fa-ghost mr-1"></i> Abrir 404 Direto
+        </button>
+        <button type="button" class="btn btn-sm btn-primary" id="btn-view-epilogue-now">
+          <i class="fas fa-film mr-1"></i> Assistir Epílogo Completo
+        </button>
+        <button type="button" class="btn btn-sm btn-outline-secondary" id="btn-close-lifecycle-footer">Fechar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================== -->
   <!-- ABERTURA CINEMATOGRÁFICA: NASCIMENTO 2008 -> 18 ANOS EM 2026 -->
   <!-- ======================================================== -->
   <div id="cinematic-entry" class="cinematic-entry" aria-label="Abertura cinematográfica da experiência">
